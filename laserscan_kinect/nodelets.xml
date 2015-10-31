@@ -1,0 +1,11 @@
+<library path="lib/libLaserScanKinectNodelet">
+
+  <class name="laserscan_kinect/LaserScanKinectNodelet"
+	 type="laserscan_kinect::LaserScanKinectNodelet"
+	 base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet to convert raw depth images (uint16) to sensor_msgs/LaserScans.
+    </description>
+  </class>
+
+</library>

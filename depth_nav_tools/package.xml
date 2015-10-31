@@ -1,0 +1,16 @@
+<package>
+  <name>depth_nav_tools</name>
+  <version>1.0.0</version>
+  <description>The kinect_nav_tools metapackage</description>
+  <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>laserscan_kinect</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
