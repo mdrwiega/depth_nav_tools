@@ -1,6 +1,7 @@
 <package>
   <name>laserscan_kinect</name>
   <version>1.0.1</version>
+  <author>Michal Drwiega</author>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
   <license>BSD</license>
 
