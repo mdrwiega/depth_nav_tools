@@ -3,11 +3,13 @@
   <version>1.0.0</version>
   <description>The kinect_nav_tools metapackage</description>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
-
+  <url type="website">http://ros.org/wiki/depth_nav_tools</url>
+  <author>Michal Drwiega</author>
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>laserscan_kinect</build_depend>
   <run_depend>laserscan_kinect</run_depend>
 
   <export>

@@ -1,12 +1,14 @@
 <package>
   <name>laserscan_kinect</name>
-  <version>1.0.1</version>
+  <version>1.0.0</version>
   <author>Michal Drwiega</author>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
   <license>BSD</license>
+  <url type="website">http://ros.org/wiki/depth_nav_tools</url>
 
-  <description>Package laserscan_kinect convert depth image from Microsoft Kinect sensor
-  to 2D laserscan format. It allows to mount Kinect with angle relative to the ground.
+  <description>Package laserscan_kinect converts depth image from Microsoft Kinect sensor
+  to 2D laser scanner format. Conversion algorithm allows to remove ground from depth image 
+  and compensate sensor mount tilt angle relative to the ground.
   </description>
 
   <!-- Dependencies which this package needs to build itself. -->
