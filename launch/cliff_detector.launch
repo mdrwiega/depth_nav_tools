@@ -1,0 +1,9 @@
+<launch>
+    <node name="cliff_detector" pkg="cliff_detector" type="cliff_detector" >
+	  	<remap from="image" to="/camera/depth/image_raw"/>
+	  	<remap from="camera_info" to="/camera/depth/camera_info"/>
+        <rosparam command="load" file="$(find cliff_detector)/config/params.yaml" />
+	</node>
+</launch>
+
+
