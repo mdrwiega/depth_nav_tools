@@ -343,19 +343,20 @@ void CliffDetector::findCliffInDepthImage( const sensor_msgs::ImageConstPtr &dep
 
   // Vector for block, constains rows, cols, depth values
   //  std::vector<std::array<int, 3> > tpoints;
-  std::vector<std::vector<int> >tpoints (block_size_ * block_size_, std::vector<int>(0));
+  std::vector<std::vector<int> >tpoints (block_size_ * block_size_, std::vector<int>(3));
 
   // Rows, cols and depth values for points which apply to stairs
   // std::vector<std::array<int, 3> > stairs_points;
-  std::vector<std::vector<int> > stairs_points (block_size_ * block_size_, std::vector<int>(0));
+  std::vector<std::vector<int> > stairs_points;
 
-  // Resize to size of block
-  //tpoints.resize(block_size_ * block_size_);
-  //px_nr.resize(block_size_ * block_size_);
 
 
   // Indicates which point from tpoints vector corresponds to which pixel in block
   std::vector<int> px_nr;
+
+  // Resize to size of block
+  //tpoints.resize(block_size_ * block_size_);
+  px_nr.resize(block_size_ * block_size_);
 
   // Four pixels in center of block
   const unsigned int c = block_size_ / 2;
@@ -387,7 +388,7 @@ void CliffDetector::findCliffInDepthImage( const sensor_msgs::ImageConstPtr &dep
           unsigned int col = bi * block_size_ + i;
           ROS_ASSERT(row < img_height && col < img_width);
 
-          unsigned int d = (depth_row[row_size * row + col]);
+          unsigned int d = depth_row[row_size * row + col];
 
           // Check if distance to point is greater than distance to ground plane
           if (d > (dist_to_ground_[row] + ground_margin_mm) &&

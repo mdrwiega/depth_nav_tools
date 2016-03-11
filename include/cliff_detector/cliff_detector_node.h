@@ -34,8 +34,8 @@
  * @brief  cliff_detector package
  */
 
-#ifndef STAIRS_DETECTOR_NODE
-#define STAIRS_DETECTOR_NODE
+#ifndef CLIFF_DETECTOR_NODE
+#define CLIFF_DETECTOR_NODE
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>

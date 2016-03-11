@@ -2,7 +2,7 @@ output_frame_id: camera_depth_frame
 rate: 10
 range_min: 0.5
 range_max: 5.0
-sensor_mount_height: 0.65
+sensor_mount_height: 0.55
 sensor_tilt_angle: 15.0
 
 publish_depth: true

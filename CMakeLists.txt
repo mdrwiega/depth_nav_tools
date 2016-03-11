@@ -3,7 +3,8 @@ project(cliff_detector)
 
 # Enable C++11 standard
 #set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp image_geometry image_transport

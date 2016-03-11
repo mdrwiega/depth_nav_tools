@@ -35,8 +35,8 @@
  * @brief  cliff_detector package
  */
 
-#ifndef STAIRS_DETECTOR
-#define STAIRS_DETECTOR
+#ifndef CLIFF_DETECTOR
+#define CLIFF_DETECTOR
 
 #include <ros/console.h>
 #include <sensor_msgs/Image.h>
@@ -57,7 +57,6 @@
 #include <cstdlib>
 
 #include <vector>
-//#include <array>
 
 namespace cliff_detector
 { 
