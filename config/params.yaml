@@ -1,0 +1,17 @@
+rate: 0.5
+range_min: 0.5
+range_max: 10.0
+mount_height_min: 0.7
+mount_height_max: 0.8
+tilt_angle_min: 15.0
+tilt_angle_max: 25.0
+
+publish_depth: true
+cam_model_update: false
+used_depth_height: 400
+depth_img_step_row: 8
+depth_img_step_col: 8
+
+ground_max_points: 2500
+ransac_max_iter: 2000
+ransac_dist_thresh: 0.001
