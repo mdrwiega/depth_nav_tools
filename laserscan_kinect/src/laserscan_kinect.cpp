@@ -36,20 +36,28 @@
 
 #include <laserscan_kinect/laserscan_kinect_node.h>
 
+#define TIME_MEASUREMENT 0 /// Measurement of processing time
+
+#if TIME_MEASUREMENT
+#include <boost/chrono.hpp>
+#endif
+
 using namespace laserscan_kinect;
 
 //=================================================================================================
 // Public methods
 //=================================================================================================
 LaserScanKinect::LaserScanKinect():
-  is_scan_msg_configurated_(false),
-  scan_msg_(new sensor_msgs::LaserScan()) { }
+  is_scan_msg_configurated_(false), scan_msg_(new sensor_msgs::LaserScan()) { }
 
 //=================================================================================================
 sensor_msgs::LaserScanPtr LaserScanKinect::prepareLaserScanMsg(
     const sensor_msgs::ImageConstPtr& depth_msg,
     const sensor_msgs::CameraInfoConstPtr& info_msg)
 {
+#if TIME_MEASUREMENT
+  boost::chrono::high_resolution_clock::time_point start = boost::chrono::high_resolution_clock::now();
+#endif
   // Configure message if necessary
   if(!is_scan_msg_configurated_ || cam_model_update_)
   {
@@ -122,6 +130,13 @@ sensor_msgs::LaserScanPtr LaserScanKinect::prepareLaserScanMsg(
     ss << "Depth image has unsupported encoding: " << depth_msg->encoding;
     throw std::runtime_error(ss.str());
   }
+
+#if TIME_MEASUREMENT // End of time measurement
+  boost::chrono::milliseconds ms = boost::chrono::duration_cast<boost::chrono::milliseconds>
+      (boost::chrono::high_resolution_clock::now() - start);
+  ROS_DEBUG_STREAM("\nProcessing takes " << ms.count() << " ms.");
+#endif
+
   return scan_msg_;
 }
 

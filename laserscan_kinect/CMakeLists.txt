@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(laserscan_kinect)
 
-# Enable C++11 standard
 set(CMAKE_CXX_FLAGS "-std=c++03 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_BUILD_TYPE Release)
 
 find_package(catkin REQUIRED COMPONENTS 
              roscpp image_geometry image_transport 
              nodelet dynamic_reconfigure sensor_msgs)
+
+find_package(Boost REQUIRED COMPONENTS Chrono)
 
 # Dynamic reconfigure config
 generate_dynamic_reconfigure_options( cfg/LaserscanKinect.cfg )
@@ -18,11 +19,11 @@ catkin_package(
   CATKIN_DEPENDS roscpp dynamic_reconfigure image_geometry image_transport nodelet sensor_msgs
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 add_library(LaserScanKinect src/laserscan_kinect.cpp)
 add_dependencies(LaserScanKinect ${PROJECT_NAME}_gencfg)
-target_link_libraries(LaserScanKinect ${catkin_LIBRARIES})
+target_link_libraries(LaserScanKinect ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(LaserScanKinectNode src/laserscan_kinect_node.cpp)
 add_dependencies(LaserScanKinectNode ${PROJECT_NAME}_gencfg)
