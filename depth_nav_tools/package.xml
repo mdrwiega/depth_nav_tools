@@ -12,7 +12,7 @@
   <exec_depend>laserscan_kinect</exec_depend>
   <exec_depend>cliff_detector</exec_depend>
   <exec_depend>depth_nav_msgs</exec_depend>
-  <exec_depend>nav_layer_points</exec_depend>
+  <exec_depend>nav_layer_from_points</exec_depend>
   <exec_depend>depth_sensor_pose</exec_depend>
 
   <export>
