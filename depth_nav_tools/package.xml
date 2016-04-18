@@ -10,7 +10,17 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>laserscan_kinect</build_depend>
+  <build_depend>cliff_detector</build_depend>
+  <build_depend>depth_nav_msgs</build_depend>
+  <build_depend>nav_layer_points</build_depend>
+  <build_depend>depth_sensor_pose</build_depend>
+
+
   <run_depend>laserscan_kinect</run_depend>
+  <run_depend>cliff_detector</run_depend>
+  <run_depend>depth_nav_msgs</run_depend>
+  <run_depend>nav_layer_points</run_depend>
+  <run_depend>depth_sensor_pose</run_depend>
 
   <export>
     <metapackage/>
