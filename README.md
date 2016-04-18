@@ -2,14 +2,23 @@
 Set of tools for mobile robot navigation with depth sensor, for example 
 Microsoft Kinect.
 
-Actually depth_nav_tools contains only package laserscan_kinect which converts
-depth image to laser scan (LaserScan). It allows to use Microsoft Kinect sensor
-for navigation purposes. Package laserscan_kinect finds smallest value of
-distance in each column of depth image and converts it to polar coordinates.
+Package depth_nav_tools contains following packages:
+- laserscan_kinect -- converts depth image to laser scan (LaserScan). 
+It finds smallest value of distance in each column of depth image 
+and converts it to polar coordinates. Moreover, package provides features 
+like ground removing from scan and sensor tilt compensation in distance values, 
+but it is necessary to know height of sensor optical center and tilt angle in frame of ground.
 
-Moreover, package provides features like ground removing from scan and sensor
-tilt compensation in distance values, but it is necessary to know height of
-sensor optical center and tilt angle in frame of ground.
+- depth_sensor_pose -- detects ground plane on depth image and estimate 
+                       height and tilt angle of depth sensor.
+
+- cliff_detector -- detects negative objects like a cliff or downstairs.
+
+- nav_layer_from_points -- creates navigation costmap layer based on received
+                           points.
+- depth_nav_msgs -- specific messages for other packages.
+
+
 
 ## ROS Documentation 
 A more detailed, standard ROS-style documentation of this package can be found on the ROS wiki at:

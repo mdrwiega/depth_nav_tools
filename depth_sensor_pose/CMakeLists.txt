@@ -6,7 +6,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp image_geometry image_transport
-  nodelet dynamic_reconfigure sensor_msgs pcl_ros cmake_modules
+  nodelet dynamic_reconfigure sensor_msgs pcl_ros cmake_modules costmap_2d
 )
 
 # Dynamic reconfigure config
@@ -14,6 +14,7 @@ generate_dynamic_reconfigure_options( cfg/DepthSensorPose.cfg )
 
 find_package( PCL REQUIRED )
 find_package( Eigen REQUIRED )
+
 
 catkin_package(
   INCLUDE_DIRS include
