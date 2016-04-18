@@ -1,27 +1,19 @@
-<package>
+<package format="2">
   <name>nav_layer_from_points</name>
   <version>1.0.0</version>
   <description> Plugin-based layers for the navigation software. </description>
   <author>Michal Drwiega</author>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
   <license>BSD</license>
+  <url type="website">http://ros.org/wiki/depth_nav_tools</url>
 
-  <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
   
-  <!-- Dependencies needed to compile this package. -->
-  <build_depend>roscpp</build_depend>
-  <build_depend>costmap_2d</build_depend>
-  <build_depend>depth_nav_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
-  
-  <!-- Dependencies needed after this package is compiled. -->
-  <run_depend>roscpp</run_depend>
-  <run_depend>costmap_2d</run_depend>
-  <run_depend>depth_nav_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
+  <depend>roscpp</depend>
+  <depend>costmap_2d</depend>
+  <depend>depth_nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>dynamic_reconfigure</depend>
 
 <export>
   <costmap_2d plugin="${prefix}/costmap_plugins.xml" />

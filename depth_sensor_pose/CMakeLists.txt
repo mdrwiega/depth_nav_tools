@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(depth_sensor_pose)
 
-set(CMAKE_CXX_FLAGS "-std=c++03 -Wall ${CMAKE_CXX_FLAGS}")
-set(CMAKE_BUILD_TYPE Debug)
-set(ROS_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS "-std=c++98 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp image_geometry image_transport

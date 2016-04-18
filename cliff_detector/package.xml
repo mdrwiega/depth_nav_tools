@@ -1,33 +1,22 @@
-<package>
+<package format="2">
   <name>cliff_detector</name>
   <version>1.0.1</version>
   <description>Cliff detector package</description>
-  <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
   <author>Michal Drwiega</author>
+  <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
   <license>BSD</license>
+  <url type="website">http://ros.org/wiki/depth_nav_tools</url>
  
-  <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
 
-  <!-- Dependencies needed to compile this package. -->
-  <build_depend>roscpp</build_depend>
-  <build_depend>nodelet</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>image_geometry</build_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>depth_nav_msgs</build_depend>
-
-  <!-- Dependencies needed after this package is compiled. -->
-  <run_depend>roscpp</run_depend>
-  <run_depend>nodelet</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>image_geometry</run_depend>
-  <run_depend>image_transport</run_depend>
-  <run_depend>cv_bridge</run_depend>
-  <run_depend>depth_nav_msgs</run_depend>
+  <depend>roscpp</depend>
+  <depend>nodelet</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>sensor_msgs</depend>
+  <depend>image_geometry</depend>
+  <depend>image_transport</depend>
+  <depend>cv_bridge</depend>
+  <depend>depth_nav_msgs</depend>
 
   <export>
     <nodelet plugin="${prefix}/nodelets.xml"/>

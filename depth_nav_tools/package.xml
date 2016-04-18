@@ -1,26 +1,19 @@
-<package>
+<package format="2">
   <name>depth_nav_tools</name>
-  <version>1.0.0</version>
-  <description>The kinect_nav_tools metapackage</description>
-  <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
-  <url type="website">http://ros.org/wiki/depth_nav_tools</url>
+  <version>1.0.1</version>
+  <description>The depth_nav_tools metapackage.</description>
   <author>Michal Drwiega</author>
+  <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
   <license>BSD</license>
+  <url type="website">http://ros.org/wiki/depth_nav_tools</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>laserscan_kinect</build_depend>
-  <build_depend>cliff_detector</build_depend>
-  <build_depend>depth_nav_msgs</build_depend>
-  <build_depend>nav_layer_points</build_depend>
-  <build_depend>depth_sensor_pose</build_depend>
-
-
-  <run_depend>laserscan_kinect</run_depend>
-  <run_depend>cliff_detector</run_depend>
-  <run_depend>depth_nav_msgs</run_depend>
-  <run_depend>nav_layer_points</run_depend>
-  <run_depend>depth_sensor_pose</run_depend>
+  <exec_depend>laserscan_kinect</exec_depend>
+  <exec_depend>cliff_detector</exec_depend>
+  <exec_depend>depth_nav_msgs</exec_depend>
+  <exec_depend>nav_layer_points</exec_depend>
+  <exec_depend>depth_sensor_pose</exec_depend>
 
   <export>
     <metapackage/>
