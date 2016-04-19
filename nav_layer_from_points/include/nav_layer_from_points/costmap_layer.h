@@ -54,15 +54,15 @@
 #include <angles/angles.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <nav_layer_from_points/NavLayerPointsConfig.h>
+#include <nav_layer_from_points/NavLayerFromPointsConfig.h>
 
 
 namespace nav_layer_from_points
 {
-class NavLayerPoints : public costmap_2d::Layer
+class NavLayerFromPoints : public costmap_2d::Layer
 {
 public:
-  NavLayerPoints() { layered_costmap_ = NULL; }
+  NavLayerFromPoints() { layered_costmap_ = NULL; }
 
   virtual void onInitialize();
 
@@ -86,7 +86,7 @@ protected:
    */
   void clearTransformedPoints();
 
-  void configure(NavLayerPointsConfig &config, uint32_t level);
+  void configure(NavLayerFromPointsConfig &config, uint32_t level);
 
 protected: // Protected fields
   ros::Subscriber sub_points_;               ///< Subscriber for points
@@ -111,8 +111,8 @@ private:
 
   //-----------------------------------------------------------------------------------------------
 
-  dynamic_reconfigure::Server<NavLayerPointsConfig>* rec_server_;
-  dynamic_reconfigure::Server<NavLayerPointsConfig>::CallbackType f_;
+  dynamic_reconfigure::Server<NavLayerFromPointsConfig>* rec_server_;
+  dynamic_reconfigure::Server<NavLayerFromPointsConfig>::CallbackType f_;
 
 };
 } // end of namespace

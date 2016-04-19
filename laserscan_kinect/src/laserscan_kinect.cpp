@@ -79,11 +79,6 @@ sensor_msgs::LaserScanPtr LaserScanKinect::prepareLaserScanMsg(
     if ( tilt_compensation_enable_ )  // Sensor tilt compensation
       calcTiltCompensationFactorsForImgRows(vertical_fov);
 
-    // Prepare laser scan message
-    scan_msg_->header = depth_msg->header;
-    if(output_frame_id_.length() > 0)
-      scan_msg_->header.frame_id = output_frame_id_;
-
     scan_msg_->angle_min = min_angle;
     scan_msg_->angle_max = max_angle;
     scan_msg_->angle_increment = (max_angle - min_angle) / (depth_msg->width - 1);
@@ -116,6 +111,11 @@ sensor_msgs::LaserScanPtr LaserScanKinect::prepareLaserScanMsg(
     }
     is_scan_msg_configurated_ = true;
   }
+
+  // Prepare laser scan message
+  scan_msg_->header = depth_msg->header;
+  if(output_frame_id_.length() > 0)
+    scan_msg_->header.frame_id = output_frame_id_;
 
   scan_msg_->ranges.assign(depth_msg->width, std::numeric_limits<float>::quiet_NaN());
 

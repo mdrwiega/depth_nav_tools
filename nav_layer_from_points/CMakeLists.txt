@@ -12,19 +12,19 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
 )
 
+include_directories(include ${catkin_INCLUDE_DIRS})
+
 # Dynamic reconfigure config
-generate_dynamic_reconfigure_options( cfg/nav_layer.cfg )
+generate_dynamic_reconfigure_options( cfg/NavLayerFromPoints.cfg )
 
 catkin_package(
+  	 INCLUDE_DIRS include
+    LIBRARIES costmap_layers
     CATKIN_DEPENDS depth_nav_msgs costmap_2d dynamic_reconfigure geometry_msgs
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS})
-
-# Add cpp library
 add_library(costmap_layers src/costmap_layer.cpp )
 
-# Add cmake target dependencies of the executable/library
 add_dependencies(costmap_layers depth_nav_msgs_gencpp ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 install(FILES costmap_plugins.xml

@@ -43,27 +43,27 @@ using costmap_2d::NO_INFORMATION;
 using costmap_2d::LETHAL_OBSTACLE;
 using costmap_2d::FREE_SPACE;
 
-PLUGINLIB_EXPORT_CLASS(nav_layer_from_points::NavLayerPoints, costmap_2d::Layer)
+PLUGINLIB_EXPORT_CLASS(nav_layer_from_points::NavLayerFromPoints, costmap_2d::Layer)
 
 namespace nav_layer_from_points
 {
   //=================================================================================================
-  void NavLayerPoints::onInitialize()
+  void NavLayerFromPoints::onInitialize()
   {
     current_ = true;
     first_time_ = true;
 
     ros::NodeHandle nh("~/" + name_), g_nh;
     sub_points_ = nh.subscribe("/downstairs_detector/points", 1,
-                               &NavLayerPoints::pointsCallback, this);
+                               &NavLayerFromPoints::pointsCallback, this);
 
-    rec_server_ = new dynamic_reconfigure::Server<NavLayerPointsConfig>(nh);
-    f_ = boost::bind(&NavLayerPoints::configure, this, _1, _2);
+    rec_server_ = new dynamic_reconfigure::Server<NavLayerFromPointsConfig>(nh);
+    f_ = boost::bind(&NavLayerFromPoints::configure, this, _1, _2);
     rec_server_->setCallback(f_);
   }
 
   //=================================================================================================
-  void NavLayerPoints::configure(NavLayerPointsConfig &config, uint32_t level)
+  void NavLayerFromPoints::configure(NavLayerFromPointsConfig &config, uint32_t level)
   {
     points_keep_time_ = ros::Duration(config.keep_time);
     enabled_ = config.enabled;
@@ -73,14 +73,14 @@ namespace nav_layer_from_points
   }
 
   //=================================================================================================
-  void NavLayerPoints::pointsCallback(const depth_nav_msgs::Point32List& points)
+  void NavLayerFromPoints::pointsCallback(const depth_nav_msgs::Point32List& points)
   {
     boost::recursive_mutex::scoped_lock lock(lock_);
     points_list_ = points;
   }
 
   //=================================================================================================
-  void NavLayerPoints::clearTransformedPoints()
+  void NavLayerFromPoints::clearTransformedPoints()
   {
     std::list<geometry_msgs::PointStamped>::iterator p_it;
     p_it = transformed_points_.begin();
@@ -98,7 +98,7 @@ namespace nav_layer_from_points
   }
 
   //=================================================================================================
-  void NavLayerPoints::updateBounds(double origin_x, double origin_y, double origin_z,
+  void NavLayerFromPoints::updateBounds(double origin_x, double origin_y, double origin_z,
                                     double* min_x, double* min_y, double* max_x, double* max_y)
   {
     boost::recursive_mutex::scoped_lock lock(lock_);
@@ -183,7 +183,7 @@ namespace nav_layer_from_points
   }
 
   //=================================================================================================
-  void NavLayerPoints::updateBoundsFromPoints(double* min_x, double* min_y, double* max_x, double* max_y)
+  void NavLayerFromPoints::updateBoundsFromPoints(double* min_x, double* min_y, double* max_x, double* max_y)
   {
     std::list<geometry_msgs::PointStamped>::iterator p_it;
 
@@ -201,7 +201,7 @@ namespace nav_layer_from_points
   }
 
   //=================================================================================================
-  void NavLayerPoints::updateCosts(costmap_2d::Costmap2D& master_grid,
+  void NavLayerFromPoints::updateCosts(costmap_2d::Costmap2D& master_grid,
                                    int min_i, int min_j, int max_i, int max_j)
   {
     boost::recursive_mutex::scoped_lock lock(lock_);
