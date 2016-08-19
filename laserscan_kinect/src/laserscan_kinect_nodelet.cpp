@@ -36,6 +36,7 @@
 
 #include <laserscan_kinect/laserscan_kinect_node.h>
 #include <nodelet/nodelet.h>
+#include <memory>
 
 namespace laserscan_kinect
 {
@@ -52,7 +53,7 @@ private:
     converter.reset(new LaserScanKinectNode(getNodeHandle(), getPrivateNodeHandle()));
   };
   
-  boost::shared_ptr<LaserScanKinectNode> converter;
+  std::shared_ptr<LaserScanKinectNode> converter;
 };
 
 } // end of namespace

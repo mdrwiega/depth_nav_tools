@@ -34,14 +34,14 @@
  * @brief  laserscan_kinect package
  */
 
-#ifndef LASERSCAN_KINECT_NODE
-#define LASERSCAN_KINECT_NODE
+#pragma once
+
+#include <mutex>
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/LaserScan.h>
-#include <boost/thread/mutex.hpp>
 #include <dynamic_reconfigure/server.h>
 
 #include <laserscan_kinect/LaserscanKinectConfig.h>
@@ -113,8 +113,6 @@ private:
   /// Object which convert depth image to laserscan and store all parameters
   laserscan_kinect::LaserScanKinect converter_;
   /// Prevents the connectCb and disconnectCb from being called until everything is initialized.
-  boost::mutex connect_mutex_;
+  std::mutex connect_mutex_;
 };
 };
-
-#endif

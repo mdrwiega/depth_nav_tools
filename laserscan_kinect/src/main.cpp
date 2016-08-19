@@ -31,7 +31,7 @@
 /**
  * @file   main.cpp
  * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   10.2015
+ * @date   2016
  * @brief  laserscan_kinect package
  */
 
