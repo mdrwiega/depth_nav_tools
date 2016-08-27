@@ -1,7 +1,7 @@
 /******************************************************************************
  * Software License Agreement (BSD License)
  *
- * Copyright (c) 2015, Michal Drwiega (drwiega.michal@gmail.com)
+ * Copyright (c) 2016, Michal Drwiega (drwiega.michal@gmail.com)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@
 /**
  * @file   laserscan_kinect.h
  * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   2016
  * @brief  laserscan_kinect package
  */
 
@@ -171,6 +170,7 @@ private: // Private methods
     *
     * @param depth_msg
     */
+    template <typename T>
     void convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr& depth_msg);
 
 private: // Private fields
@@ -205,7 +205,7 @@ private: // Private fields
     std::vector<unsigned> dist_to_ground_;
 
     /// Calculated sensor tilt compensation factors
-    std::vector<double> tilt_compensation_factor_;
+    std::vector<float> tilt_compensation_factor_;
 };
 
 }; // end of namespace laserscan_kinect

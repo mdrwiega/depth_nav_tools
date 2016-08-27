@@ -1,0 +1,6 @@
+include/laserscan_kinect/laserscan_kinect.h
+include/laserscan_kinect/laserscan_kinect_node.h
+src/laserscan_kinect.cpp
+src/laserscan_kinect_node.cpp
+src/laserscan_kinect_nodelet.cpp
+src/main.cpp

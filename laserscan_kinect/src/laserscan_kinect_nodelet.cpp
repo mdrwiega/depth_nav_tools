@@ -30,7 +30,6 @@
 /**
  * @file   laserscan_kinect_nodelet.cpp
  * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   10.2015
  * @brief  laserscan_kinect package
  */
 

@@ -1,7 +1,7 @@
 /******************************************************************************
  * Software License Agreement (BSD License)
  *
- * Copyright (c) 2015, Michal Drwiega (drwiega.michal@gmail.com)
+ * Copyright (c) 2016, Michal Drwiega (drwiega.michal@gmail.com)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@
 /**
  * @file   laserscan_kinect.cpp
  * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   2016
  * @brief  laserscan_kinect package
  */
 
@@ -38,7 +37,7 @@
 
 #include <cmath>
 #include <algorithm>
-#include <cstdint>
+#include <typeinfo>
 
 #define TIME_MEASUREMENT 0 /// Measurement of processing time
 
@@ -94,10 +93,10 @@ sensor_msgs::LaserScanPtr LaserScanKinect::prepareLaserScanMsg(
         // Set min and max range in preparing message
         if (tilt_compensation_enable_)
         {
-            scan_msg_->range_min = range_min_ * *std::min_element( tilt_compensation_factor_.begin(),
-                                                                   tilt_compensation_factor_.end() );
-            scan_msg_->range_max = range_max_ * *std::max_element( tilt_compensation_factor_.begin(),
-                                                                   tilt_compensation_factor_.end() );
+            scan_msg_->range_min = range_min_ * *std::min_element(tilt_compensation_factor_.begin(),
+                                                                  tilt_compensation_factor_.end());
+            scan_msg_->range_max = range_max_ * *std::max_element(tilt_compensation_factor_.begin(),
+                                                                  tilt_compensation_factor_.end());
         }
         else
         {
@@ -127,7 +126,11 @@ sensor_msgs::LaserScanPtr LaserScanKinect::prepareLaserScanMsg(
     // Check if image encoding is correctly
     if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1)
     {
-        convertDepthToPolarCoords(depth_msg);
+        convertDepthToPolarCoords<uint16_t>(depth_msg);
+    }
+    else if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1)
+    {
+        convertDepthToPolarCoords<float>(depth_msg);
     }
     else
     {
@@ -266,15 +269,18 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov)
 
     dist_to_ground_.resize(img_height);
 
-    for(int i = 0; i < img_height; i++) // Coefficients calculations for each row of image
+    // Coefficients calculations for each row of image
+    for(int i = 0; i < img_height; ++i)
     {
         // Angle between ray and optical center
-        double delta = vertical_fov * (i - cam_model_.cy() - 0.5) / ((double)img_height - 1);
+        double delta = vertical_fov * (i - cam_model_.cy() - 0.5)
+                     / (static_cast<double>(img_height) - 1);
 
         if ((delta + alpha) > 0)
         {
-            dist_to_ground_[i] = sensor_mount_height_ * sin(M_PI/2-delta) * 1000
-                    / cos(M_PI/2-delta-alpha);
+            dist_to_ground_[i] = sensor_mount_height_ * sin(M_PI / 2 - delta) * 1000
+                               / cos(M_PI / 2 - delta - alpha);
+
             ROS_ASSERT(dist_to_ground_[i] > 0);
         }
         else
@@ -285,14 +291,14 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov)
 //=================================================================================================
 void LaserScanKinect::calcTiltCompensationFactorsForImgRows(double vertical_fov)
 {
-    const double alpha = sensor_tilt_angle_ * M_PI / 180.0; // Sensor tilt angle in radians
+    const double alpha = sensor_tilt_angle_ * M_PI / 180.0;
     const int img_height = cam_model_.fullResolution().height;
 
     ROS_ASSERT(img_height >= 0);
 
     tilt_compensation_factor_.resize(img_height);
 
-    for(int i = 0; i < img_height; i++) // Process all rows
+    for(int i = 0; i < img_height; ++i) // Processing all rows
     {
         double delta = vertical_fov * (i - cam_model_.cy() - 0.5) / ((double)img_height - 1);
 
@@ -314,58 +320,78 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPt
 }
 
 //=================================================================================================
+template <typename T>
 void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr &depth_msg)
 {
-    const uint16_t* depth_row = reinterpret_cast<const uint16_t*>(&depth_msg->data[0]);
+    const T* depth_row = reinterpret_cast<const T*>(&depth_msg->data[0]);
     const int offset = (int)(cam_model_.cy()- scan_height_ / 2);
-    const int row_size = depth_msg->step / sizeof(uint16_t);
+    const int row_size = depth_msg->step / sizeof(T);
 
     const unsigned range_min_mm = range_min_ * 1000;
     const unsigned range_max_mm = range_max_ * 1000;
     const int ground_margin_mm = ground_margin_ * 1000;
 
-    // Loop over each column in image
-    for (int j = 0; j < (int)depth_msg->width; j++)
+    // Correction of distance to ground for each row of image
+    std::vector<int> dist_to_ground_corrected(cam_model_.fullResolution().height);
+    for (unsigned i = 0; i < dist_to_ground_.size(); ++i)
     {
-        float depth_min = UINT16_MAX;
+        dist_to_ground_corrected[i] = dist_to_ground_[i] - ground_margin_mm;
+    }
+
+    // Loop over each column in image
+    for (unsigned j = 0; j < (int)depth_msg->width; ++j)
+    {
+        float depth_min = std::numeric_limits<T>::max();
 
         // Loop over pixels in column. Calculate z_min in column
-        for (int i = offset; i < offset + scan_height_; i += depth_img_row_step_)
+        for (unsigned i = offset; i < offset + scan_height_; i += depth_img_row_step_)
         {
-            uint16_t depth_raw = depth_row[row_size * i + j];
-            float depth;
+            int depth_raw_mm;
+            float depth_m;
 
-            if ( tilt_compensation_enable_ ) // Check if tilt compensation is enabled
-                depth = depth_raw * tilt_compensation_factor_[i] / 1000.0f;
-            else
-                depth = depth_raw / 1000.0f;
+            if (typeid(T) == typeid(uint16_t))
+            {
+                depth_raw_mm = depth_row[row_size * i + j];
+                depth_m = static_cast<float>(depth_raw_mm) / 1000.0;
+            }
+            else if (typeid(T) == typeid(float))
+            {
+                depth_m = depth_row[row_size * i + j];
+                depth_raw_mm = static_cast<unsigned>(depth_m * 1000.0);
+            }
 
-            if ( ground_remove_enable_ ) // Enabled remove floor from scan feature
+            if (tilt_compensation_enable_) // Check if tilt compensation is enabled
+            {
+                depth_m *= tilt_compensation_factor_[i];
+            }
+
+            if (ground_remove_enable_) // Enabled remove floor from scan feature
             {
                 // Find min values in columns
-                if( depth_raw >= range_min_mm && depth_raw <= range_max_mm &&
-                        depth < depth_min && depth_raw < (dist_to_ground_[i] - ground_margin_mm) )
+                if (depth_raw_mm >= range_min_mm && depth_raw_mm <= range_max_mm &&
+                    depth_raw_mm < dist_to_ground_corrected[i] && depth_m < depth_min)
                 {
-                    depth_min = depth;
+                    depth_min = depth_m;
                 }
             }
             else // Disabled remove floor from scan feature
             {
                 // Find min values in columns
-                if( depth_raw >= range_min_mm && depth_raw <= range_max_mm && depth < depth_min )
+                if (depth_raw_mm >= range_min_mm && depth_raw_mm <= range_max_mm &&
+                    depth_m < depth_min)
                 {
-                    depth_min = depth;
+                    depth_min = depth_m;
                 }
             }
         }
         // When the smallest distance in column found then conversion to polar coords
-        if (depth_min != UINT16_MAX)
+        if (depth_min != std::numeric_limits<T>::max())
         {
             // Calculate x in XZ ( z = depth )
             float x = (j - cam_model_.cx()) * depth_min  / cam_model_.fx();
 
-            // Calculate distance in polar coords
-            scan_msg_->ranges[ scan_msg_index_[j] ] = sqrt(x * x + depth_min * depth_min);
+            // Calculate distance in polar coordinates
+            scan_msg_->ranges[scan_msg_index_[j]] = sqrt(x * x + depth_min * depth_min);
         }
         else // No information about distances in j column
             scan_msg_->ranges[scan_msg_index_[j]] = NAN;

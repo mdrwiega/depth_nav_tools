@@ -1,7 +1,7 @@
 /******************************************************************************
  * Software License Agreement (BSD License)
  *
- * Copyright (c) 2015, Michal Drwiega (drwiega.michal@gmail.com)
+ * Copyright (c) 2016, Michal Drwiega (drwiega.michal@gmail.com)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@
 /**
  * @file   main.cpp
  * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   10.2015
  * @brief  laserscan_kinect package
  */
 
