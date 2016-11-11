@@ -62,7 +62,7 @@ public:
    *
    * @return Return pointer to LaserScan message.
    */
-    sensor_msgs::LaserScanPtr prepareLaserScanMsg(const sensor_msgs::ImageConstPtr& depth_msg,
+    sensor_msgs::LaserScanPtr getLaserScanMsg(const sensor_msgs::ImageConstPtr& depth_msg,
                                                   const sensor_msgs::CameraInfoConstPtr& info_msg);
     /**
    * @brief setOutputFrame sets the frame to output laser scan

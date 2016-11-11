@@ -52,7 +52,7 @@
 namespace laserscan_kinect {
 
 //=================================================================================================
-sensor_msgs::LaserScanPtr LaserScanKinect::prepareLaserScanMsg(
+sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
         const sensor_msgs::ImageConstPtr & depth_msg,
         const sensor_msgs::CameraInfoConstPtr & info_msg)
 {
@@ -333,30 +333,30 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr
 
     // Correction of distance to ground for each row of image
     std::vector<int> dist_to_ground_corrected(cam_model_.fullResolution().height);
-    for (unsigned i = 0; i < dist_to_ground_.size(); ++i)
+    for (size_t i = 0; i < dist_to_ground_.size(); ++i)
     {
         dist_to_ground_corrected[i] = dist_to_ground_[i] - ground_margin_mm;
     }
 
     // Loop over each column in image
-    for (unsigned j = 0; j < (int)depth_msg->width; ++j)
+    for (size_t j = 0; j < (int)depth_msg->width; ++j)
     {
         float depth_min = std::numeric_limits<T>::max();
 
         // Loop over pixels in column. Calculate z_min in column
-        for (unsigned i = offset; i < offset + scan_height_; i += depth_img_row_step_)
+        for (size_t i = offset; i < offset + scan_height_; i += depth_img_row_step_)
         {
-            int depth_raw_mm;
+            unsigned depth_raw_mm;
             float depth_m;
 
             if (typeid(T) == typeid(uint16_t))
             {
-                depth_raw_mm = depth_row[row_size * i + j];
+                depth_raw_mm = static_cast<unsigned>(depth_row[row_size * i + j]);
                 depth_m = static_cast<float>(depth_raw_mm) / 1000.0;
             }
             else if (typeid(T) == typeid(float))
             {
-                depth_m = depth_row[row_size * i + j];
+                depth_m = static_cast<float>(depth_row[row_size * i + j]);
                 depth_raw_mm = static_cast<unsigned>(depth_m * 1000.0);
             }
 
@@ -365,20 +365,15 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr
                 depth_m *= tilt_compensation_factor_[i];
             }
 
-            if (ground_remove_enable_) // Enabled remove floor from scan feature
+            // Check if point is in ranges and find min value in column
+            if (depth_raw_mm >= range_min_mm && depth_raw_mm <= range_max_mm)
             {
-                // Find min values in columns
-                if (depth_raw_mm >= range_min_mm && depth_raw_mm <= range_max_mm &&
-                    depth_raw_mm < dist_to_ground_corrected[i] && depth_m < depth_min)
+                if (ground_remove_enable_ &&
+                    depth_m < depth_min && depth_raw_mm < dist_to_ground_corrected[i])
                 {
                     depth_min = depth_m;
                 }
-            }
-            else // Disabled remove floor from scan feature
-            {
-                // Find min values in columns
-                if (depth_raw_mm >= range_min_mm && depth_raw_mm <= range_max_mm &&
-                    depth_m < depth_min)
+                else if (depth_m < depth_min)
                 {
                     depth_min = depth_m;
                 }
@@ -394,7 +389,9 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr
             scan_msg_->ranges[scan_msg_index_[j]] = sqrt(x * x + depth_min * depth_min);
         }
         else // No information about distances in j column
+        {
             scan_msg_->ranges[scan_msg_index_[j]] = NAN;
+        }
     }
 }
 

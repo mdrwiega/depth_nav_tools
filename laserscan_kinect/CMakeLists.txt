@@ -32,3 +32,9 @@ target_link_libraries(LaserScanKinectNodelet LaserScanKinectNode ${catkin_LIBRAR
 
 add_executable(laserscan_kinect src/main.cpp)
 target_link_libraries(laserscan_kinect LaserScanKinectNode ${catkin_LIBRARIES})
+
+# Unit tests
+if (CATKIN_ENABLE_TESTING)
+    catkin_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
+    target_link_libraries(laserscanKinectTest LaserScanKinect)
+endif()

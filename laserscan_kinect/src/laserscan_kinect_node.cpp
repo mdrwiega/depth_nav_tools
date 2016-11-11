@@ -65,7 +65,7 @@ void LaserScanKinectNode::depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
 {
     try
     {
-        sensor_msgs::LaserScanPtr laserscan_msg = converter_.prepareLaserScanMsg(depth_msg, info_msg);
+        sensor_msgs::LaserScanPtr laserscan_msg = converter_.getLaserScanMsg(depth_msg, info_msg);
         pub_.publish(laserscan_msg);
     }
     catch (std::runtime_error& e)
