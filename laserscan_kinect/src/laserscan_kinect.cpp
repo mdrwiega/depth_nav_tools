@@ -38,15 +38,10 @@
 #include <cmath>
 #include <algorithm>
 #include <typeinfo>
-
-#define TIME_MEASUREMENT 0 /// Measurement of processing time
+#include <thread>
 
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
-#endif
-
-#if TIME_MEASUREMENT
-#include <chrono>
 #endif
 
 namespace laserscan_kinect {
@@ -56,9 +51,6 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
         const sensor_msgs::ImageConstPtr & depth_msg,
         const sensor_msgs::CameraInfoConstPtr & info_msg)
 {
-#if TIME_MEASUREMENT
-    auto start = std::chrono::high_resolution_clock::now();
-#endif
     // Configure message if necessary
     if(!is_scan_msg_configurated_ || cam_model_update_)
     {
@@ -78,10 +70,10 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
                          Point(cam_model_.cx(),      cam_model_.cy()),
                          Point(depth_msg->width - 1, cam_model_.cy()), min_angle, max_angle);
 
-        if ( ground_remove_enable_ )      // Remove floor from scan
+        if ( ground_remove_enable_ )
             calcGroundDistancesForImgRows(vertical_fov);
 
-        if ( tilt_compensation_enable_ )  // Sensor tilt compensation
+        if ( tilt_compensation_enable_ )
             calcTiltCompensationFactorsForImgRows(vertical_fov);
 
         scan_msg_->angle_min = min_angle;
@@ -113,6 +105,8 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
             ss << "scan_height ( " << scan_height_ << " pixels) is too large for the image height.";
             throw std::runtime_error(ss.str());
         }
+        image_vertical_offset_ = static_cast<int>(cam_model_.cy()- scan_height_ / 2);
+
         is_scan_msg_configurated_ = true;
     }
 
@@ -123,7 +117,7 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
 
     scan_msg_->ranges.assign(depth_msg->width, std::numeric_limits<float>::quiet_NaN());
 
-    // Check if image encoding is correctly
+    // Check if image encoding is correct
     if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1)
     {
         convertDepthToPolarCoords<uint16_t>(depth_msg);
@@ -138,11 +132,6 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
         ss << "Depth image has unsupported encoding: " << depth_msg->encoding;
         throw std::runtime_error(ss.str());
     }
-
-#if TIME_MEASUREMENT
-    auto diff = std::chrono::high_resolution_clock::now() - start;
-    ROS_DEBUG_STREAM("\nProcessing time: " << chrono::duration <double, milli> (diff).count() << " ms.");
-#endif
 
     return scan_msg_;
 }
@@ -267,7 +256,8 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov)
 
     ROS_ASSERT(img_height >= 0);
 
-    dist_to_ground_.resize(img_height);
+    const int ground_margin_mm = ground_margin_ * 1000;
+    dist_to_ground_corrected.resize(img_height);
 
     // Coefficients calculations for each row of image
     for(int i = 0; i < img_height; ++i)
@@ -278,13 +268,15 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov)
 
         if ((delta + alpha) > 0)
         {
-            dist_to_ground_[i] = sensor_mount_height_ * sin(M_PI / 2 - delta) * 1000
+            dist_to_ground_corrected[i] = sensor_mount_height_ * sin(M_PI / 2 - delta) * 1000
                                / cos(M_PI / 2 - delta - alpha);
 
-            ROS_ASSERT(dist_to_ground_[i] > 0);
+            ROS_ASSERT(dist_to_ground_corrected[i] > 0);
         }
         else
-            dist_to_ground_[i] = 100 * 1000;
+            dist_to_ground_corrected[i] = 100 * 1000;
+
+        dist_to_ground_corrected[i] -= ground_margin_mm;
     }
 }
 
@@ -312,7 +304,7 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPt
 {
     scan_msg_index_.resize((int)depth_msg->width);
 
-    for (int u = 0; u < (int)depth_msg->width; u++)
+    for (size_t u = 0; u < static_cast<size_t>(depth_msg->width); u++)
     {
         double th = -atan2((double)(u - cam_model_.cx()) * 0.001f / cam_model_.fx(), 0.001f);
         scan_msg_index_[u] = (th - scan_msg_->angle_min) / scan_msg_->angle_increment;
@@ -321,78 +313,96 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPt
 
 //=================================================================================================
 template <typename T>
-void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr &depth_msg)
+float LaserScanKinect::getSmallestValueInColumn(const T* depth_row, const int row_size, int col)
 {
-    const T* depth_row = reinterpret_cast<const T*>(&depth_msg->data[0]);
-    const int offset = (int)(cam_model_.cy()- scan_height_ / 2);
-    const int row_size = depth_msg->step / sizeof(T);
-
+    float depth_min = std::numeric_limits<T>::max();
     const unsigned range_min_mm = range_min_ * 1000;
     const unsigned range_max_mm = range_max_ * 1000;
-    const int ground_margin_mm = ground_margin_ * 1000;
 
-    // Correction of distance to ground for each row of image
-    std::vector<int> dist_to_ground_corrected(cam_model_.fullResolution().height);
-    for (size_t i = 0; i < dist_to_ground_.size(); ++i)
+    // Loop over pixels in column. Calculate z_min in column
+    for (size_t i = image_vertical_offset_; i < image_vertical_offset_ + scan_height_;
+                                                                            i += depth_img_row_step_)
     {
-        dist_to_ground_corrected[i] = dist_to_ground_[i] - ground_margin_mm;
-    }
+        unsigned depth_raw_mm;
+        float depth_m;
 
-    // Loop over each column in image
-    for (size_t j = 0; j < (int)depth_msg->width; ++j)
-    {
-        float depth_min = std::numeric_limits<T>::max();
-
-        // Loop over pixels in column. Calculate z_min in column
-        for (size_t i = offset; i < offset + scan_height_; i += depth_img_row_step_)
+        if (typeid(T) == typeid(uint16_t))
         {
-            unsigned depth_raw_mm;
-            float depth_m;
-
-            if (typeid(T) == typeid(uint16_t))
-            {
-                depth_raw_mm = static_cast<unsigned>(depth_row[row_size * i + j]);
-                depth_m = static_cast<float>(depth_raw_mm) / 1000.0;
-            }
-            else if (typeid(T) == typeid(float))
-            {
-                depth_m = static_cast<float>(depth_row[row_size * i + j]);
-                depth_raw_mm = static_cast<unsigned>(depth_m * 1000.0);
-            }
-
-            if (tilt_compensation_enable_) // Check if tilt compensation is enabled
-            {
-                depth_m *= tilt_compensation_factor_[i];
-            }
-
-            // Check if point is in ranges and find min value in column
-            if (depth_raw_mm >= range_min_mm && depth_raw_mm <= range_max_mm)
-            {
-                if (ground_remove_enable_ &&
-                    depth_m < depth_min && depth_raw_mm < dist_to_ground_corrected[i])
-                {
-                    depth_min = depth_m;
-                }
-                else if (depth_m < depth_min)
-                {
-                    depth_min = depth_m;
-                }
-            }
+            depth_raw_mm = static_cast<unsigned>(depth_row[row_size * i + col]);
+            depth_m = static_cast<float>(depth_raw_mm) / 1000.0;
         }
-        // When the smallest distance in column found then conversion to polar coords
-        if (depth_min != std::numeric_limits<T>::max())
+        else if (typeid(T) == typeid(float))
         {
-            // Calculate x in XZ ( z = depth )
-            float x = (j - cam_model_.cx()) * depth_min  / cam_model_.fx();
-
-            // Calculate distance in polar coordinates
-            scan_msg_->ranges[scan_msg_index_[j]] = sqrt(x * x + depth_min * depth_min);
+            depth_m = static_cast<float>(depth_row[row_size * i + col]);
+            depth_raw_mm = static_cast<unsigned>(depth_m * 1000.0);
         }
-        else // No information about distances in j column
+
+        if (tilt_compensation_enable_) // Check if tilt compensation is enabled
         {
-            scan_msg_->ranges[scan_msg_index_[j]] = NAN;
+            depth_m *= tilt_compensation_factor_[i];
+        }
+
+        // Check if point is in ranges and find min value in column
+        if (depth_raw_mm >= range_min_mm && depth_raw_mm <= range_max_mm)
+        {
+            if (ground_remove_enable_ &&
+                depth_m < depth_min && depth_raw_mm < dist_to_ground_corrected[i])
+            {
+                depth_min = depth_m;
+            }
+            else if (depth_m < depth_min)
+            {
+                depth_min = depth_m;
+            }
         }
     }
+    return depth_min;
 }
 
-} // end of namespace
+//=================================================================================================
+template <typename T>
+void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr &depth_msg)
+{
+    const int row_size = depth_msg->step / sizeof(T);
+    const T* depth_row= reinterpret_cast<const T*>(&depth_msg->data[0]);
+
+    // Converts depth from specific column to polar coordinates
+    auto convertToPolar = [&](size_t col, float depth) -> float {
+        if (depth != std::numeric_limits<T>::max())
+        {
+            // Calculate x in XZ ( z = depth )
+            float x = (col - cam_model_.cx()) * depth  / cam_model_.fx();
+
+            // Calculate distance in polar coordinates
+            return sqrt(x * x + depth * depth);
+        }
+        return NAN; // No information about distances in column
+    };
+
+    // Processing for specified columns from [left, right]
+    auto process_columns = [&](size_t left, size_t right) {
+        for (size_t i = left; i < right; ++i)
+        {
+            float depth_min = getSmallestValueInColumn<T>(depth_row, row_size, i);
+            scan_msg_->ranges[scan_msg_index_[i]] = convertToPolar(i, depth_min);
+        }
+    };
+
+#if MULTITHREAD
+    const size_t thread_num = 2;
+    std::vector<std::thread> workers;
+    size_t step = static_cast<size_t>(depth_msg->width) / thread_num;
+    size_t left = 0;
+    for (size_t i = 0; i < thread_num - 1; ++i)
+    {
+        workers.push_back(std::thread(process_columns, left, left + step - 1));
+        left = step;
+    }
+    process_columns(left, static_cast<size_t>(depth_msg->width));
+    for (auto &t : workers) { t.join(); }
+#else
+    process_columns(0, static_cast<size_t>(depth_msg->width));
+#endif
+}
+
+}

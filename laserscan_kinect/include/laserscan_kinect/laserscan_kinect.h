@@ -165,8 +165,15 @@ private: // Private methods
     * @param depth_msg
     */
     void calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPtr& depth_msg);
+
     /**
-    * @brief convertDepthToPolarCoords finds smallest values in depth image columns
+    * @brief getSmallestValueInColumn finds smallest values in depth image columns
+     */
+    template <typename T>
+    float getSmallestValueInColumn(const T* depth_row, const int row_size, int j);
+
+    /**
+    * @brief convertDepthToPolarCoords converts depth map to 2D
     *
     * @param depth_msg
     */
@@ -176,17 +183,17 @@ private: // Private methods
 private: // Private fields
     //-----------------------------------------------------------------------------------------------
     // ROS parameters configurated with configuration file or dynamic_reconfigure
-    std::string output_frame_id_;     ///< Output frame_id for laserscan message.
-    float range_min_;                 ///< Stores the current minimum range to use
-    float range_max_;                 ///< Stores the current maximum range to use
-    unsigned scan_height_;            ///< Number of pixel rows used to scan computing
-    unsigned depth_img_row_step_;     ///< Row step in depth map processing
-    bool  cam_model_update_;          ///< If continously calibration update required
-    float sensor_mount_height_;       ///< Height of sensor mount from ground
-    float sensor_tilt_angle_;         ///< Angle of sensor tilt
-    bool  ground_remove_enable_;      ///< Determines if remove ground from output scan
-    float ground_margin_;             ///< Margin for floor remove feature (in meters)
-    bool  tilt_compensation_enable_;  ///< Determines if tilt compensation feature is on
+    std::string output_frame_id_;           ///< Output frame_id for laserscan message.
+    float range_min_{0};                    ///< Stores the current minimum range to use
+    float range_max_{0};                    ///< Stores the current maximum range to use
+    unsigned scan_height_{0};               ///< Number of pixel rows used to scan computing
+    unsigned depth_img_row_step_{0};        ///< Row step in depth map processing
+    bool  cam_model_update_{false};         ///< If continously calibration update required
+    float sensor_mount_height_{0};          ///< Height of sensor mount from ground
+    float sensor_tilt_angle_{0};            ///< Angle of sensor tilt
+    bool  ground_remove_enable_{false};     ///< Determines if remove ground from output scan
+    float ground_margin_{0};                ///< Margin for floor remove feature (in meters)
+    bool  tilt_compensation_enable_{false}; ///< Determines if tilt compensation feature is on
     //-----------------------------------------------------------------------------------------------
 
     /// Published scan message
@@ -202,11 +209,14 @@ private: // Private fields
     std::vector<unsigned> scan_msg_index_;
 
     /// Calculated maximal distances for measurements not included as floor
-    std::vector<unsigned> dist_to_ground_;
+    std::vector<unsigned> dist_to_ground_corrected;
 
     /// Calculated sensor tilt compensation factors
     std::vector<float> tilt_compensation_factor_;
+
+    /// The vertical offset of image based on calibration data
+    int image_vertical_offset_{0};
 };
 
-}; // end of namespace laserscan_kinect
+};
 

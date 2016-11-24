@@ -34,7 +34,11 @@
 
 #include <laserscan_kinect/laserscan_kinect.h>
 
+#include <chrono>
+#include <iostream>
 #include <gtest/gtest.h>
+
+using namespace std::chrono;
 
 class LaserScanKinectTest : public ::testing::Test
 {
@@ -45,14 +49,15 @@ public:
 
     unsigned img_height { 480 };
     unsigned img_width { 640 };
-    unsigned scan_height { 400 };
+    unsigned scan_height { 420 };
 
     LaserScanKinectTest() {
         defaultConverterConfiguration();
         setDefaultInfoMsg();
     }
 
-    void defaultConverterConfiguration() {
+    void defaultConverterConfiguration()
+    {
         converter.setOutputFrame("kinect_frame");
         converter.setRangeLimits(0.5, 5.0);
         converter.setScanHeight(scan_height);
@@ -67,7 +72,8 @@ public:
         converter.setScanConfigurated(false);
     }
 
-    void setDefaultInfoMsg() {
+    void setDefaultInfoMsg()
+    {
         info_msg.reset(new sensor_msgs::CameraInfo);
         info_msg->header.frame_id = "depth_frame";
         info_msg->header.seq = 100;
@@ -91,7 +97,8 @@ public:
     }
 
     template<typename T>
-    void setDefaultDepthMsg(T value) {
+    void setDefaultDepthMsg(T value)
+    {
         depth_msg.reset(new sensor_msgs::Image);
         depth_msg->header.frame_id = "depth_frame";
         depth_msg->header.seq = 100;
@@ -106,34 +113,38 @@ public:
         else if (typeid(T) == typeid(float))
             depth_msg->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
 
-        depth_msg->data.resize(
-                depth_msg->width * depth_msg->height * sizeof(T));
+        depth_msg->data.resize(depth_msg->width * depth_msg->height * sizeof(T));
         T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
-        for (size_t i = 0; i < depth_msg->width * depth_msg->height; ++i) {
+        for (size_t i = 0; i < depth_msg->width * depth_msg->height; ++i)
+        {
             depth_row[i] = value;
         }
     }
 
     template<typename T>
-    void setDepthMsgWithTheSameSmallestValueInEachColumn(T low_value,
-            T high_value) {
+    void setDepthMsgWithTheSameSmallestValueInEachColumn(T low_value, T high_value)
+    {
         setDefaultDepthMsg<T>(high_value);
 
         T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
-        const unsigned row_size = depth_msg->width;
-        const int offset = (int) (info_msg->K[5] - scan_height / 2);
+        const int row_size = depth_msg->width;
+        const int offset = static_cast<int>(info_msg->K[5] - scan_height / 2);
 
         // Change one pixel in each column to smaller value
         bool down = true;
-        size_t row = std::max(0, offset);
-        for (size_t col = 0; col < depth_msg->width; ++col) {
+        int row = std::max(0, offset);
+        for (size_t col = 0; col < depth_msg->width; ++col)
+        {
             depth_row[row_size * row + col] = low_value;
-            if (down) {
-                if ((row + 1) <= (offset + scan_height))
+            if (down)
+            {
+                if ((row + 1) <= (offset + static_cast<int>(scan_height)))
                     row++;
                 else
                     down = false;
-            } else {
+            }
+            else
+            {
                 if ((row - 1) >= offset)
                     row--;
                 else
@@ -161,15 +172,16 @@ TEST_F(LaserScanKinectTest, minInEachColumn_U16_FeaturesDisabled)
 
     setDepthMsgWithTheSameSmallestValueInEachColumn<uint16_t>(low, high);
 
-    sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg,
-            info_msg);
+    sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
+    size_t nan_counter = 0;
 
     // Check if in each column minimum value was selected
-    for (size_t i = 0; i < scan_msg->ranges.size(); ++i) {
-        ASSERT_EQ(true,
-                scan_msg->ranges[i] <= low + 1
-                        || std::isnan(scan_msg->ranges[i]));
+    for (size_t i = 0; i < scan_msg->ranges.size(); ++i)
+    {
+        if (std::isnan(scan_msg->ranges[i])) nan_counter++;
+        ASSERT_EQ(true, scan_msg->ranges[i] <= low || std::isnan(scan_msg->ranges[i]));
     }
+    EXPECT_LE(nan_counter, static_cast<size_t>(scan_msg->ranges.size() / 10));
 }
 
 TEST_F(LaserScanKinectTest, minInEachColumn_F32_FeaturesDisabled)
@@ -178,18 +190,102 @@ TEST_F(LaserScanKinectTest, minInEachColumn_F32_FeaturesDisabled)
 
     setDepthMsgWithTheSameSmallestValueInEachColumn<float>(low, high);
 
-    sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg,
-            info_msg);
+    sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
 
     float tmp = info_msg->K[2] * high / info_msg->K[0];
     float max_depth = sqrt(tmp * tmp + high * high);
 
     // Check if in each column minimum value was selected
-    for (size_t i = 0; i < scan_msg->ranges.size(); ++i) {
-        ASSERT_EQ(true,
-                scan_msg->ranges[i] <= max_depth
-                        || std::isnan(scan_msg->ranges[i]));
+    for (size_t i = 0; i < scan_msg->ranges.size(); ++i)
+    {
+        ASSERT_EQ(true, scan_msg->ranges[i] <= max_depth || std::isnan(scan_msg->ranges[i]));
     }
+}
+
+TEST_F(LaserScanKinectTest, timeMeasurement_U16_FeaturesDisabled)
+{
+    uint16_t low = 800, high = 3000;
+
+    setDepthMsgWithTheSameSmallestValueInEachColumn<uint16_t>(low, high);
+
+    unsigned iter = 1000;
+    duration<double> time{0};
+
+    for (size_t i = 0; i < iter; ++i)
+    {
+        auto start = high_resolution_clock::now();
+
+        sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
+        time += (high_resolution_clock::now() - start);
+    }
+    std::cout << "Mean processing time: "
+              << duration<double, std::milli>(time).count() / iter << " ms.\n";
+}
+
+TEST_F(LaserScanKinectTest, timeMeasurement_U16_FeaturesEnabled)
+{
+    uint16_t low = 800, high = 3000;
+    converter.setCamModelUpdate(true);
+    converter.setGroundRemove(true);
+    converter.setTiltCompensation(true);
+
+    setDepthMsgWithTheSameSmallestValueInEachColumn<uint16_t>(low, high);
+
+    unsigned iter = 1000;
+    duration<double> time{0};
+
+    for (size_t i = 0; i < iter; ++i)
+    {
+        auto start = high_resolution_clock::now();
+
+        sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
+        time += (high_resolution_clock::now() - start);
+    }
+    std::cout << "Mean processing time: "
+              << duration<double, std::milli>(time).count() / iter << " ms.\n";
+}
+
+TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesDisabled)
+{
+    float low = 0.6, high = 4.5;
+
+    setDepthMsgWithTheSameSmallestValueInEachColumn<float>(low, high);
+
+    unsigned iter = 1000;
+    duration<double> time{0};
+
+    for (size_t i = 0; i < iter; ++i)
+    {
+        auto start = std::chrono::high_resolution_clock::now();
+
+        sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
+        time += (high_resolution_clock::now() - start);
+    }
+    std::cout << "Mean processing time: "
+              << duration<double, std::milli>(time).count() / iter << " ms.\n";
+}
+
+TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesEnabled)
+{
+    float low = 0.6, high = 4.5;
+    converter.setCamModelUpdate(true);
+    converter.setGroundRemove(true);
+    converter.setTiltCompensation(true);
+
+    setDepthMsgWithTheSameSmallestValueInEachColumn<float>(low, high);
+
+    unsigned iter = 1000;
+    duration<double> time{0};
+
+    for (size_t i = 0; i < iter; ++i)
+    {
+        auto start = std::chrono::high_resolution_clock::now();
+
+        sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
+        time += (high_resolution_clock::now() - start);
+    }
+    std::cout << "Mean processing time: "
+              << duration<double, std::milli>(time).count() / iter << " ms.\n";
 }
 
 int main(int argc, char **argv)

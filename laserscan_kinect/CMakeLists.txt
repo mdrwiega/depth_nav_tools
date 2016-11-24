@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(laserscan_kinect)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -O3 ${CMAKE_CXX_FLAGS}")
+
+add_definitions(-DMULTITHREAD=0) # Set to 1 for multithreading
 
 find_package(catkin REQUIRED COMPONENTS 
              roscpp image_geometry image_transport 
@@ -38,3 +40,4 @@ if (CATKIN_ENABLE_TESTING)
     catkin_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
     target_link_libraries(laserscanKinectTest LaserScanKinect)
 endif()
+
