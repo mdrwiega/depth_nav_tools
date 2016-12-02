@@ -40,12 +40,24 @@
 
 using namespace std::chrono;
 
+class LaserScanKinectTestable : public laserscan_kinect::LaserScanKinect
+{
+public:
+    LaserScanKinectTestable() = default;
+    ~LaserScanKinectTestable() = default;
+
+    float calcSmallestValueInColumn(std::vector<uint16_t> &values)
+    {
+        return getSmallestValueInColumn(reinterpret_cast<const uint16_t*>(values.data()), 1, 0);
+    }
+};
+
 class LaserScanKinectTest : public ::testing::Test
 {
 public:
     sensor_msgs::ImagePtr depth_msg;
     sensor_msgs::CameraInfoPtr info_msg;
-    laserscan_kinect::LaserScanKinect converter;
+    LaserScanKinectTestable converter;
 
     unsigned img_height { 480 };
     unsigned img_width { 640 };
@@ -164,6 +176,37 @@ TEST_F(LaserScanKinectTest, encodingSupport)
 
     depth_msg->encoding = sensor_msgs::image_encodings::MONO16;
     EXPECT_ANY_THROW(converter.getLaserScanMsg(depth_msg, info_msg));
+}
+
+TEST_F(LaserScanKinectTest, getSmallestValueInColumn_U16_FeaturesOff)
+{
+    converter.setCamModelUpdate(true);
+    uint16_t low = 0.5 * 1000, high = 2000;
+
+    std::vector<uint16_t> values(img_height, high);
+    values[img_height/3] = low;
+
+    EXPECT_EQ((float)low/1000, converter.calcSmallestValueInColumn(values));
+}
+
+TEST_F(LaserScanKinectTest, getSmallestValueInColumn_U16_GroundDetection)
+{
+    converter.setCamModelUpdate(true);
+    converter.setGroundRemove(true);
+    converter.setSensorMountHeight(1.0);
+    converter.setSensorTiltAngle(45);
+    setDefaultDepthMsg<uint16_t>(1);
+    converter.getLaserScanMsg(depth_msg, info_msg);
+    // Low value should be skipped (it's ground value)
+    // z >= h * sin(pi/2 - delta)/cos(pi/2 - delta - alpha)
+    // delta=0, alpha=45 => z >= sqrt(2) = 1.41
+    uint16_t ground = 1.6 * 1000, low = 1700, high = 3000;
+
+    std::vector<uint16_t> values(img_height, high);
+    values[img_height/4] = low;
+    values[img_height/2] = ground;
+
+    EXPECT_EQ((float)low/1000, converter.calcSmallestValueInColumn(values));
 }
 
 TEST_F(LaserScanKinectTest, minInEachColumn_U16_FeaturesDisabled)

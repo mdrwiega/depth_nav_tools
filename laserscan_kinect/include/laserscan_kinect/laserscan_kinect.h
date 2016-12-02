@@ -129,7 +129,7 @@ public:
    */
     void setScanConfigurated (const bool configurated) { is_scan_msg_configurated_ = configurated; }
 
-private: // Private methods
+protected:
     /**
     * @brief lengthOfVector calculate length of 3D vector
     *
@@ -170,8 +170,56 @@ private: // Private methods
     * @brief getSmallestValueInColumn finds smallest values in depth image columns
      */
     template <typename T>
-    float getSmallestValueInColumn(const T* depth_row, const int row_size, int j);
+    float getSmallestValueInColumn(const T* depth_row, int row_size, int col)
+    {
+        float depth_min = std::numeric_limits<float>::max();
+        const unsigned range_min_mm = range_min_ * 1000;
+        const unsigned range_max_mm = range_max_ * 1000;
 
+        // Loop over pixels in column. Calculate z_min in column
+        for (size_t i = image_vertical_offset_; i < image_vertical_offset_ + scan_height_;
+                                                                                i += depth_img_row_step_)
+        {
+            unsigned depth_raw_mm;
+            float depth_m;
+
+            if (typeid(T) == typeid(uint16_t))
+            {
+                depth_raw_mm = static_cast<unsigned>(depth_row[row_size * i + col]);
+                depth_m = static_cast<float>(depth_raw_mm) / 1000.0;
+            }
+            else if (typeid(T) == typeid(float))
+            {
+                depth_m = static_cast<float>(depth_row[row_size * i + col]);
+                depth_raw_mm = static_cast<unsigned>(depth_m * 1000.0);
+            }
+
+            if (tilt_compensation_enable_) // Check if tilt compensation is enabled
+            {
+                depth_m *= tilt_compensation_factor_[i];
+            }
+
+            // Check if point is in ranges and find min value in column
+            if (depth_raw_mm >= range_min_mm && depth_raw_mm <= range_max_mm)
+            {
+                if (ground_remove_enable_)
+                {
+                    if (depth_m < depth_min && depth_raw_mm < dist_to_ground_corrected[i])
+                    {
+                        depth_min = depth_m;
+                    }
+                }
+                else
+                {
+                    if (depth_m < depth_min)
+                    {
+                        depth_min = depth_m;
+                    }
+                }
+            }
+        }
+        return depth_min;
+    }
     /**
     * @brief convertDepthToPolarCoords converts depth map to 2D
     *
@@ -180,7 +228,7 @@ private: // Private methods
     template <typename T>
     void convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr& depth_msg);
 
-private: // Private fields
+private:
     //-----------------------------------------------------------------------------------------------
     // ROS parameters configurated with configuration file or dynamic_reconfigure
     std::string output_frame_id_;           ///< Output frame_id for laserscan message.
