@@ -1,7 +1,7 @@
 /******************************************************************************
  * Software License Agreement (BSD License)
  *
- * Copyright (c) 2015, Michal Drwiega (drwiega.michal@gmail.com)
+ * Copyright (c) 2016, Michal Drwiega (drwiega.michal@gmail.com)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,13 +27,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-/**
- * @file   main.cpp
- * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   2016
- * @brief  depth_sensor_pose estimates height and tilt angle of depth sensor mount
- *         based on ground position
- */
 
 #include <ros/ros.h>
 #include <depth_sensor_pose/depth_sensor_pose_node.h>

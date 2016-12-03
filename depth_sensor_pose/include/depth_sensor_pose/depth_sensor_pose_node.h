@@ -28,14 +28,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 /**
- * @file   main.cpp
+ * @file   depth_sensor_pose_node.h
  * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   11.2015
  * @brief  depth_sensor_pose package
  */
 
-#ifndef DEPTH_SENSOR_POSE_NODE
-#define DEPTH_SENSOR_POSE_NODE
+#pragma once
+
+#include <mutex>
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
@@ -47,19 +47,22 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
-#include <boost/thread/mutex.hpp>
 
 #include <depth_sensor_pose/DepthSensorPoseConfig.h>
 #include <depth_sensor_pose/depth_sensor_pose.h>
 
-namespace depth_sensor_pose
-{
+namespace depth_sensor_pose {
+
 class DepthSensorPoseNode
 {
 public:
   DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pnh);
 
   ~DepthSensorPoseNode();
+
+  DepthSensorPoseNode (const DepthSensorPoseNode &) = delete;
+  DepthSensorPoseNode & operator= (const DepthSensorPoseNode &) = delete;
+
   /**
    * @brief setNodeRate sets rate of processing data loop in node.
    *
@@ -111,9 +114,9 @@ private:
    */
   void reconfigureCb(depth_sensor_pose::DepthSensorPoseConfig& config, uint32_t level);
 //-------------------------------------------------------------------------------------------------
-private: // Private fields
+private:
 
-  float node_rate_hz_;                    ///< Node loop frequency in Hz
+  float node_rate_hz_{1};                 ///< Node loop frequency in Hz
   ros::NodeHandle pnh_;                   ///< Private node handler
 
   image_transport::ImageTransport it_;    ///< Subscribes to synchronized Image CameraInfo pairs
@@ -130,8 +133,7 @@ private: // Private fields
   depth_sensor_pose::DepthSensorPose estimator_;
 
   /// Prevents the connectCb and disconnectCb from being called until everything is initialized
-  boost::mutex connection_mutex_;
+  std::mutex connection_mutex_;
 };
 }
 
-#endif

@@ -1,7 +1,7 @@
 /******************************************************************************
  * Software License Agreement (BSD License)
  *
- * Copyright (c) 2015, Michal Drwiega (drwiega.michal@gmail.com)
+ * Copyright (c) 2016, Michal Drwiega (drwiega.michal@gmail.com)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,16 +27,10 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-/**
- * @file   main.cpp
- * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   11.2015
- * @brief  depth_sensor_pose package
- */
 
 #include <depth_sensor_pose/depth_sensor_pose_node.h>
 #include <nodelet/nodelet.h>
-
+#include <memory>
 
 namespace depth_sensor_pose
 {
@@ -54,7 +48,7 @@ private:
     calibrator.reset(new DepthSensorPoseNode(getNodeHandle(), getPrivateNodeHandle()));
   };
   
-  boost::shared_ptr<DepthSensorPoseNode> calibrator;
+  std::shared_ptr<DepthSensorPoseNode> calibrator;
 };
 
 }

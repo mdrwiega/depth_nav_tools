@@ -46,9 +46,10 @@ public:
     LaserScanKinectTestable() = default;
     ~LaserScanKinectTestable() = default;
 
-    float calcSmallestValueInColumn(std::vector<uint16_t> &values)
+    template <typename T>
+    float calcSmallestValueInColumn(std::vector<T> &values)
     {
-        return getSmallestValueInColumn(reinterpret_cast<const uint16_t*>(values.data()), 1, 0);
+        return getSmallestValueInColumn(reinterpret_cast<const T*>(values.data()), 1, 0);
     }
 };
 
@@ -186,7 +187,18 @@ TEST_F(LaserScanKinectTest, getSmallestValueInColumn_U16_FeaturesOff)
     std::vector<uint16_t> values(img_height, high);
     values[img_height/3] = low;
 
-    EXPECT_EQ((float)low/1000, converter.calcSmallestValueInColumn(values));
+    EXPECT_EQ((float)low/1000, converter.calcSmallestValueInColumn<uint16_t>(values));
+}
+
+TEST_F(LaserScanKinectTest, getSmallestValueInColumn_F32_FeaturesOff)
+{
+    converter.setCamModelUpdate(true);
+    float low = 0.5, high = 2;
+
+    std::vector<float> values(img_height, high);
+    values[img_height/3] = low;
+
+    EXPECT_EQ(low, converter.calcSmallestValueInColumn<float>(values));
 }
 
 TEST_F(LaserScanKinectTest, getSmallestValueInColumn_U16_GroundDetection)
@@ -206,7 +218,24 @@ TEST_F(LaserScanKinectTest, getSmallestValueInColumn_U16_GroundDetection)
     values[img_height/4] = low;
     values[img_height/2] = ground;
 
-    EXPECT_EQ((float)low/1000, converter.calcSmallestValueInColumn(values));
+    EXPECT_EQ((float)low/1000, converter.calcSmallestValueInColumn<uint16_t>(values));
+}
+
+TEST_F(LaserScanKinectTest, getSmallestValueInColumn_F32_GroundDetection)
+{
+    converter.setCamModelUpdate(true);
+    converter.setGroundRemove(true);
+    converter.setSensorMountHeight(1.0);
+    converter.setSensorTiltAngle(45);
+    setDefaultDepthMsg<float>(1);
+    converter.getLaserScanMsg(depth_msg, info_msg);
+    float ground = 1.6, low = 1.7, high = 3;
+
+    std::vector<float> values(img_height, high);
+    values[img_height/4] = low;
+    values[img_height/2] = ground;
+
+    EXPECT_EQ(low, converter.calcSmallestValueInColumn<float>(values));
 }
 
 TEST_F(LaserScanKinectTest, minInEachColumn_U16_FeaturesDisabled)
@@ -299,7 +328,7 @@ TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesDisabled)
 
     for (size_t i = 0; i < iter; ++i)
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        auto start = high_resolution_clock::now();
 
         sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
         time += (high_resolution_clock::now() - start);
@@ -322,7 +351,7 @@ TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesEnabled)
 
     for (size_t i = 0; i < iter; ++i)
     {
-        auto start = std::chrono::high_resolution_clock::now();
+        auto start = high_resolution_clock::now();
 
         sensor_msgs::LaserScanPtr scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
         time += (high_resolution_clock::now() - start);

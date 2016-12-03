@@ -1,7 +1,7 @@
 /******************************************************************************
  * Software License Agreement (BSD License)
  *
- * Copyright (c) 2015, Michal Drwiega (drwiega.michal@gmail.com)
+ * Copyright (c) 2016, Michal Drwiega (drwiega.michal@gmail.com)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,31 +27,10 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-/**
- * @file   main.cpp
- * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   2016
- * @brief  depth_sensor_pose package
- */
 
 #include <depth_sensor_pose/depth_sensor_pose.h>
 
-using namespace depth_sensor_pose;
-
-//=================================================================================================
-// Public methods
-//=================================================================================================
-
-
-//=================================================================================================
-DepthSensorPose::DepthSensorPose(): reconf_serv_params_updated_(true)
-{
-}
-
-//=================================================================================================
-DepthSensorPose::~DepthSensorPose()
-{
-}
+namespace depth_sensor_pose {
 
 //=================================================================================================
 void DepthSensorPose::estimateParams( const sensor_msgs::ImageConstPtr& depth_msg,
@@ -162,7 +141,9 @@ void DepthSensorPose::setRangeLimits( const float rmin, const float rmax )
 void DepthSensorPose::setSensorMountHeightMin (const float height)
 {
   if( height > 0)
-    mount_height_min_ = height;
+  {
+      mount_height_min_ = height;
+  }
   else
   {
     mount_height_min_ = 0;
@@ -388,13 +369,7 @@ void DepthSensorPose::getGroundPoints( const sensor_msgs::ImageConstPtr& depth_m
 void DepthSensorPose::sensorPoseCalibration(
     const sensor_msgs::ImageConstPtr& depth_msg, double& tilt, double& height)
 {
-
-
-
-
-
   pcl::PointCloud<pcl::PointXYZ>::Ptr points(new pcl::PointCloud<pcl::PointXYZ>);
-
 
   // Get ground points
   getGroundPoints(depth_msg, points);
@@ -448,4 +423,4 @@ void DepthSensorPose::sensorPoseCalibration(
   }
 }
 
-
+}

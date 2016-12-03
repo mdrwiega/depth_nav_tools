@@ -27,24 +27,18 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-/**
- * @file   depth_sensor_pose_node.cpp
- * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   2016
- * @brief  depth_sensor_pose package
- */
 
 #include "depth_sensor_pose/depth_sensor_pose_node.h"
 
-#define MAX_NODE_RATE 30
+constexpr int MAX_NODE_RATE = 30;
 
 using namespace depth_sensor_pose;
 
 //=================================================================================================
-DepthSensorPoseNode::DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pnh):
-  node_rate_hz_(1), pnh_(pnh), it_(n), srv_(pnh)
+DepthSensorPoseNode::DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pnh)
+  : pnh_(pnh), it_(n), srv_(pnh)
 {
-  boost::mutex::scoped_lock lock(connection_mutex_);
+  std::lock_guard<std::mutex> lock(connection_mutex_);
   
   // Dynamic reconfigure server callback
   srv_.setCallback(boost::bind(&DepthSensorPoseNode::reconfigureCb, this, _1, _2));
@@ -118,7 +112,7 @@ void DepthSensorPoseNode::depthCb( const sensor_msgs::ImageConstPtr& depth_msg,
 //=================================================================================================
 void DepthSensorPoseNode::connectCb()
 {
-  boost::mutex::scoped_lock lock(connection_mutex_);
+  std::lock_guard<std::mutex> lock(connection_mutex_);
   if (!sub_ && (pub_height_.getNumSubscribers() > 0 || pub_angle_.getNumSubscribers() > 0
                 || pub_.getNumSubscribers() > 0))
   {
@@ -131,7 +125,7 @@ void DepthSensorPoseNode::connectCb()
 //=================================================================================================
 void DepthSensorPoseNode::disconnectCb()
 {
-  boost::mutex::scoped_lock lock(connection_mutex_);
+  std::lock_guard<std::mutex> lock(connection_mutex_);
   if (pub_height_.getNumSubscribers() == 0 && pub_angle_.getNumSubscribers() == 0
       && pub_.getNumSubscribers() == 0)
   {
