@@ -2,7 +2,7 @@
   <name>cliff_detector</name>
   <version>1.0.1</version>
   <description>Cliff detector package</description>
-  <author>Michal Drwiega</author>
+  <author>Michal Drwiega (http://www.mdrwiega.com)</author>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/depth_nav_tools</url>

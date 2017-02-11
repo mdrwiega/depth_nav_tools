@@ -13,16 +13,16 @@ find_package(catkin REQUIRED COMPONENTS
 generate_dynamic_reconfigure_options( cfg/DepthSensorPose.cfg )
 
 find_package( PCL REQUIRED )
-find_package( Eigen REQUIRED )
-
+find_package( Eigen3 REQUIRED )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES DepthSensorPose DepthSensorPoseNode DepthSensorPoseNodelet
   CATKIN_DEPENDS roscpp dynamic_reconfigure image_geometry
                  image_transport nodelet sensor_msgs libpcl-all
-  DEPENDS Eigen
 )
+
+add_definitions(${Eigen_DEFINITIONS})
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 
