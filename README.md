@@ -28,4 +28,5 @@ http://wiki.ros.org/depth_nav_tools
 
 ### The example of obstacles detection by laserscan_kinect
 ![Laserscan Kinect detection](http://wiki.ros.org/laserscan_kinect?action=AttachFile&do=get&target=laserscan_kinect_detection.jpg)
+
 The picture shows comparison between laser scan based on converted depth image from Microsoft Kinect (blue points) and laser scan from scanner Hokuyo URG-04LX-UG01 (black points).
