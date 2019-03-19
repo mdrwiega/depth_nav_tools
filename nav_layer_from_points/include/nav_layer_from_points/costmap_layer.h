@@ -48,6 +48,8 @@
 
 #include <boost/thread.hpp>
 
+#include <tf/transform_listener.h>
+
 #include <math.h>
 #include <algorithm>
 
