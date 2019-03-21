@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   depth_nav_msgs
   dynamic_reconfigure
   geometry_msgs
+  tf
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -20,7 +21,7 @@ generate_dynamic_reconfigure_options( cfg/NavLayerFromPoints.cfg )
 catkin_package(
   	 INCLUDE_DIRS include
     LIBRARIES costmap_layers
-    CATKIN_DEPENDS depth_nav_msgs costmap_2d dynamic_reconfigure geometry_msgs
+    CATKIN_DEPENDS depth_nav_msgs costmap_2d dynamic_reconfigure geometry_msgs tf
 )
 
 add_library(costmap_layers src/costmap_layer.cpp )
