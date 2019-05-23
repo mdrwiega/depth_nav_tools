@@ -1,5 +1,5 @@
 <library path="lib/libcostmap_layers">
-  <class type="nav_layer_from_points::NavLayerPoints" base_class_type="costmap_2d::Layer">
+  <class type="nav_layer_from_points::NavLayerFromPoints" base_class_type="costmap_2d::Layer">
     <description>Uses points information to change the costmap</description>
   </class>
 </library>
