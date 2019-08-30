@@ -48,12 +48,16 @@ CliffDetectorNode::CliffDetectorNode( ros::NodeHandle& n, ros::NodeHandle& pnh )
   reconf_srv_.setCallback(boost::bind(&CliffDetectorNode::reconfigureCb, this, _1, _2));
 
   // New depth image publisher
+  // change by hwata
   pub_ = it_.advertise("cliff_detector/depth", 1,
                        boost::bind(&CliffDetectorNode::connectCb, this),
                        boost::bind(&CliffDetectorNode::disconnectCb, this));
 
   // Publisher for stairs points msg
-  pub_points_ = n.advertise<depth_nav_msgs::Point32List>("cliff_detector/points", 2);
+  // change by hwata
+  pub_points_ = n.advertise<depth_nav_msgs::Point32List>("cliff_detector/points", 2,
+                       boost::bind(&CliffDetectorNode::connectCb, this),
+                       boost::bind(&CliffDetectorNode::disconnectCb, this));
 }
 
 //=================================================================================================
@@ -103,9 +107,9 @@ void CliffDetectorNode::depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
 void CliffDetectorNode::connectCb()
 {
   boost::mutex::scoped_lock lock(connection_mutex_);
-  if (!sub_ && pub_.getNumSubscribers() > 0)
+  if (!sub_ && (pub_.getNumSubscribers() > 0 || pub_points_.getNumSubscribers() > 0)) // change by hwata
   {
-    ROS_DEBUG("Connecting to depth topic.");
+    ROS_DEBUG("Connecting to depth/points topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
     sub_ = it_.subscribeCamera("image", 1, &CliffDetectorNode::depthCb, this, hints);
   }
@@ -115,9 +119,9 @@ void CliffDetectorNode::connectCb()
 void CliffDetectorNode::disconnectCb()
 {
   boost::mutex::scoped_lock lock(connection_mutex_);
-  if (pub_.getNumSubscribers() == 0)
+  if (pub_.getNumSubscribers() == 0 && pub_points_.getNumSubscribers() == 0)  // change by hwata
   {
-    ROS_DEBUG("Unsubscribing from depth topic.");
+    ROS_DEBUG("Unsubscribing from depth/points topic.");
     sub_.shutdown();
   }
 }
