@@ -446,12 +446,16 @@ void CliffDetector::findCliffInDepthImage( const sensor_msgs::ImageConstPtr &dep
     // Calculate point in XZ plane -- depth (z)
     //pt.z = (float)(*it)[Depth] * tilt_compensation_factor_[(*it)[Row]] / 1000.0f;
     unsigned int row = (*it)[Row];
-    pt.z = sensor_mount_height_ / std::tan(sensor_tilt_angle_ * M_PI / 180.0 + delta_row_[row]);
+    // pt.z = sensor_mount_height_ / std::tan(sensor_tilt_angle_ * M_PI / 180.0 + delta_row_[row]); // comment out by hwata
 
-    // Calculate x value
     // pt.x = ((*it)[Col] - camera_model_.cx()) * (*it)[Depth] / camera_model_.fx() / 1000.0f;
     double depth = sensor_mount_height_ / std::sin(sensor_tilt_angle_*M_PI/180.0 + delta_row_[row]);
-
+    // Calculate z value
+    pt.z = depth;
+    // Calculate y value
+    pt.y = depth * std::sin(delta_row_[row]);
+    // << add by hwata
+    // Calculate x value
     pt.x = ((*it)[Col] - camera_model_.cx()) * depth / camera_model_.fx();
 
     // Add point to message

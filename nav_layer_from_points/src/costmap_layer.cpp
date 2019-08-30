@@ -120,7 +120,7 @@ namespace nav_layer_from_points
       try
       {
         pt.point.x = tpt.point.x;
-        pt.point.y = 0;
+        pt.point.y = tpt.point.y;
         pt.point.z =  tpt.point.z;
         pt.header.frame_id = points_list_.header.frame_id;
 
