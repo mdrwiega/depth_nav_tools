@@ -45,10 +45,18 @@ using costmap_2d::FREE_SPACE;
 
 PLUGINLIB_EXPORT_CLASS(nav_layer_from_points::NavLayerFromPoints, costmap_2d::Layer)
 
-namespace nav_layer_from_points
-{
-  //=================================================================================================
-  void NavLayerFromPoints::onInitialize()
+namespace nav_layer_from_points {
+//=================================================================================================
+  NavLayerFromPoints::NavLayerFromPoints() : rec_server_(NULL) 
+  {  // add by hwata
+      layered_costmap_ = NULL;
+  }
+  NavLayerFromPoints::~NavLayerFromPoints()
+  {  // add by hwata
+      if (rec_server_ != NULL)
+          delete rec_server_;
+  }
+  void NavLayerFromPoints::onInitialize() 
   {
     current_ = true;
     first_time_ = true;
@@ -86,8 +94,10 @@ namespace nav_layer_from_points
     p_it = transformed_points_.begin();
 
     if (transformed_points_.size() > 10000)
+    {
       transformed_points_.clear();
-
+      return;
+    }
     while(p_it != transformed_points_.end())
     {
       if(ros::Time::now() - (*p_it).header.stamp > points_keep_time_)
@@ -103,51 +113,48 @@ namespace nav_layer_from_points
   {
     boost::recursive_mutex::scoped_lock lock(lock_);
 
-    std::string global_frame = layered_costmap_->getGlobalFrameID();
+    if(!enabled_)
+      return;
 
     // Check if there are points to remove in transformed_points list and if so, then remove it
     if(!transformed_points_.empty())
       clearTransformedPoints();
 
+    if (points_list_.points.size() == 0)  // add by hwata
+        return;
+
+    std::string global_frame = layered_costmap_->getGlobalFrameID();
+
     // Add points to PointStamped list transformed_points_
-    for(unsigned int i = 0; i < points_list_.points.size(); i++)
-    {
-      geometry_msgs::PointStamped tpt;
-      geometry_msgs::PointStamped pt, out_pt;
+    for (unsigned int i = 0; i < points_list_.points.size(); i++) {
+        geometry_msgs::PointStamped tpt;
+        geometry_msgs::PointStamped pt, out_pt;
 
-      tpt.point = costmap_2d::toPoint(points_list_.points[i]);
+        tpt.point = costmap_2d::toPoint(points_list_.points[i]);
 
-      try
-      {
-        pt.point.x = tpt.point.x;
-        pt.point.y = tpt.point.y;
-        pt.point.z =  tpt.point.z;
-        pt.header.frame_id = points_list_.header.frame_id;
+        try {
+            pt.point.x = tpt.point.x;
+            pt.point.y = tpt.point.y;
+            pt.point.z = tpt.point.z;
+            pt.header = points_list_.header;  // modified by hwata
 
-        tf_.transformPoint(global_frame, pt, out_pt);
-        tpt.point.x = out_pt.point.x;
-        tpt.point.y = out_pt.point.y;
-        tpt.point.z = out_pt.point.z;
-
-        tpt.header.stamp = pt.header.stamp;
-        //s << " ( " << tpt.point.x << " , " << tpt.point.y << " , " << tpt.point.z << " ) ";
-        transformed_points_.push_back(tpt);
-      }
-      catch(tf::LookupException& ex)
-      {
-        ROS_ERROR("No Transform available Error: %s\n", ex.what());
-        continue;
-      }
-      catch(tf::ConnectivityException& ex)
-      {
-        ROS_ERROR("Connectivity Error: %s\n", ex.what());
-        continue;
-      }
-      catch(tf::ExtrapolationException& ex)
-      {
-        ROS_ERROR("Extrapolation Error: %s\n", ex.what());
-        continue;
-      }
+            tf_.transformPoint(global_frame, pt, out_pt);
+            tpt.point.x = out_pt.point.x;
+            tpt.point.y = out_pt.point.y;
+            tpt.point.z = out_pt.point.z;
+            tpt.header = out_pt.header;  // modified by hwata
+            // s << " ( " << tpt.point.x << " , " << tpt.point.y << " , " << tpt.point.z << " ) ";
+            transformed_points_.push_back(tpt);
+        } catch (tf::LookupException& ex) {
+            ROS_ERROR("No Transform available Error: %s\n", ex.what());
+            continue;
+        } catch (tf::ConnectivityException& ex) {
+            ROS_ERROR("Connectivity Error: %s\n", ex.what());
+            continue;
+        } catch (tf::ExtrapolationException& ex) {
+            ROS_ERROR("Extrapolation Error: %s\n", ex.what());
+            continue;
+        }
     }
 
     //ROS_INFO_STREAM_THROTTLE(2,"transformed_points = " << s.str());
@@ -209,54 +216,50 @@ namespace nav_layer_from_points
     if(!enabled_)
       return;
 
-    if( points_list_.points.size() == 0 )
-      return;
-
+    if (transformed_points_.size() == 0) {  // modified by hwata
+        return;
+    }
     std::list<geometry_msgs::PointStamped>::iterator p_it;
 
-    costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
-    double res = costmap->getResolution();
+    // costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();  // commentout by hwata
+    double res = master_grid.getResolution();
 
-    for(p_it = transformed_points_.begin(); p_it != transformed_points_.end(); ++p_it)
-    {
-      geometry_msgs::Point pt = (*p_it).point;
+    for (p_it = transformed_points_.begin(); p_it != transformed_points_.end(); ++p_it) {
+        geometry_msgs::Point pt = (*p_it).point;
 
-      unsigned int size = std::max(1, int( (point_radius_ + robot_radius_) / res ));
-      unsigned int map_x, map_y;
-      unsigned int size_x = size, size_y = size;
-      unsigned int start_x, start_y, end_x, end_y;
+        unsigned int size = std::max(1, int((point_radius_ + robot_radius_) / res));
+        unsigned int map_x, map_y;
+        unsigned int size_x = size, size_y = size;
+        unsigned int start_x, start_y, end_x, end_y;
 
-      // Check if point is on map
-      // Convert from world coordinates to map coordinates with checking for legal bounds
-      if (costmap->worldToMap(pt.x, pt.y, map_x, map_y))
-      {
-        start_x = map_x - size_x / 2;
-        start_y = map_y - size_y / 2;
-        end_x = map_x + size_x / 2;
-        end_y = map_y + size_y / 2;
+        // Check if point is on map
+        // Convert from world coordinates to map coordinates with checking for legal bounds
+        if (master_grid.worldToMap(pt.x, pt.y, map_x, map_y)) {  // modified by hwata
+            start_x = map_x - size_x / 2;
+            start_y = map_y - size_y / 2;
+            end_x = map_x + size_x / 2;
+            end_y = map_y + size_y / 2;
 
-        if (start_x < min_i)
-          start_x = min_i;
-        if (end_x > max_i)
-          end_x = max_i;
-        if (start_y < min_j)
-          start_y = min_j;
-        if (end_y > max_j)
-          end_y = max_j;
+            if (start_x < min_i)
+                start_x = min_i;
+            if (end_x > max_i)
+                end_x = max_i;
+            if (start_y < min_j)
+                start_y = min_j;
+            if (end_y > max_j)
+                end_y = max_j;
 
-        for(int j = start_y; j < end_y; j++)
-        {
-          for(int i = start_x; i < end_x; i++)
-          {
-            unsigned char old_cost = costmap->getCost(i, j);
-//            unsigned char old_cost = costmap->getCost(map_x, map_y);
+            for (int j = start_y; j < end_y; j++) {
+                for (int i = start_x; i < end_x; i++) {
+                    unsigned char old_cost = master_grid.getCost(i, j);  // modified by hwata
+                    //            unsigned char old_cost = costmap->getCost(map_x, map_y);
 
-            if(old_cost == costmap_2d::NO_INFORMATION)
-              continue;
+                if(old_cost == costmap_2d::NO_INFORMATION)
+                  continue;
 
-            costmap->setCost(i, j, costmap_2d::LETHAL_OBSTACLE);
-          }
-        }
+                    master_grid.setCost(i, j, costmap_2d::LETHAL_OBSTACLE);  // modified by hwata
+                }
+            }
 
         //=============================================================================================
         /* int map_x, map_y;
@@ -302,6 +305,24 @@ namespace nav_layer_from_points
       }
     }
   }
+
+void NavLayerFromPoints::reset()
+{
+  ROS_DEBUG("Reseting nav layer from points...");
+  deactivate();
+  resetMaps();
+  current_ = true;
+  activate();
+}
+
+
+void NavLayerFromPoints::deactivate() {  // add by hwata
+    transformed_points_.clear();
+}
+
+void NavLayerFromPoints::activate() {  // add by hwata
+    transformed_points_.clear();
+}
 } // end of namespace
 //=================================================================================================
 //=================================================================================================

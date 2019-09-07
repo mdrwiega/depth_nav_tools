@@ -39,6 +39,7 @@
 
 #include <ros/ros.h>
 #include <costmap_2d/layered_costmap.h>
+#include <costmap_2d/costmap_layer.h>
 #include <costmap_2d/footprint.h>
 #include <costmap_2d/layer.h>
 #include <pluginlib/class_list_macros.h>
@@ -46,25 +47,22 @@
 #include <depth_nav_msgs/Point32List.h>
 #include <geometry_msgs/PointStamped.h>
 
-#include <boost/thread.hpp>
-
-#include <tf/transform_listener.h>
-
 #include <math.h>
-#include <algorithm>
-
 #include <angles/angles.h>
-
+#include <tf/transform_listener.h>
 #include <dynamic_reconfigure/server.h>
 #include <nav_layer_from_points/NavLayerFromPointsConfig.h>
 
+#include <algorithm>
+#include <boost/thread.hpp>
 
 namespace nav_layer_from_points
 {
-class NavLayerFromPoints : public costmap_2d::Layer
+class NavLayerFromPoints : public costmap_2d::CostmapLayer
 {
 public:
-  NavLayerFromPoints() { layered_costmap_ = NULL; }
+  NavLayerFromPoints();
+  virtual ~NavLayerFromPoints();
 
   virtual void onInitialize();
 
@@ -77,6 +75,9 @@ public:
   void updateBoundsFromPoints( double* min_x, double* min_y,
                                double* max_x, double* max_y);
 
+  virtual void activate();
+  virtual void deactivate();
+  virtual void reset();
   bool isDiscretized() { return false; }
 
 protected:
