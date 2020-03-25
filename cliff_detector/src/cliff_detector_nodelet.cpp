@@ -60,6 +60,5 @@ private:
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(cliff_detector, CliffDetectorNodelet,
-                        cliff_detector::CliffDetectorNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(cliff_detector::CliffDetectorNodelet, nodelet::Nodelet)
 
