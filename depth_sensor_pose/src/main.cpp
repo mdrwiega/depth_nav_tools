@@ -9,8 +9,7 @@ int main(int argc, char **argv)
 
   depth_sensor_pose::DepthSensorPoseNode estimator(n, pnh);
 
-  while (ros::ok())
-  {
+  while (ros::ok()) {
     ros::Rate rate(estimator.getNodeRate());
     ros::spinOnce();
     rate.sleep();

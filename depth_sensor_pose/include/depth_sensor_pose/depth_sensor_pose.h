@@ -1,47 +1,4 @@
-/******************************************************************************
- * Software License Agreement (BSD License)
- *
- * Copyright (c) 2016, Michal Drwiega (drwiega.michal@gmail.com)
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     1. Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *     2. Redistributions in binary form must reproduce the above copyright
- *        notice, this list of conditions and the following disclaimer in the
- *        documentation and/or other materials provided with the distribution.
- *     3. Neither the name of the copyright holder nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-/**
- * @file   depth_sensor_pose.h
- * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @brief  depth_sensor_pose package
- */
-
 #pragma once
-
-#include <ros/console.h>
-#include <ros/ros.h>
-
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/LaserScan.h>
-#include <sensor_msgs/image_encodings.h>
-#include <image_geometry/pinhole_camera_model.h>
 
 #include <sstream>
 #include <limits>
@@ -50,6 +7,14 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+
+#include <ros/console.h>
+#include <ros/ros.h>
+
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/image_encodings.h>
+#include <image_geometry/pinhole_camera_model.h>
 
 #include <pcl/point_types.h>
 #include <pcl/sample_consensus/ransac.h>
@@ -165,12 +130,10 @@ public:
   void setRansacDistanceThresh (const float u) { ransacDistanceThresh_ = u; }
 
   void setGroundMaxPoints (const unsigned int u) { max_ground_points_ = u; }
-  //------------------------------------------------------------------------
 
   float getSensorTiltAngle () const { return tilt_angle_est_; }
   float getSensorMountHeight () const { return mount_height_est_; }
 
-  //---------------------------------------------------------------------------------------------
 private: // Private methods
   /**
      * Computes euclidean length of a cv::Point3d (as a ray from origin)
@@ -230,7 +193,6 @@ private: // Private methods
    */
   void sensorPoseCalibration(const sensor_msgs::ImageConstPtr& depth_msg, double & tilt, double & height);
 
-  //-----------------------------------------------------------------------------------------------
 public:
   sensor_msgs::Image new_depth_msg_;
 
@@ -254,7 +216,6 @@ private:
   float ransacDistanceThresh_{0};
   float groundDistTolerance_{0};
 
-  //----------------------------------------------------------------------------
   ///< Class for managing sensor_msgs/CameraInfo messages
   image_geometry::PinholeCameraModel camera_model_;
 

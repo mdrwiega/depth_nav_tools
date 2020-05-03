@@ -1,38 +1,7 @@
-/******************************************************************************
- * Software License Agreement (BSD License)
- *
- * Copyright (c) 2016, Michal Drwiega (drwiega.michal@gmail.com)
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     1. Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *     2. Redistributions in binary form must reproduce the above copyright
- *        notice, this list of conditions and the following disclaimer in the
- *        documentation and/or other materials provided with the distribution.
- *     3. Neither the name of the copyright holder nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <depth_sensor_pose/depth_sensor_pose.h>
 
 namespace depth_sensor_pose {
 
-//=================================================================================================
 void DepthSensorPose::estimateParams( const sensor_msgs::ImageConstPtr& depth_msg,
                                       const sensor_msgs::CameraInfoConstPtr& info_msg )
 {
@@ -118,7 +87,6 @@ void DepthSensorPose::estimateParams( const sensor_msgs::ImageConstPtr& depth_ms
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::setRangeLimits( const float rmin, const float rmax )
 {
   if (rmin >= 0 && rmin < rmax)
@@ -137,7 +105,6 @@ void DepthSensorPose::setRangeLimits( const float rmin, const float rmax )
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::setSensorMountHeightMin (const float height)
 {
   if( height > 0)
@@ -151,7 +118,6 @@ void DepthSensorPose::setSensorMountHeightMin (const float height)
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::setSensorMountHeightMax (const float height)
 {
   if( height > 0)
@@ -163,7 +129,6 @@ void DepthSensorPose::setSensorMountHeightMax (const float height)
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::setSensorTiltAngleMin (const float angle)
 {
   if( angle < 90 && angle > -90)
@@ -175,7 +140,6 @@ void DepthSensorPose::setSensorTiltAngleMin (const float angle)
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::setSensorTiltAngleMax (const float angle)
 {
   if( angle < 90 && angle > -90)
@@ -187,7 +151,6 @@ void DepthSensorPose::setSensorTiltAngleMax (const float angle)
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::setUsedDepthHeight(const unsigned int height)
 {
   if( height > 0)
@@ -199,7 +162,6 @@ void DepthSensorPose::setUsedDepthHeight(const unsigned int height)
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::setDepthImgStepRow(const int step)
 {
   if( step > 0 )
@@ -211,7 +173,6 @@ void DepthSensorPose::setDepthImgStepRow(const int step)
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::setDepthImgStepCol(const int step)
 {
   if( step > 0 )
@@ -223,16 +184,11 @@ void DepthSensorPose::setDepthImgStepCol(const int step)
   }
 }
 
-
-//=================================================================================================
-// Private methods
-//=================================================================================================
 double DepthSensorPose::lengthOfVector(const cv::Point3d& vec) const
 {
   return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
 
-//=================================================================================================
 double DepthSensorPose::angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const
 {
   double dot = ray1.x*ray2.x + ray1.y*ray2.y + ray1.z*ray2.z;
@@ -240,7 +196,6 @@ double DepthSensorPose::angleBetweenRays(const cv::Point3d& ray1, const cv::Poin
   return acos(dot / (lengthOfVector(ray1) * lengthOfVector(ray2)));
 }
 
-//=================================================================================================
 void DepthSensorPose::fieldOfView(double & min, double & max, double x1, double y1,
                                   double xc, double yc, double x2, double y2)
 {
@@ -262,7 +217,6 @@ void DepthSensorPose::fieldOfView(double & min, double & max, double x1, double 
   ROS_ASSERT(min < 0 && max > 0);
 }
 
-//=================================================================================================
 void DepthSensorPose::calcDeltaAngleForImgRows(double vertical_fov)
 {
   const unsigned int img_height = camera_model_.fullResolution().height;
@@ -274,7 +228,6 @@ void DepthSensorPose::calcDeltaAngleForImgRows(double vertical_fov)
     delta_row_[i] = vertical_fov * (i - camera_model_.cy() - 0.5) / ((double)img_height - 1);
 }
 
-//=================================================================================================
 void DepthSensorPose::calcGroundDistancesForImgRows(double mount_height, double tilt_angle,
                                                     std::vector<unsigned int>& distances)
 {
@@ -299,7 +252,6 @@ void DepthSensorPose::calcGroundDistancesForImgRows(double mount_height, double 
   }
 }
 
-//=================================================================================================
 void DepthSensorPose::getGroundPoints( const sensor_msgs::ImageConstPtr& depth_msg,
                                        pcl::PointCloud<pcl::PointXYZ>::Ptr& points)
 {
@@ -365,7 +317,6 @@ void DepthSensorPose::getGroundPoints( const sensor_msgs::ImageConstPtr& depth_m
 #endif
 }
 
-//=================================================================================================
 void DepthSensorPose::sensorPoseCalibration(
     const sensor_msgs::ImageConstPtr& depth_msg, double& tilt, double& height)
 {

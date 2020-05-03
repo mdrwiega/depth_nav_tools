@@ -21,7 +21,7 @@ class LaserScanKinectNode {
    * @param n  Node handler.
    * @param pnh Private node handler.
    */
-  LaserScanKinectNode(ros::NodeHandle& pnh);
+  LaserScanKinectNode(ros::NodeHandle& n, ros::NodeHandle& pnh);
   ~LaserScanKinectNode();
 
 private:

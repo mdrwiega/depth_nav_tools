@@ -3,7 +3,7 @@
 
 namespace laserscan_kinect {
 
-LaserScanKinectNode::LaserScanKinectNode(ros::NodeHandle& pnh) :
+LaserScanKinectNode::LaserScanKinectNode(ros::NodeHandle& n, ros::NodeHandle& pnh) :
     pnh_(pnh), it_(n), srv_(pnh)
 {
     std::lock_guard<std::mutex> lock(connect_mutex_);
