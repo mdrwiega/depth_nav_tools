@@ -30,7 +30,7 @@ find_package( OpenCV REQUIRED )
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES CliffDetector CliffDetectorNode CliffDetectorNodelet
+  LIBRARIES CliffDetector CliffDetectorNode
   CATKIN_DEPENDS roscpp dynamic_reconfigure image_geometry
                  image_transport nodelet sensor_msgs depth_nav_msgs
 )
@@ -44,9 +44,6 @@ target_link_libraries(CliffDetector ${catkin_LIBRARIES})
 add_library(CliffDetectorNode src/cliff_detector_node.cpp)
 add_dependencies(CliffDetectorNode ${PROJECT_NAME}_gencfg)
 target_link_libraries(CliffDetectorNode CliffDetector ${OpenCV_LIBS} ${catkin_LIBRARIES})
-
-add_library(CliffDetectorNodelet src/cliff_detector_nodelet.cpp)
-target_link_libraries(CliffDetectorNodelet CliffDetectorNode ${catkin_LIBRARIES})
 
 add_executable(cliff_detector src/main.cpp)
 target_link_libraries(cliff_detector CliffDetectorNode ${catkin_LIBRARIES})

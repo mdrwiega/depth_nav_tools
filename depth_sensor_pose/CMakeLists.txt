@@ -32,7 +32,7 @@ find_package( Eigen3 REQUIRED )
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES DepthSensorPose DepthSensorPoseNode DepthSensorPoseNodelet
+  LIBRARIES DepthSensorPose DepthSensorPoseNode
   CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
 )
 
@@ -48,8 +48,6 @@ add_library(DepthSensorPoseNode src/depth_sensor_pose_node.cpp)
 add_dependencies(DepthSensorPoseNode ${PROJECT_NAME}_gencfg)
 target_link_libraries(DepthSensorPoseNode DepthSensorPose ${catkin_LIBRARIES})
 
-add_library(DepthSensorPoseNodelet src/depth_sensor_pose_nodelet.cpp)
-target_link_libraries(DepthSensorPoseNodelet DepthSensorPoseNode ${catkin_LIBRARIES})
 
 add_executable(depth_sensor_pose src/main.cpp)
 target_link_libraries(depth_sensor_pose DepthSensorPoseNode ${catkin_LIBRARIES})

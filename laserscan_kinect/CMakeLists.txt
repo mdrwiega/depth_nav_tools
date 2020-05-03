@@ -28,7 +28,7 @@ generate_dynamic_reconfigure_options( cfg/LaserscanKinect.cfg )
 
 catkin_package(
   INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
-  LIBRARIES LaserScanKinect LaserScanKinectNode LaserScanKinectNodelet
+  LIBRARIES LaserScanKinect LaserScanKinectNode
   CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
 )
 
@@ -41,9 +41,6 @@ target_link_libraries(LaserScanKinect ${catkin_LIBRARIES})
 add_library(LaserScanKinectNode src/laserscan_kinect_node.cpp)
 add_dependencies(LaserScanKinectNode ${PROJECT_NAME}_gencfg)
 target_link_libraries(LaserScanKinectNode LaserScanKinect ${catkin_LIBRARIES})
-
-add_library(LaserScanKinectNodelet src/laserscan_kinect_nodelet.cpp)
-target_link_libraries(LaserScanKinectNodelet LaserScanKinectNode ${catkin_LIBRARIES})
 
 add_executable(laserscan_kinect src/main.cpp)
 target_link_libraries(laserscan_kinect LaserScanKinectNode ${catkin_LIBRARIES})
