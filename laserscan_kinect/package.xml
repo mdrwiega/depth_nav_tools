@@ -20,7 +20,4 @@
   <depend>image_geometry</depend>
   <depend>image_transport</depend>
 
-  <export>
-    <nodelet plugin="${prefix}/nodelets.xml"/>
-  </export>
 </package>

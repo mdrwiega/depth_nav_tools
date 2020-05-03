@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(depth_nav_msgs)
 
-set(CMAKE_CXX_FLAGS "-std=c++03 ${CMAKE_CXX_FLAGS}")
-set(CMAKE_BUILD_TYPE Release)
+set(CATKIN_PACKAGE_DEPENDENCIES
+  message_generation
+  std_msgs
+  geometry_msgs
+)
 
-find_package(catkin REQUIRED COMPONENTS message_generation geometry_msgs std_msgs)
+find_package(catkin REQUIRED COMPONENTS ${CATKIN_PACKAGE_DEPENDENCIES})
 
 add_message_files(
    DIRECTORY msg
@@ -18,5 +21,5 @@ generate_messages(
 )
 
 catkin_package(
-    CATKIN_DEPENDS message_runtime geometry_msgs std_msgs
+  CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
 )

@@ -20,7 +20,4 @@
   <depend>libpcl-all</depend>
   <depend>pcl_ros</depend>
 
-  <export>
-    <nodelet plugin="${prefix}/nodelets.xml"/>
-  </export>
 </package>

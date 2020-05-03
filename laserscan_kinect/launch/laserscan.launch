@@ -1,4 +1,8 @@
 <launch>
+  <arg name="run_openni_driver" default="false"/>
+
+  <include if="$(arg run_openni_driver)" file="$(find openni_launch)/launch/openni.launch"/>
+
 	<!-- Convert depth image to laser scan -->
 	<node name	= "laserscan_kinect"
 				pkg		= "laserscan_kinect"

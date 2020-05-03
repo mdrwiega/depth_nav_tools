@@ -17,8 +17,4 @@
   <depend>image_transport</depend>
   <depend>cv_bridge</depend>
   <depend>depth_nav_msgs</depend>
-
-  <export>
-    <nodelet plugin="${prefix}/nodelets.xml"/>
-  </export>
 </package>
