@@ -40,7 +40,8 @@ public:
    * @return Returns data processing loop rate in Hz.
    */
   float getNodeRate();
-private:
+
+ protected:
   /**
    * @brief depthCb is callback which is called when new depth image appear
    *
@@ -50,8 +51,8 @@ private:
    * @param depth_msg Depth image provided by image_transport.
    * @param info_msg CameraInfo provided by image_transport.
    */
-  void depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
-               const sensor_msgs::CameraInfoConstPtr& info_msg);
+  void depthCallback(const sensor_msgs::ImageConstPtr& depth_msg,
+                     const sensor_msgs::CameraInfoConstPtr& info_msg);
   /**
    * @brief connectCb is callback which is called when new subscriber connected.
    *
@@ -60,7 +61,7 @@ private:
    *
    * @param pub Publisher which subscribers are checked.
    */
-  void connectCb();
+  void connectCallback();
   /**
    * @brief disconnectCb is called when a subscriber stop subscribing
    *
@@ -68,7 +69,7 @@ private:
    *
    * @param pub Publisher which subscribers are checked.
    */
-  void disconnectCb();
+  void disconnectCallback();
   /**
    * @brief reconfigureCb is dynamic reconfigure callback
    *
@@ -77,9 +78,9 @@ private:
    * @param config Dynamic Reconfigure object.
    * @param level Dynamic Reconfigure level.
    */
-  void reconfigureCb(depth_sensor_pose::DepthSensorPoseConfig& config, uint32_t level);
-//-------------------------------------------------------------------------------------------------
-private:
+  void reconfigureCallback(depth_sensor_pose::DepthSensorPoseConfig& config, uint32_t level);
+
+ private:
 
   float node_rate_hz_{1};                 ///< Node loop frequency in Hz
   ros::NodeHandle pnh_;                   ///< Private node handler
@@ -92,7 +93,7 @@ private:
   image_transport::Publisher pub_;        ///< Publisher for image_transport
 
   /// Dynamic reconfigure server
-  dynamic_reconfigure::Server<depth_sensor_pose::DepthSensorPoseConfig> srv_;
+  dynamic_reconfigure::Server<depth_sensor_pose::DepthSensorPoseConfig> dyn_rec_srv_;
 
   /// Object which contain estimation methods
   depth_sensor_pose::DepthSensorPose estimator_;

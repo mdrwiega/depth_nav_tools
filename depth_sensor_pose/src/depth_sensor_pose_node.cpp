@@ -1,3 +1,5 @@
+#include <functional>
+
 #include "depth_sensor_pose/depth_sensor_pose_node.h"
 
 constexpr int MAX_NODE_RATE = 30;
@@ -5,27 +7,28 @@ constexpr int MAX_NODE_RATE = 30;
 using namespace depth_sensor_pose;
 
 DepthSensorPoseNode::DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pnh)
-  : pnh_(pnh), it_(n), srv_(pnh)
+  : pnh_(pnh), it_(n), dyn_rec_srv_(pnh)
 {
   std::lock_guard<std::mutex> lock(connection_mutex_);
 
   // Dynamic reconfigure server callback
-  srv_.setCallback(boost::bind(&DepthSensorPoseNode::reconfigureCb, this, _1, _2));
+  dyn_rec_srv_.setCallback(
+    boost::bind(&DepthSensorPoseNode::reconfigureCallback, this, _1, _2));
 
   // Lazy subscription implementation
   // Tilt angle and height publisher
   pub_height_ = n.advertise<std_msgs::Float64>("depth_sensor_pose/height", 2,
-        boost::bind(&DepthSensorPoseNode::connectCb, this),
-        boost::bind(&DepthSensorPoseNode::disconnectCb, this));
+    std::bind(&DepthSensorPoseNode::connectCallback, this),
+    std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 
   pub_angle_ = n.advertise<std_msgs::Float64>("depth_sensor_pose/tilt_angle", 2,
-        boost::bind(&DepthSensorPoseNode::connectCb, this),
-        boost::bind(&DepthSensorPoseNode::disconnectCb, this));
+    std::bind(&DepthSensorPoseNode::connectCallback, this),
+    std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 
   // New depth image publisher
   pub_ = it_.advertise("depth_sensor_pose/depth", 1,
-                       boost::bind(&DepthSensorPoseNode::connectCb, this),
-                       boost::bind(&DepthSensorPoseNode::disconnectCb, this));
+    std::bind(&DepthSensorPoseNode::connectCallback, this),
+    std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 }
 
 DepthSensorPoseNode::~DepthSensorPoseNode()
@@ -46,20 +49,16 @@ float DepthSensorPoseNode::getNodeRate()
   return node_rate_hz_;
 }
 
-void DepthSensorPoseNode::depthCb( const sensor_msgs::ImageConstPtr& depth_msg,
-                                   const sensor_msgs::CameraInfoConstPtr& info_msg)
+void DepthSensorPoseNode::depthCallback(const sensor_msgs::ImageConstPtr& depth_msg,
+                                        const sensor_msgs::CameraInfoConstPtr& info_msg)
 {
-  try
-  {
+  try {
     // Estimation of parameters -- sensor pose
     estimator_.estimateParams(depth_msg, info_msg);
 
     std_msgs::Float64 height, tilt_angle;
     height.data = estimator_.getSensorMountHeight();
     tilt_angle.data = estimator_.getSensorTiltAngle();
-
-    ROS_ERROR("height = %.4f angle = %.4f", estimator_.getSensorMountHeight(),
-              estimator_.getSensorTiltAngle());
 
     pub_height_.publish(height);
     pub_angle_.publish(tilt_angle);
@@ -70,23 +69,23 @@ void DepthSensorPoseNode::depthCb( const sensor_msgs::ImageConstPtr& depth_msg,
   }
   catch (std::runtime_error& e)
   {
-    ROS_ERROR_THROTTLE(1.0, "Could not to run estimatation procedure: %s", e.what());
+    ROS_ERROR_THROTTLE(1.0, "Could not to run estimation procedure: %s", e.what());
   }
 }
 
-void DepthSensorPoseNode::connectCb()
+void DepthSensorPoseNode::connectCallback()
 {
   std::lock_guard<std::mutex> lock(connection_mutex_);
   if (!sub_ && (pub_height_.getNumSubscribers() > 0 || pub_angle_.getNumSubscribers() > 0
-                || pub_.getNumSubscribers() > 0))
+                                                    || pub_.getNumSubscribers() > 0))
   {
     ROS_DEBUG("Connecting to depth topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
-    sub_ = it_.subscribeCamera("image", 1, &DepthSensorPoseNode::depthCb, this, hints);
+    sub_ = it_.subscribeCamera("image", 1, &DepthSensorPoseNode::depthCallback, this, hints);
   }
 }
 
-void DepthSensorPoseNode::disconnectCb()
+void DepthSensorPoseNode::disconnectCallback()
 {
   std::lock_guard<std::mutex> lock(connection_mutex_);
   if (pub_height_.getNumSubscribers() == 0 && pub_angle_.getNumSubscribers() == 0
@@ -97,10 +96,10 @@ void DepthSensorPoseNode::disconnectCb()
   }
 }
 
-void DepthSensorPoseNode::reconfigureCb( depth_sensor_pose::DepthSensorPoseConfig& config,
-                                         uint32_t level )
+void DepthSensorPoseNode::reconfigureCallback(depth_sensor_pose::DepthSensorPoseConfig& config,
+                                              uint32_t level)
 {
-  node_rate_hz_ = (float) config.rate;
+  node_rate_hz_ = static_cast<float>(config.rate);
 
   estimator_.setRangeLimits(config.range_min, config.range_max);
   estimator_.setSensorMountHeightMin(config.mount_height_min);

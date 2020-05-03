@@ -228,13 +228,5 @@ private:
   std::vector<unsigned int>dist_to_ground_min_;
 };
 
-template <typename T>
-std::string NumberToString ( T Number )
-{
-  std::ostringstream ss;
-  ss << Number;
-  return ss.str();
-}
-
 }
 

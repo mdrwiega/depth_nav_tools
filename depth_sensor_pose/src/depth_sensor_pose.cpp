@@ -5,9 +5,8 @@ namespace depth_sensor_pose {
 void DepthSensorPose::estimateParams( const sensor_msgs::ImageConstPtr& depth_msg,
                                       const sensor_msgs::CameraInfoConstPtr& info_msg )
 {
-#if DEBUG
   ROS_DEBUG("Start estimation procedure");
-#endif
+
   // Update data based on depth sensor parameters only if new params values
   // or turned on continuous data calculations
   if(reconf_serv_params_updated_ || cam_model_update_)
@@ -20,9 +19,8 @@ void DepthSensorPose::estimateParams( const sensor_msgs::ImageConstPtr& depth_ms
     fieldOfView(vert_min, vert_max, cx, 0, cx, cy, cx, depth_msg->height -1);
     double vertical_fov = vert_max - vert_min;
 
-#if DEBUG
     ROS_DEBUG("Recalculate distance to ground coefficients for image rows.");
-#endif
+
     calcDeltaAngleForImgRows(vertical_fov);
     dist_to_ground_max_.resize(camera_model_.fullResolution().height);
     dist_to_ground_min_.resize(camera_model_.fullResolution().height);
@@ -30,14 +28,14 @@ void DepthSensorPose::estimateParams( const sensor_msgs::ImageConstPtr& depth_ms
     calcGroundDistancesForImgRows(mount_height_min_,tilt_angle_max_, dist_to_ground_min_);
 
     reconf_serv_params_updated_ = false;
-#ifdef DEBUG_INFO
+#ifdef DEBUG
     std::ostringstream s;
     for(int v = 0; v < depth_msg->height; v+=8)
       s << " " << rowFloorThreshold_[v];
     ROS_INFO_STREAM_THROTTLE(2,"rowFloorThreshold = " << s.str());
 #endif
 
-#ifdef DEBUG_INFO
+#ifdef DEBUG
     const uint16_t* depthRoww = reinterpret_cast<const uint16_t*>(&depth_msg->data[0]);
     int rowStepp = depth_msg->step / sizeof(uint16_t);
     std::ostringstream s, sss;
@@ -50,7 +48,7 @@ void DepthSensorPose::estimateParams( const sensor_msgs::ImageConstPtr& depth_ms
 #endif
   }
 
-#ifdef DEBUG_INFO
+#ifdef DEBUG
   const uint16_t* depthRow = reinterpret_cast<const uint16_t*>(&depth_msg->data[0]);
   int rowStep = depth_msg->step / sizeof(uint16_t);
   std::ostringstream ss, sss, stream;
@@ -348,7 +346,7 @@ void DepthSensorPose::sensorPoseCalibration(
                                   (std::sqrt(B*B + A*A) * std::sqrt(A*A+B*B+C*C))) * 180.0 / M_PI;
     mount_height_est_ = std::abs(D) / std::sqrt(A*A+B*B+C*C);
 
-    ROS_ERROR("11height = %.4f angle = %.4f", mount_height_est_, tilt_angle_est_);
+    ROS_DEBUG("height = %.4f angle = %.4f", mount_height_est_, tilt_angle_est_);
 
 #ifdef DEBUG_CALIBRATION
     std::ostringstream s;

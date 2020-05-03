@@ -1,9 +1,15 @@
 <launch>
-  <!-- -->
-  <node name="depth_sensor_pose" pkg="depth_sensor_pose" type="depth_sensor_pose" output="screen">
-      <remap from="image" to="/camera/depth/image_raw"/>
-	  	<remap from="camera_info" to="/camera/depth/camera_info"/>
-      <rosparam command="load" file="$(find depth_sensor_pose)/config/params.yaml" />
+  <arg name="run_openni_driver" default="false"/>
+
+  <include if="$(arg run_openni_driver)" file="$(find openni_launch)/launch/openni.launch"/>
+
+  <node name    = "depth_sensor_pose"
+        pkg     = "depth_sensor_pose"
+        type    = "depth_sensor_pose"
+        output  = "screen">
+    <remap from="image" to="/camera/depth/image_raw"/>
+    <remap from="camera_info" to="/camera/depth/camera_info"/>
+    <rosparam command="load" file="$(find depth_sensor_pose)/config/params.yaml"/>
 	</node>
 </launch>
 
