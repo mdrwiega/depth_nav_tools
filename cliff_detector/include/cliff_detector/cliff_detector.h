@@ -1,42 +1,4 @@
-/******************************************************************************
- * Software License Agreement (BSD License)
- *
- * Copyright (c) 2015, Michal Drwiega (drwiega.michal@gmail.com)
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     1. Redistributions of source code must retain the above copyright
- *        notice, this list of conditions and the following disclaimer.
- *     2. Redistributions in binary form must reproduce the above copyright
- *        notice, this list of conditions and the following disclaimer in the
- *        documentation and/or other materials provided with the distribution.
- *     3. Neither the name of the copyright holder nor the names of its
- *        contributors may be used to endorse or promote products derived
- *        from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
-/**
- * @file   cliff_detector.h
- * @author Michal Drwiega (drwiega.michal@gmail.com)
- * @date   03.2016
- * @brief  cliff_detector package
- */
-
-#ifndef CLIFF_DETECTOR
-#define CLIFF_DETECTOR
+#pragma once
 
 #include <ros/console.h>
 #include <sensor_msgs/Image.h>
@@ -50,25 +12,19 @@
 #include <math.h>
 #include <cmath>
 #include <string>
-#include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <fstream>
 #include <utility>
 #include <cstdlib>
-
 #include <vector>
 
-namespace cliff_detector
-{ 
+namespace cliff_detector {
 /**
  * @brief The CliffDetector class detect cliff based on depth image
  */
-class CliffDetector
-{
-  //---------------------------------------------------------------------------------------------
-public: // Public methods
+class CliffDetector {
+ public:
   CliffDetector();
-  ~CliffDetector() { }
   /**
    * @brief detectCliff detects descending stairs based on the information in a depth image
    *
@@ -79,8 +35,8 @@ public: // Public methods
    * @param depth_msg UInt16 encoded depth image.
    * @param info_msg CameraInfo associated with depth_msg
    */
-  void detectCliff( const sensor_msgs::ImageConstPtr& depth_msg,
-                         const sensor_msgs::CameraInfoConstPtr& info_msg);
+  void detectCliff(const sensor_msgs::ImageConstPtr& depth_msg,
+                   const sensor_msgs::CameraInfoConstPtr& info_msg);
   /**
    * @brief setRangeLimits sets the minimum and maximum range of depth value from RGBD sensor.
    *
@@ -99,28 +55,28 @@ public: // Public methods
    *
    * @return Return sensor mount height in meters
    */
-  float getSensorMountHeight () { return sensor_mount_height_; }
+  float getSensorMountHeight() { return sensor_mount_height_; }
   /**
    * @brief setSensorTiltAngle sets the sensor tilt angle (in degrees)
    * @param angle
    */
-  void setSensorTiltAngle (const float angle);
+  void setSensorTiltAngle(const float angle);
   /**
    * @brief getSensorTiltAngle gets sensor tilt angle in degrees
    *
    * @return Return sensor tilt angle in degrees
    */
-  float getSensorTiltAngle () { return sensor_tilt_angle_; }
+  float getSensorTiltAngle() { return sensor_tilt_angle_; }
   /**
    * @brief setPublishDepthEnable
    * @param enable
    */
-  void setPublishDepthEnable (const bool enable) { publish_depth_enable_ = enable; }
+  void setPublishDepthEnable(const bool enable) { publish_depth_enable_ = enable; }
   /**
    * @brief getPublishDepthEnable
    * @return
    */
-  bool getPublishDepthEnable () const { return publish_depth_enable_; }
+  bool getPublishDepthEnable() const { return publish_depth_enable_; }
   /**
      * @brief Sets the number of image rows to use in data processing.
      *
@@ -131,13 +87,9 @@ public: // Public methods
      *
      */
   /**
-    * @brief Set value which determine if sensor params needs continously update
-    */
-  /**
    * @brief setCamModelUpdate
-   * @param u
    */
-  void setCamModelUpdate (const bool u) { cam_model_update_ = u; }
+  void setCamModelUpdate(const bool u) { cam_model_update_ = u; }
   /**
    * @brief setUsedDepthHeight
    * @param height
@@ -176,8 +128,7 @@ public: // Public methods
    */
   void setParametersConfigurated (const bool u) { depth_sensor_params_update = u; }
 
-  //---------------------------------------------------------------------------------------------
-private: // Private methods
+ protected:
   /**
    * @brief lengthOfVector calculates length of 3D vector.
    *
@@ -234,15 +185,10 @@ private: // Private methods
   void calcGroundDistancesForImgRows(double vertical_fov);
   /**
    * @brief calcTiltCompensationFactorsForImgRows calculate factors used in tilt compensation
-   *
-   * @param vertical_fov
    */
   void calcTiltCompensationFactorsForImgRows(double vertical_fov);
 
-
-private: // Private fields
-
-  //-----------------------------------------------------------------------------------------------
+ private:
   // ROS parameters configurated with config file or dynamic_reconfigure
   std::string  outputFrameId_;        ///< Output frame_id for laserscan.
   float        range_min_;            ///< Stores the current minimum range to use
@@ -257,7 +203,6 @@ private: // Private fields
   unsigned int depth_image_step_row_; ///< Rows step in depth processing (px).
   unsigned int depth_image_step_col_; ///< Columns step in depth processing (px).
   float        ground_margin_;        ///< Margin for ground points feature detector (m)
-  //-----------------------------------------------------------------------------------------------
 
   bool depth_sensor_params_update;
   /// Class for managing sensor_msgs/CameraInfo messages
@@ -269,16 +214,12 @@ private: // Private fields
 
   std::vector<double> delta_row_;
 
-  //-----------------------------------------------------------------------------------------------
-public: // Public fields
-
+ public:
   sensor_msgs::Image new_depth_msg_;
   sensor_msgs::ImageConstPtr depth_msg_to_pub_;
 
   ///< Store points which contain stairs
   depth_nav_msgs::Point32List stairs_points_msg_;
-
 };
-}; // cliff_detector
 
-#endif
+}

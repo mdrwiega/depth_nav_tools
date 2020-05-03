@@ -27,7 +27,6 @@
 
 //#define     DEBUG 1
 //#define 		DATA_TO_FILE
-//#define     DEBUG_INFO
 //#define 		DEBUG_CALIBRATION
 
 namespace depth_sensor_pose {
@@ -132,9 +131,10 @@ public:
   void setGroundMaxPoints (const unsigned int u) { max_ground_points_ = u; }
 
   float getSensorTiltAngle () const { return tilt_angle_est_; }
+
   float getSensorMountHeight () const { return mount_height_est_; }
 
-private: // Private methods
+protected:
   /**
      * Computes euclidean length of a cv::Point3d (as a ray from origin)
      *
@@ -167,10 +167,7 @@ private: // Private methods
   */
   void fieldOfView( double & min, double & max, double x1, double y1,
                     double xc, double yc, double x2, double y2 );
-  /**
-   * @brief calcDeltaAngleForImgRows
-   * @param vertical_fov
-   */
+
   void calcDeltaAngleForImgRows( double vertical_fov);
   /**
     * @brief Calculates distances to ground for every row of depth image
@@ -183,15 +180,12 @@ private: // Private methods
     */
   void calcGroundDistancesForImgRows( double mount_height, double tilt_angle,
                                       std::vector<unsigned int>& distances);
-  /**
-   * @brief
-   */
+
   void getGroundPoints(const sensor_msgs::ImageConstPtr& depth_msg,
                        pcl::PointCloud<pcl::PointXYZ>::Ptr& points);
-  /**
-   * @brief
-   */
-  void sensorPoseCalibration(const sensor_msgs::ImageConstPtr& depth_msg, double & tilt, double & height);
+
+  void sensorPoseCalibration(const sensor_msgs::ImageConstPtr& depth_msg,
+                             double & tilt, double & height);
 
 public:
   sensor_msgs::Image new_depth_msg_;
