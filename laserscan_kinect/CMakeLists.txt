@@ -2,21 +2,34 @@ cmake_minimum_required(VERSION 2.8.3)
 project(laserscan_kinect)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -O3 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_STANDARD 17)
+
+add_compile_options(
+  -Wall
+  -O3
+  -Werror
+)
 
 add_definitions(-DMULTITHREAD=0) # Set to 1 for multithreading
 
-find_package(catkin REQUIRED COMPONENTS 
-             roscpp image_geometry image_transport 
-             nodelet dynamic_reconfigure sensor_msgs)
+set(CATKIN_PACKAGE_DEPENDENCIES
+  roscpp
+  image_geometry
+  image_transport
+  nodelet
+  dynamic_reconfigure
+  sensor_msgs
+)
+
+find_package(catkin REQUIRED COMPONENTS ${CATKIN_PACKAGE_DEPENDENCIES})
 
 # Dynamic reconfigure config
 generate_dynamic_reconfigure_options( cfg/LaserscanKinect.cfg )
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
   LIBRARIES LaserScanKinect LaserScanKinectNode LaserScanKinectNodelet
-  CATKIN_DEPENDS roscpp dynamic_reconfigure image_geometry image_transport nodelet sensor_msgs
+  CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
