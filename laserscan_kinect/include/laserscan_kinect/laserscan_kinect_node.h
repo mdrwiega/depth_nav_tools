@@ -11,12 +11,10 @@
 #include <laserscan_kinect/LaserscanKinectConfig.h>
 #include <laserscan_kinect/laserscan_kinect.h>
 
-namespace laserscan_kinect
-{
+namespace laserscan_kinect {
 
-class LaserScanKinectNode
-{
-public:
+class LaserScanKinectNode {
+ public:
   /**
    * @brief LaserScanKinectNode constructor.
    *
@@ -80,4 +78,5 @@ private:
   /// Prevents the connectCb and disconnectCb from being called until everything is initialized.
   std::mutex connect_mutex_;
 };
-};
+
+}
