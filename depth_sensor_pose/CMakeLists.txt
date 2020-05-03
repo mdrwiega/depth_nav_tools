@@ -1,13 +1,28 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(depth_sensor_pose)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall ${CMAKE_CXX_FLAGS}")
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_STANDARD 17)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp image_geometry image_transport
-  nodelet dynamic_reconfigure sensor_msgs pcl_ros cmake_modules costmap_2d
+add_compile_options(
+  -Wall
+  -O3
+  -Werror
 )
+
+set(CATKIN_PACKAGE_DEPENDENCIES
+  roscpp
+  image_geometry
+  image_transport
+  nodelet
+  dynamic_reconfigure
+  sensor_msgs
+  pcl_ros
+  cmake_modules
+  costmap_2d
+)
+
+find_package(catkin REQUIRED COMPONENTS ${CATKIN_PACKAGE_DEPENDENCIES})
 
 # Dynamic reconfigure config
 generate_dynamic_reconfigure_options( cfg/DepthSensorPose.cfg )
@@ -18,8 +33,7 @@ find_package( Eigen3 REQUIRED )
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES DepthSensorPose DepthSensorPoseNode DepthSensorPoseNodelet
-  CATKIN_DEPENDS roscpp dynamic_reconfigure image_geometry
-                 image_transport nodelet sensor_msgs libpcl-all
+  CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
 )
 
 add_definitions(${Eigen_DEFINITIONS})

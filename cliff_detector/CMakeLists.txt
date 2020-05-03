@@ -1,13 +1,27 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(cliff_detector)
 
-set(CMAKE_CXX_FLAGS "-std=c++03 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_STANDARD 17)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp image_geometry image_transport
-  nodelet dynamic_reconfigure sensor_msgs depth_nav_msgs
+add_compile_options(
+  -Wall
+  -O3
+  -Werror
 )
+
+set(CATKIN_PACKAGE_DEPENDENCIES
+  roscpp
+  image_geometry
+  image_transport
+  nodelet
+  dynamic_reconfigure
+  sensor_msgs
+  depth_nav_msgs
+)
+
+find_package(catkin REQUIRED COMPONENTS ${CATKIN_PACKAGE_DEPENDENCIES})
+
 
 # Dynamic reconfigure config
 generate_dynamic_reconfigure_options(cfg/CliffDetector.cfg)
