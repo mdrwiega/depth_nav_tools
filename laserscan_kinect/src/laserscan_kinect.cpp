@@ -11,13 +11,12 @@
 
 namespace laserscan_kinect {
 
-//=================================================================================================
 sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
         const sensor_msgs::ImageConstPtr & depth_msg,
         const sensor_msgs::CameraInfoConstPtr & info_msg)
 {
     // Configure message if necessary
-    if(!is_scan_msg_configurated_ || cam_model_update_)
+    if(!is_scan_msg_configured_ || cam_model_update_)
     {
         cam_model_.fromCameraInfo(info_msg);
 
@@ -45,7 +44,7 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
         scan_msg_->angle_max = max_angle;
         scan_msg_->angle_increment = (max_angle - min_angle) / (depth_msg->width - 1);
         scan_msg_->time_increment = 0.0;
-        scan_msg_->scan_time = SCAN_TIME;
+        scan_msg_->scan_time = 1.0 / 30.0;
 
         // Set min and max range in preparing message
         if (tilt_compensation_enable_)
@@ -72,7 +71,7 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
         }
         image_vertical_offset_ = static_cast<int>(cam_model_.cy()- scan_height_ / 2);
 
-        is_scan_msg_configurated_ = true;
+        is_scan_msg_configured_ = true;
     }
 
     // Prepare laser scan message
@@ -101,7 +100,6 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
     return scan_msg_;
 }
 
-//=================================================================================================
 void LaserScanKinect::setRangeLimits(const float rmin, const float rmax)
 {
     if (rmin >= 0 && rmin < rmax)
@@ -120,7 +118,6 @@ void LaserScanKinect::setRangeLimits(const float rmin, const float rmax)
     }
 }
 
-//=================================================================================================
 void LaserScanKinect::setScanHeight(const int scan_height)
 {
     if(scan_height > 0)
@@ -132,7 +129,6 @@ void LaserScanKinect::setScanHeight(const int scan_height)
     }
 }
 
-//=================================================================================================
 void LaserScanKinect::setDepthImgRowStep(const int row_step)
 {
     if( row_step > 0 )
@@ -144,7 +140,6 @@ void LaserScanKinect::setDepthImgRowStep(const int row_step)
     }
 }
 
-//=================================================================================================
 void LaserScanKinect::setSensorMountHeight (const float height)
 {
     if( height > 0)
@@ -156,7 +151,6 @@ void LaserScanKinect::setSensorMountHeight (const float height)
     }
 }
 
-//=================================================================================================
 void LaserScanKinect::setSensorTiltAngle (const float angle)
 {
     if( angle < 90 && angle > -90)
@@ -168,7 +162,6 @@ void LaserScanKinect::setSensorTiltAngle (const float angle)
     }
 }
 
-//=================================================================================================
 void LaserScanKinect::setGroundMargin (const float margin)
 {
     if( margin > 0)
@@ -180,13 +173,11 @@ void LaserScanKinect::setGroundMargin (const float margin)
     }
 }
 
-//=================================================================================================
 double LaserScanKinect::lengthOfVector(const cv::Point3d& vec) const
 {
     return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
 
-//=================================================================================================
 double LaserScanKinect::angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const
 {
     double dot = ray1.x * ray2.x + ray1.y * ray2.y + ray1.z * ray2.z;
@@ -194,7 +185,6 @@ double LaserScanKinect::angleBetweenRays(const cv::Point3d& ray1, const cv::Poin
     return acos(dot / (lengthOfVector(ray1) * lengthOfVector(ray2)));
 }
 
-//=================================================================================================
 void LaserScanKinect::calcFieldOfView( const cv::Point2d && left, const cv::Point2d && center,
                                        const cv::Point2d && right, double & min, double & max)
 {
@@ -213,7 +203,6 @@ void LaserScanKinect::calcFieldOfView( const cv::Point2d && left, const cv::Poin
     ROS_ASSERT(min < 0 && max > 0);
 }
 
-//=================================================================================================
 void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov)
 {
     const double alpha = sensor_tilt_angle_ * M_PI / 180.0; // Sensor tilt angle in radians
@@ -245,7 +234,6 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov)
     }
 }
 
-//=================================================================================================
 void LaserScanKinect::calcTiltCompensationFactorsForImgRows(double vertical_fov)
 {
     const double alpha = sensor_tilt_angle_ * M_PI / 180.0;
@@ -264,7 +252,6 @@ void LaserScanKinect::calcTiltCompensationFactorsForImgRows(double vertical_fov)
     }
 }
 
-//=================================================================================================
 void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPtr& depth_msg)
 {
     scan_msg_index_.resize((int)depth_msg->width);
@@ -276,7 +263,6 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPt
     }
 }
 
-//=================================================================================================
 template <typename T>
 void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr &depth_msg)
 {

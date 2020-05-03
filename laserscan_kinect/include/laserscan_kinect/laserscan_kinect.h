@@ -9,8 +9,6 @@
 #include <sensor_msgs/image_encodings.h>
 #include <image_geometry/pinhole_camera_model.h>
 
-constexpr double SCAN_TIME = 1.0 / 30.0;
-
 namespace laserscan_kinect {
 
 class LaserScanKinect {
@@ -18,7 +16,7 @@ class LaserScanKinect {
     LaserScanKinect(): scan_msg_(new sensor_msgs::LaserScan()) { }
     ~LaserScanKinect() = default;
 
-    /**
+  /**
    * @brief prepareLaserScanMsg converts depthimage and prepare new LaserScan message
    *
    * @param depth_msg Message that contains depth image which will be converted to LaserScan.
@@ -91,7 +89,7 @@ class LaserScanKinect {
    *
    * @param enable
    */
-    void setScanConfigurated (const bool configurated) { is_scan_msg_configurated_ = configurated; }
+    void setScanConfigurated (const bool configured) { is_scan_msg_configured_ = configured; }
 
 protected:
     /**
@@ -186,14 +184,11 @@ protected:
     }
     /**
     * @brief convertDepthToPolarCoords converts depth map to 2D
-    *
-    * @param depth_msg
     */
     template <typename T>
     void convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr& depth_msg);
 
 private:
-    //-----------------------------------------------------------------------------------------------
     // ROS parameters configurated with configuration file or dynamic_reconfigure
     std::string output_frame_id_;           ///< Output frame_id for laserscan message.
     float range_min_{0};                    ///< Stores the current minimum range to use
@@ -206,7 +201,6 @@ private:
     bool  ground_remove_enable_{false};     ///< Determines if remove ground from output scan
     float ground_margin_{0};                ///< Margin for floor remove feature (in meters)
     bool  tilt_compensation_enable_{false}; ///< Determines if tilt compensation feature is on
-    //-----------------------------------------------------------------------------------------------
 
     /// Published scan message
     sensor_msgs::LaserScanPtr scan_msg_;
@@ -215,7 +209,7 @@ private:
     image_geometry::PinholeCameraModel cam_model_;
 
     /// Determines if laser scan message is configurated
-    bool is_scan_msg_configurated_{false};
+    bool is_scan_msg_configured_{false};
 
     /// Calculated laser scan msg indexes for each depth image column
     std::vector<unsigned> scan_msg_index_;
