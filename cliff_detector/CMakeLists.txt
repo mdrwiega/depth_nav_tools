@@ -22,7 +22,6 @@ set(CATKIN_PACKAGE_DEPENDENCIES
 
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_PACKAGE_DEPENDENCIES})
 
-
 # Dynamic reconfigure config
 generate_dynamic_reconfigure_options(cfg/CliffDetector.cfg)
 
@@ -31,8 +30,7 @@ find_package( OpenCV REQUIRED )
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES CliffDetector CliffDetectorNode
-  CATKIN_DEPENDS roscpp dynamic_reconfigure image_geometry
-                 image_transport nodelet sensor_msgs depth_nav_msgs
+  CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
