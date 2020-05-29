@@ -101,5 +101,5 @@ public:
   /// Prevents the connectCb and disconnectCb from being called until everything is initialized
   std::mutex connection_mutex_;
 };
-}
 
+} // namespace depth_sensor_pose

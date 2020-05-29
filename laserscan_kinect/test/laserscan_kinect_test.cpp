@@ -79,15 +79,16 @@ class LaserScanKinectTest : public ::testing::Test {
     depth_msg->is_bigendian = false;
     depth_msg->step = depth_msg->width * sizeof(T);
 
-    if (typeid(T) == typeid(uint16_t))
-        depth_msg->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-    else if (typeid(T) == typeid(float))
-        depth_msg->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+    if (typeid(T) == typeid(uint16_t)) {
+      depth_msg->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+    }
+    else if (typeid(T) == typeid(float)) {
+      depth_msg->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+    }
 
     depth_msg->data.resize(depth_msg->width * depth_msg->height * sizeof(T));
     T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
-    for (size_t i = 0; i < depth_msg->width * depth_msg->height; ++i)
-    {
+    for (size_t i = 0; i < depth_msg->width * depth_msg->height; ++i) {
         depth_row[i] = value;
     }
   }
@@ -98,7 +99,7 @@ class LaserScanKinectTest : public ::testing::Test {
 
     T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
     const int row_size = depth_msg->width;
-    const int offset = static_cast<int>(info_msg->K[5] - scan_height / 2);
+    const int offset = static_cast<int>(info_msg->K[5] - scan_height / 2.0);
 
     // Change one pixel in each column to smaller value
     bool down = true;
@@ -106,16 +107,20 @@ class LaserScanKinectTest : public ::testing::Test {
     for (size_t col = 0; col < depth_msg->width; ++col) {
       depth_row[row_size * row + col] = low_value;
       if (down) {
-        if ((row + 1) <= (offset + static_cast<int>(scan_height)))
-            row++;
-        else
-            down = false;
+        if ((row + 1) <= (offset + static_cast<int>(scan_height))) {
+          row++;
+        }
+        else {
+          down = false;
+        }
       }
       else {
-        if ((row - 1) >= offset)
-            row--;
-        else
-            down = true;
+        if ((row - 1) >= offset) {
+          row--;
+        }
+        else {
+          down = true;
+        }
       }
     }
   }
@@ -202,11 +207,11 @@ TEST_F(LaserScanKinectTest, minInEachColumn_U16_FeaturesDisabled)
   size_t nan_counter = 0;
 
   // Check if in each column minimum value was selected
-  for (size_t i = 0; i < scan_msg->ranges.size(); ++i) {
-    if (std::isnan(scan_msg->ranges[i])) {
+  for (const float range : scan_msg->ranges) {
+    if (std::isnan(range)) {
       nan_counter++;
     }
-    ASSERT_EQ(true, scan_msg->ranges[i] <= low || std::isnan(scan_msg->ranges[i]));
+    ASSERT_EQ(true, range <= low || std::isnan(range));
   }
   EXPECT_LE(nan_counter, static_cast<size_t>(scan_msg->ranges.size() / 10));
 }
@@ -223,8 +228,8 @@ TEST_F(LaserScanKinectTest, minInEachColumn_F32_FeaturesDisabled)
   float max_depth = sqrt(tmp * tmp + high * high);
 
   // Check if in each column minimum value was selected
-  for (size_t i = 0; i < scan_msg->ranges.size(); ++i) {
-      ASSERT_EQ(true, scan_msg->ranges[i] <= max_depth || std::isnan(scan_msg->ranges[i]));
+  for (const float range : scan_msg->ranges) {
+      ASSERT_EQ(true, range <= max_depth || std::isnan(range));
   }
 }
 

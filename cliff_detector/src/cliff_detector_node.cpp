@@ -3,8 +3,7 @@
 namespace cliff_detector {
 
 CliffDetectorNode::CliffDetectorNode(ros::NodeHandle& n, ros::NodeHandle& pnh):
-  node_rate_hz_(2), pnh_(pnh), it_(n), reconf_srv_(pnh)
-{
+  node_rate_hz_(2), pnh_(pnh), it_(n), reconf_srv_(pnh) {
   boost::mutex::scoped_lock lock(connection_mutex_);
 
   // Set callback for dynamic reconfigure server
@@ -19,29 +18,26 @@ CliffDetectorNode::CliffDetectorNode(ros::NodeHandle& n, ros::NodeHandle& pnh):
   pub_points_ = n.advertise<depth_nav_msgs::Point32List>("cliff_detector/points", 2);
 }
 
-CliffDetectorNode::~CliffDetectorNode()
-{
+CliffDetectorNode::~CliffDetectorNode() {
   sub_.shutdown();
 }
 
-void CliffDetectorNode::setNodeRate(const unsigned int rate)
-{
-  if (rate <= 30)
+void CliffDetectorNode::setNodeRate(const unsigned int rate) {
+  if (rate <= 30) {
     node_rate_hz_ = rate;
-  else
+  }
+  else {
     node_rate_hz_ = 30;
+  }
 }
 
-unsigned int CliffDetectorNode::getNodeRate()
-{
+unsigned int CliffDetectorNode::getNodeRate() {
   return node_rate_hz_;
 }
 
 void CliffDetectorNode::depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
-                                const sensor_msgs::CameraInfoConstPtr& info_msg)
-{
-  try
-  {
+                                const sensor_msgs::CameraInfoConstPtr& info_msg) {
+  try {
     // Run cliff detector based on depth image
     detector_.detectCliff(depth_msg, info_msg);
 
@@ -49,38 +45,34 @@ void CliffDetectorNode::depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
     pub_points_.publish(detector_.stairs_points_msg_);
 
     // Publishes new depth image with added cliff
-    if (detector_.getPublishDepthEnable())
+    if (detector_.getPublishDepthEnable()) {
       pub_.publish(detector_.new_depth_msg_);
+    }
   }
-  catch (std::runtime_error& e)
-  {
+  catch (std::runtime_error& e) {
     ROS_ERROR_THROTTLE(1.0, "Could not perform stairs detection: %s", e.what());
   }
 }
 
-void CliffDetectorNode::connectCb()
-{
+void CliffDetectorNode::connectCb() {
   boost::mutex::scoped_lock lock(connection_mutex_);
-  if (!sub_ && pub_.getNumSubscribers() > 0)
-  {
+  if (sub_ != nullptr && pub_.getNumSubscribers() > 0) {
     ROS_DEBUG("Connecting to depth topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
     sub_ = it_.subscribeCamera("image", 1, &CliffDetectorNode::depthCb, this, hints);
   }
 }
 
-void CliffDetectorNode::disconnectCb()
-{
+void CliffDetectorNode::disconnectCb() {
   boost::mutex::scoped_lock lock(connection_mutex_);
-  if (pub_.getNumSubscribers() == 0)
-  {
+  if (pub_.getNumSubscribers() == 0) {
     ROS_DEBUG("Unsubscribing from depth topic.");
     sub_.shutdown();
   }
 }
 
 void CliffDetectorNode::reconfigureCb(
-    cliff_detector::CliffDetectorConfig& config, uint32_t level)
+    cliff_detector::CliffDetectorConfig& config, [[maybe_unused]] uint32_t level)
 {
   node_rate_hz_ = (unsigned int) config.rate;
 
@@ -100,4 +92,4 @@ void CliffDetectorNode::reconfigureCb(
   detector_.setParametersConfigurated(false);
 }
 
-}
+} // namespace cliff_detector

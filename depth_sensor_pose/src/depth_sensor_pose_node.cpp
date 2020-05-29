@@ -31,27 +31,24 @@ DepthSensorPoseNode::DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pn
     std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 }
 
-DepthSensorPoseNode::~DepthSensorPoseNode()
-{
+DepthSensorPoseNode::~DepthSensorPoseNode() {
   sub_.shutdown();
 }
 
-void DepthSensorPoseNode::setNodeRate(const float rate)
-{
-  if (rate <= MAX_NODE_RATE)
+void DepthSensorPoseNode::setNodeRate(const float rate) {
+  if (rate <= MAX_NODE_RATE) {
     node_rate_hz_ = rate;
+  }
   else
     node_rate_hz_ = MAX_NODE_RATE;
 }
 
-float DepthSensorPoseNode::getNodeRate()
-{
+float DepthSensorPoseNode::getNodeRate() {
   return node_rate_hz_;
 }
 
 void DepthSensorPoseNode::depthCallback(const sensor_msgs::ImageConstPtr& depth_msg,
-                                        const sensor_msgs::CameraInfoConstPtr& info_msg)
-{
+                                        const sensor_msgs::CameraInfoConstPtr& info_msg) {
   try {
     // Estimation of parameters -- sensor pose
     estimator_.estimateParams(depth_msg, info_msg);
@@ -67,38 +64,32 @@ void DepthSensorPoseNode::depthCallback(const sensor_msgs::ImageConstPtr& depth_
     if (estimator_.getPublishDepthEnable())
       pub_.publish(estimator_.new_depth_msg_);
   }
-  catch (std::runtime_error& e)
-  {
+  catch (std::runtime_error& e) {
     ROS_ERROR_THROTTLE(1.0, "Could not to run estimation procedure: %s", e.what());
   }
 }
 
-void DepthSensorPoseNode::connectCallback()
-{
+void DepthSensorPoseNode::connectCallback() {
   std::lock_guard<std::mutex> lock(connection_mutex_);
-  if (!sub_ && (pub_height_.getNumSubscribers() > 0 || pub_angle_.getNumSubscribers() > 0
-                                                    || pub_.getNumSubscribers() > 0))
-  {
+  if (sub_ != nullptr && (pub_height_.getNumSubscribers() > 0 || pub_angle_.getNumSubscribers() > 0
+                                                    || pub_.getNumSubscribers() > 0)) {
     ROS_DEBUG("Connecting to depth topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
     sub_ = it_.subscribeCamera("image", 1, &DepthSensorPoseNode::depthCallback, this, hints);
   }
 }
 
-void DepthSensorPoseNode::disconnectCallback()
-{
+void DepthSensorPoseNode::disconnectCallback() {
   std::lock_guard<std::mutex> lock(connection_mutex_);
   if (pub_height_.getNumSubscribers() == 0 && pub_angle_.getNumSubscribers() == 0
-      && pub_.getNumSubscribers() == 0)
-  {
+      && pub_.getNumSubscribers() == 0) {
     ROS_DEBUG("Unsubscribing from depth topic.");
     sub_.shutdown();
   }
 }
 
 void DepthSensorPoseNode::reconfigureCallback(depth_sensor_pose::DepthSensorPoseConfig& config,
-                                              uint32_t level)
-{
+                                              [[maybe_unused]] uint32_t level) {
   node_rate_hz_ = static_cast<float>(config.rate);
 
   estimator_.setRangeLimits(config.range_min, config.range_max);

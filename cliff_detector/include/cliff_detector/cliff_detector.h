@@ -186,7 +186,7 @@ class CliffDetector {
   /**
    * @brief calcTiltCompensationFactorsForImgRows calculate factors used in tilt compensation
    */
-  void calcTiltCompensationFactorsForImgRows(double vertical_fov);
+  void calcTiltCompensationFactorsForImgRows();
 
  private:
   // ROS parameters configurated with config file or dynamic_reconfigure
@@ -222,4 +222,4 @@ class CliffDetector {
   depth_nav_msgs::Point32List stairs_points_msg_;
 };
 
-}
+} // namespace cliff_detector

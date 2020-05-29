@@ -144,7 +144,7 @@ protected:
      * @return Returns the magnitude of the ray.
      *
      */
-  double lengthOfVector( const cv::Point3d& ray) const;
+  double lengthOfVector( const cv::Point3d& vec) const;
   /**
      * Computes the angle between two cv::Point3d
      *
@@ -222,5 +222,4 @@ private:
   std::vector<unsigned int>dist_to_ground_min_;
 };
 
-}
-
+} // namespace depth_sensor_pose

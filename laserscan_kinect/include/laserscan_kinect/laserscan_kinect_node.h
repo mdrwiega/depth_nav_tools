@@ -79,4 +79,4 @@ private:
   std::mutex connect_mutex_;
 };
 
-}
+} // namespace laserscan_kinect
