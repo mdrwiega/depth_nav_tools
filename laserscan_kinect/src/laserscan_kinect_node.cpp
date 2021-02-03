@@ -34,7 +34,7 @@ void LaserScanKinectNode::depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
 void LaserScanKinectNode::connectCb([[maybe_unused]] const ros::SingleSubscriberPublisher& pub) {
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
-  if (sub_ != nullptr && pub_.getNumSubscribers() > 0) {
+  if (sub_ == nullptr && pub_.getNumSubscribers() > 0) {
     ROS_DEBUG("Connecting to depth topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
     sub_ = it_.subscribeCamera("image", 10, &LaserScanKinectNode::depthCb, this, hints);

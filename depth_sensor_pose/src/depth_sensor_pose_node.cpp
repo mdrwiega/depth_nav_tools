@@ -71,7 +71,7 @@ void DepthSensorPoseNode::depthCallback(const sensor_msgs::ImageConstPtr& depth_
 
 void DepthSensorPoseNode::connectCallback() {
   std::lock_guard<std::mutex> lock(connection_mutex_);
-  if (sub_ != nullptr && (pub_height_.getNumSubscribers() > 0 || pub_angle_.getNumSubscribers() > 0
+  if (sub_ == nullptr && (pub_height_.getNumSubscribers() > 0 || pub_angle_.getNumSubscribers() > 0
                                                     || pub_.getNumSubscribers() > 0)) {
     ROS_DEBUG("Connecting to depth topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);

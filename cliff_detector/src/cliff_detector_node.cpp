@@ -56,7 +56,7 @@ void CliffDetectorNode::depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
 
 void CliffDetectorNode::connectCb() {
   boost::mutex::scoped_lock lock(connection_mutex_);
-  if (sub_ != nullptr && pub_.getNumSubscribers() > 0) {
+  if (sub_ == nullptr && pub_.getNumSubscribers() > 0) {
     ROS_DEBUG("Connecting to depth topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
     sub_ = it_.subscribeCamera("image", 1, &CliffDetectorNode::depthCb, this, hints);
