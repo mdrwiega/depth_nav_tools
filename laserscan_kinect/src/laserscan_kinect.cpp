@@ -203,16 +203,15 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
     double delta = vertical_fov * (i - cam_model_.cy() - 0.5) / (static_cast<double>(img_height) - 1);
 
     if ((delta + alpha) > 0) {
-      dist_to_ground_corrected[i] = sensor_mount_height_ * sin(M_PI / 2 - delta) * 1000
-                          / cos(M_PI / 2 - delta - alpha);
+      dist_to_ground_corrected[i] = sensor_mount_height_ * sin(M_PI / 2 - delta) / cos(M_PI / 2 - delta - alpha);
 
       ROS_ASSERT(dist_to_ground_corrected[i] > 0);
     }
     else {
-      dist_to_ground_corrected[i] = 100 * 1000;
+      dist_to_ground_corrected[i] = 100;
     }
 
-    dist_to_ground_corrected[i] -= ground_margin_mm;
+    dist_to_ground_corrected[i] -= ground_margin_mm / 1000.0;
   }
 }
 
@@ -244,8 +243,6 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPt
 
 template <typename T>
 void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr &depth_msg) {
-  const int row_size = depth_msg->step / sizeof(T);
-  const T* depth_row= reinterpret_cast<const T*>(&depth_msg->data[0]);
 
   // Converts depth from specific column to polar coordinates
   auto convert_to_polar = [&](size_t col, float depth) -> float {
@@ -262,7 +259,7 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr
   // Processing for specified columns from [left, right]
   auto process_columns = [&](size_t left, size_t right) {
     for (size_t i = left; i < right; ++i) {
-      float depth_min = getSmallestValueInColumn<T>(depth_row, row_size, i);
+      float depth_min = getSmallestValueInColumn<T>(depth_msg, i);
       scan_msg_->ranges[scan_msg_index_[i]] = convert_to_polar(i, depth_min);
     }
   };

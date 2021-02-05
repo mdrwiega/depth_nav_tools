@@ -60,12 +60,12 @@ void DepthSensorPose::estimateParams( const sensor_msgs::ImageConstPtr& depth_ms
   depthRow = reinterpret_cast<const uint16_t*>(&depth_msg->data[0]);
   for(int v = 0; v < depth_msg->height; v++, depthRow += rowStep)
     stream << " " << (int)depthRow[320] * 0.001f;
-  std::ofstream file("/home/themin/kinect_data.txt", std::ios::out | std::ios::app);
+  std::ofstream file("/tmp/kinect_data.txt", std::ios::out | std::ios::app);
   file << stream.str() << "\n";
   file.close();
 #endif
 
-  // Check if image encoding is correctly
+  // Check if image encoding is correct
   if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
     double tilt = 0;
     double height = 0;

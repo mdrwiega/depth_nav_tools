@@ -41,3 +41,7 @@ BibTeX:
 ![Laserscan Kinect detection](http://wiki.ros.org/laserscan_kinect?action=AttachFile&do=get&target=laserscan_kinect_detection.jpg)
 
 The picture shows comparison between a laser scan based on the converted depth image from a Microsoft Kinect (blue points) and a laser scan from a scanner Hokuyo URG-04LX-UG01 (black points).
+
+### Tests
+Currently unit tests are implemented only for the **laserscan_kinect** package.
+- `catkin_make run_tests_laserscan_kinect`

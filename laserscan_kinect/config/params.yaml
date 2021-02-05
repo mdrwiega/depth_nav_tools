@@ -12,9 +12,9 @@ depth_img_row_step: 1
 cam_model_update: false
 
 # Height of sensor optical center mount (m).
-sensor_mount_height: 0.2
+sensor_mount_height: 0.8
 # Sensor tilt angle compensation.
-sensor_tilt_angle: 5.0
+sensor_tilt_angle: -45.0
 # Remove ground from scan.
 ground_remove_en: true
 # Ground margin (m).

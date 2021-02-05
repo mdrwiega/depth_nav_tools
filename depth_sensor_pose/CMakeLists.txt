@@ -51,3 +51,9 @@ target_link_libraries(DepthSensorPoseNode DepthSensorPose ${catkin_LIBRARIES})
 
 add_executable(depth_sensor_pose src/main.cpp)
 target_link_libraries(depth_sensor_pose DepthSensorPoseNode ${catkin_LIBRARIES})
+
+# Unit tests
+if (CATKIN_ENABLE_TESTING)
+    catkin_add_gtest(depthSensorPoseTest test/depth_sensor_pose_test.cpp)
+    target_link_libraries(depthSensorPoseTest DepthSensorPose)
+endif()
