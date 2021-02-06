@@ -157,6 +157,7 @@ class CliffDetector {
     *
     * @param depth_msg The UInt16 encoded depth message.
     */
+  template<typename T>
   void findCliffInDepthImage(const sensor_msgs::ImageConstPtr& depth_msg);
   /**
     * Calculate vertical angle_min and angle_max by measuring angles between

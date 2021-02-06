@@ -45,3 +45,9 @@ target_link_libraries(CliffDetectorNode CliffDetector ${OpenCV_LIBS} ${catkin_LI
 
 add_executable(cliff_detector src/main.cpp)
 target_link_libraries(cliff_detector CliffDetectorNode ${catkin_LIBRARIES})
+
+# Unit tests
+if (CATKIN_ENABLE_TESTING)
+    catkin_add_gtest(CliffDetectorTest test/cliff_detector_test.cpp)
+    target_link_libraries(CliffDetectorTest CliffDetector)
+endif()

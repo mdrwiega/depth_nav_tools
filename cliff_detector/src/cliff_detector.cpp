@@ -4,9 +4,8 @@ namespace cliff_detector {
 
 CliffDetector::CliffDetector(): depth_sensor_params_update(false) {}
 
-void CliffDetector::detectCliff( const sensor_msgs::ImageConstPtr& depth_msg,
-                                           const sensor_msgs::CameraInfoConstPtr& info_msg)
-{
+void CliffDetector::detectCliff(const sensor_msgs::ImageConstPtr& depth_msg,
+                                const sensor_msgs::CameraInfoConstPtr& info_msg) {
   // Update data based on depth sensor parameters only if new params values
   // or turned on continuous data calculations
   if(!depth_sensor_params_update || cam_model_update_)
@@ -34,21 +33,21 @@ void CliffDetector::detectCliff( const sensor_msgs::ImageConstPtr& depth_msg,
     calcTiltCompensationFactorsForImgRows();
 
     // Check scan_height vs image_height
-    if (used_depth_height_ > depth_msg->height)
-    {
+    if (used_depth_height_ > depth_msg->height) {
       ROS_ERROR("Parameter used_depth_height is higher than height of image.");
       used_depth_height_ = depth_msg->height;
     }
     depth_sensor_params_update = true;
   }
 
-  // Check if image encoding is correctly
-  if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1)
-  {
-    findCliffInDepthImage(depth_msg);
+  // Check the image encoding
+  if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
+    findCliffInDepthImage<uint16_t>(depth_msg);
   }
-  else
-  {
+  else if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1) {
+    findCliffInDepthImage<float>(depth_msg);
+  }
+  else {
     std::stringstream ss;
     ss << "Depth image has unsupported encoding: " << depth_msg->encoding;
     throw std::runtime_error(ss.str());
@@ -92,7 +91,7 @@ void CliffDetector::setSensorTiltAngle (const float angle) {
   }
 }
 
-void CliffDetector::setUsedDepthHeight(const unsigned int height) {
+void CliffDetector::setUsedDepthHeight(const unsigned height) {
   if (height > 0) {
     used_depth_height_ = height;
   }
@@ -102,85 +101,67 @@ void CliffDetector::setUsedDepthHeight(const unsigned int height) {
   }
 }
 
-void CliffDetector::setBlockSize(const int size)
-{
-  if (size > 0 && (size % 2 == 0))
-  {
+void CliffDetector::setBlockSize(const int size) {
+  if (size > 0 && (size % 2 == 0)) {
     block_size_ = size;
   }
-  else
-  {
+  else {
     block_size_ = 8;
     ROS_ERROR("Incorrect value of block size. Set default value: 8.");
   }
 }
 
-void CliffDetector::setBlockPointsThresh(const int thresh)
-{
-  if (thresh > 0)
-  {
+void CliffDetector::setBlockPointsThresh(const int thresh) {
+  if (thresh > 0) {
     block_points_thresh_ = thresh;
   }
-  else
-  {
+  else {
     block_points_thresh_ = 1;
     ROS_ERROR("Incorrect value of block points threshold parameter. Set default value: 1.");
   }
 }
 
-void CliffDetector::setDepthImgStepRow(const int step)
-{
-  if (step > 0)
-  {
+void CliffDetector::setDepthImgStepRow(const int step) {
+  if (step > 0) {
     depth_image_step_row_ = step;
   }
-  else
-  {
+  else {
     depth_image_step_row_ = 1;
     ROS_ERROR("Incorrect value depth image row step parameter. Set default value: 1.");
   }
 }
 
-void CliffDetector::setDepthImgStepCol(const int step)
-{
-  if (step > 0 )
-  {
+void CliffDetector::setDepthImgStepCol(const int step) {
+  if (step > 0 ) {
     depth_image_step_col_ = step;
   }
-  else
-  {
+  else {
     depth_image_step_col_ = 1;
     ROS_ERROR("Incorrect value depth image column step parameter. Set default value: 1.");
   }
 }
 
-void CliffDetector::setGroundMargin (const float margin)
-{
-  if (margin > 0)
-  {
+void CliffDetector::setGroundMargin (const float margin) {
+  if (margin > 0) {
     ground_margin_ = margin;
   }
-  else
-  {
+  else {
     ground_margin_ = 0;
     ROS_ERROR("Incorrect value of ground margin parameter. Set default value: 0.");
   }
 }
 
-double CliffDetector::lengthOfVector(const cv::Point3d& vec) const
-{
+double CliffDetector::lengthOfVector(const cv::Point3d& vec) const {
   return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
 
-double CliffDetector::angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const
-{
+double CliffDetector::angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const {
   double dot = ray1.x*ray2.x + ray1.y*ray2.y + ray1.z*ray2.z;
   return acos(dot / (lengthOfVector(ray1) * lengthOfVector(ray2)));
 }
 
 void CliffDetector::fieldOfView(double & min, double & max, double x1, double y1,
-                                double xc, double yc, double x2, double y2)
-{
+                                double xc, double yc, double x2, double y2) {
   cv::Point2d raw_pixel_left(x1, y1);
   cv::Point2d rect_pixel_left = camera_model_.rectifyPoint(raw_pixel_left);
   cv::Point3d left_ray = camera_model_.projectPixelTo3dRay(rect_pixel_left);
@@ -199,37 +180,35 @@ void CliffDetector::fieldOfView(double & min, double & max, double x1, double y1
   ROS_ASSERT(min < 0 && max > 0);
 }
 
-void CliffDetector::calcDeltaAngleForImgRows(double vertical_fov)
-{
-  const unsigned int img_height = camera_model_.fullResolution().height;
+void CliffDetector::calcDeltaAngleForImgRows(double vertical_fov) {
+  const unsigned img_height = camera_model_.fullResolution().height;
 
   delta_row_.resize(img_height);
 
   // Angle between ray and optical center
-  for(unsigned int i = 0; i < img_height; i++) {
+  for(unsigned i = 0; i < img_height; i++) {
     delta_row_[i] = vertical_fov * (i - camera_model_.cy() - 0.5) / ((double)img_height - 1);
   }
 }
 
-void CliffDetector::calcGroundDistancesForImgRows([[maybe_unused]] double vertical_fov)
-{
+void CliffDetector::calcGroundDistancesForImgRows([[maybe_unused]] double vertical_fov) {
   const double alpha = sensor_tilt_angle_ * M_PI / 180.0; // Sensor tilt angle in radians
-  const unsigned int img_height = camera_model_.fullResolution().height;
+  const unsigned img_height = camera_model_.fullResolution().height;
 
   ROS_ASSERT(img_height >= 0);
 
   dist_to_ground_.resize(img_height);
 
   // Calculations for each row of image
-  for (unsigned int i = 0; i < img_height; i++) {
+  for (unsigned i = 0; i < img_height; i++) {
     // Angle between ray and optical center
     if ((delta_row_[i] + alpha) > 0) {
-      dist_to_ground_[i] = sensor_mount_height_ * sin(M_PI/2 - delta_row_[i]) * 1000
+      dist_to_ground_[i] = sensor_mount_height_ * sin(M_PI/2 - delta_row_[i])
           / cos(M_PI/2 - delta_row_[i] - alpha);
       ROS_ASSERT(dist_to_ground_[i] > 0);
     }
     else {
-      dist_to_ground_[i] = 100 * 1000;
+      dist_to_ground_[i] = 100.0;
     }
   }
 }
@@ -237,41 +216,36 @@ void CliffDetector::calcGroundDistancesForImgRows([[maybe_unused]] double vertic
 void CliffDetector::calcTiltCompensationFactorsForImgRows()
 {
   const double alpha = sensor_tilt_angle_ * M_PI / 180.0; // Sensor tilt angle in radians
-  const unsigned int img_height = camera_model_.fullResolution().height;
+  const unsigned img_height = camera_model_.fullResolution().height;
 
   ROS_ASSERT(img_height >= 0);
 
   tilt_compensation_factor_.resize(img_height);
 
-  for (unsigned int i = 0; i < img_height; i++) { // Process all rows
+  for (unsigned i = 0; i < img_height; i++) { // Process all rows
     tilt_compensation_factor_[i] = sin(M_PI/2 - delta_row_[i] - alpha)
                                     / sin(M_PI/2 - delta_row_[i]);
     ROS_ASSERT(tilt_compensation_factor_[i] > 0 && tilt_compensation_factor_[i] < 10);
   }
 }
 
+template<typename T>
 void CliffDetector::findCliffInDepthImage(const sensor_msgs::ImageConstPtr &depth_msg)
 {
   enum Point { Row, Col, Depth };
 
-  const uint16_t* depth_row = reinterpret_cast<const uint16_t*>(&depth_msg->data[0]);
-
-  const unsigned int row_size = depth_msg->step / sizeof(uint16_t);
-
-  const unsigned int img_height = camera_model_.fullResolution().height;
-  const unsigned int img_width = camera_model_.fullResolution().width;
+  const T* data = reinterpret_cast<const T*>(&depth_msg->data[0]);
+  const unsigned row_size = depth_msg->width;
+  const unsigned img_height = camera_model_.fullResolution().height;
+  const unsigned img_width = camera_model_.fullResolution().width;
 
   if ((block_size_ % 2) != 0) {
     ROS_ERROR("Block size should be even number. Value will be decreased by one.");
     block_size_--;
   }
 
-  const unsigned int block_cols_nr = img_width / block_size_;
-  const unsigned int block_rows_nr = used_depth_height_ / block_size_;
-
-  const int ground_margin_mm = ground_margin_ * 1000;
-  const unsigned int range_min_mm = range_min_ * 1000;
-  const unsigned int range_max_mm = range_max_ * 1000;
+  const unsigned block_cols_nr = img_width / block_size_;
+  const unsigned block_rows_nr = used_depth_height_ / block_size_;
 
   // Check if points thresh isn't too big
   if (block_points_thresh_ >= (block_size_ * block_size_ / depth_image_step_col_
@@ -288,8 +262,6 @@ void CliffDetector::findCliffInDepthImage(const sensor_msgs::ImageConstPtr &dept
 
   // Indicates which point from tpoints vector corresponds to which pixel in block
   std::vector<int> px_nr;
-
-  // Resize to size of block
   px_nr.resize(block_size_ * block_size_);
 
   // Four pixels in center of block
@@ -304,7 +276,8 @@ void CliffDetector::findCliffInDepthImage(const sensor_msgs::ImageConstPtr &dept
   for (unsigned bj = 0; bj < block_rows_nr; ++bj) {
     // Loop over each block column in image, bi - block row
     for (unsigned bi = 0; bi < block_cols_nr; ++bi) {
-      // Start of block processing
+
+      // Block processing
       unsigned block_cnt = 0;
       std::fill(px_nr.begin(), px_nr.end(), -1);
 
@@ -317,11 +290,18 @@ void CliffDetector::findCliffInDepthImage(const sensor_msgs::ImageConstPtr &dept
           unsigned col = bi * block_size_ + i;
           ROS_ASSERT(row < img_height && col < img_width);
 
-          unsigned d = depth_row[row_size * row + col];
+          float d = 0.0;
+
+          if (typeid(T) == typeid(uint16_t)) {
+            unsigned depth_raw_mm = static_cast<unsigned>(data[row_size * row + col]);
+            d = static_cast<float>(depth_raw_mm) / 1000.0;
+          }
+          else if (typeid(T) == typeid(float)) {
+            d = static_cast<float>(data[row_size * row + col]);
+          }
 
           // Check if distance to point is greater than distance to ground plane
-          if (d > (dist_to_ground_[row] + ground_margin_mm) &&
-              d > range_min_mm && d < range_max_mm) {
+          if (d > (dist_to_ground_[row] + ground_margin_) && d > range_min_ && d < range_max_) {
             tpoints[block_cnt][Row] = row;
             tpoints[block_cnt][Col] = col;
             tpoints[block_cnt][Depth] = d;
@@ -356,23 +336,21 @@ void CliffDetector::findCliffInDepthImage(const sensor_msgs::ImageConstPtr &dept
   std::vector<std::vector<int> >::iterator it;
   geometry_msgs::Point32 pt;
 
-  if (publish_depth_enable_)
-  {
+  if (publish_depth_enable_) {
     new_depth_msg_ = *depth_msg;
   }
 
-  uint16_t* new_depth_row = reinterpret_cast<uint16_t*>(&new_depth_msg_.data[0]);
+  T* new_depth_row = reinterpret_cast<T*>(&new_depth_msg_.data[0]);
 
   // Set header and size of points list in message
   stairs_points_msg_.header = depth_msg->header;
-  stairs_points_msg_.size = (unsigned int) stairs_points.size();
+  stairs_points_msg_.size = (unsigned) stairs_points.size();
   stairs_points_msg_.points.clear();
   pt.y = 0;
 
-  for(it = stairs_points.begin(); it != stairs_points.end(); ++it)
-  {
+  for (it = stairs_points.begin(); it != stairs_points.end(); ++it) {
     // Calculate point in XZ plane -- depth (z)
-    unsigned int row = (*it)[Row];
+    unsigned row = (*it)[Row];
     pt.z = sensor_mount_height_ / std::tan(sensor_tilt_angle_ * M_PI / 180.0 + delta_row_[row]);
 
     // Calculate x value
@@ -391,5 +369,8 @@ void CliffDetector::findCliffInDepthImage(const sensor_msgs::ImageConstPtr &dept
   }
   ROS_DEBUG_STREAM("Stairs points: " << stairs_points.size());
 }
+
+template void CliffDetector::findCliffInDepthImage<uint16_t>(const sensor_msgs::ImageConstPtr&);
+template void CliffDetector::findCliffInDepthImage<float>(const sensor_msgs::ImageConstPtr&);
 
 } // namespace cliff_detector

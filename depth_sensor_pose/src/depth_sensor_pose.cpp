@@ -332,8 +332,7 @@ void DepthSensorPose::sensorPoseCalibration(
     float c = ground_coeffs[2], d = ground_coeffs[3];
 
     // Dot product two vectors v=[a,b,c], w=[1,1,0]
-    tilt_angle_est_ =  std::acos ((b*b + a*a) /
-                                  (std::sqrt(b*b + a*a) * std::sqrt(a*a+b*b+c*c))) * 180.0 / M_PI;
+    tilt_angle_est_ =  std::acos ((b*b + a*a) / (std::sqrt(b*b + a*a) * std::sqrt(a*a+b*b+c*c))) * 180.0 / M_PI;
     mount_height_est_ = std::abs(d) / std::sqrt(a*a+b*b+c*c);
 
     ROS_DEBUG("height = %.4f angle = %.4f", mount_height_est_, tilt_angle_est_);
