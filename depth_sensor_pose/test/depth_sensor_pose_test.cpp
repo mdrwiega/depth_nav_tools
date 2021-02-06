@@ -80,6 +80,9 @@ TEST_F(DepthSensorPoseTest, encodingSupport)
 {
   setDefaultDepthMsg<uint16_t>(1);
   estimator.estimateParams(depth_msg, info_msg);
+
+  setDefaultDepthMsg<float>(1);
+  estimator.estimateParams(depth_msg, info_msg);
 }
 
 TEST_F(DepthSensorPoseTest, unsupportedEncoding)

@@ -181,6 +181,7 @@ protected:
   void calcGroundDistancesForImgRows( double mount_height, double tilt_angle,
                                       std::vector<unsigned int>& distances);
 
+  template<typename T>
   void getGroundPoints(const sensor_msgs::ImageConstPtr& depth_msg,
                        pcl::PointCloud<pcl::PointXYZ>::Ptr& points);
 
