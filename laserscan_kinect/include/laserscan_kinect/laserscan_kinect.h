@@ -25,7 +25,7 @@ class LaserScanKinect {
    * @return Return pointer to LaserScan message.
    */
   sensor_msgs::LaserScanPtr getLaserScanMsg(const sensor_msgs::ImageConstPtr& depth_msg,
-                                                const sensor_msgs::CameraInfoConstPtr& info_msg);
+                                            const sensor_msgs::CameraInfoConstPtr& info_msg);
   /**
    * @brief setOutputFrame sets the frame to output laser scan
    * @param frame
@@ -127,55 +127,11 @@ class LaserScanKinect {
   * @param depth_msg
   */
   void calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPtr& depth_msg);
-
   /**
   * @brief getSmallestValueInColumn finds smallest values in depth image columns
     */
   template <typename T>
-  float getSmallestValueInColumn(const sensor_msgs::ImageConstPtr &depth_msg, int col) {
-    float depth_min = std::numeric_limits<float>::max();
-    const int row_size = depth_msg->width;
-    const T* data = reinterpret_cast<const T*>(&depth_msg->data[0]);
-
-    // Loop over pixels in column. Calculate z_min in column
-    for (size_t i = image_vertical_offset_; i < image_vertical_offset_ + scan_height_; i += depth_img_row_step_) {
-
-      float depth_raw = 0.0;
-      float depth_m = 0.0;
-
-      if (typeid(T) == typeid(uint16_t)) {
-        unsigned depth_raw_mm = static_cast<unsigned>(data[row_size * i + col]);
-        depth_raw = static_cast<float>(depth_raw_mm) / 1000.0;
-      }
-      else if (typeid(T) == typeid(float)) {
-        depth_raw = static_cast<float>(data[row_size * i + col]);
-      }
-
-      if (tilt_compensation_enable_) { // Check if tilt compensation is enabled
-        depth_m = depth_raw * tilt_compensation_factor_[i];
-      }
-      else {
-        depth_m = depth_raw;
-      }
-
-      // Check if point is in ranges and find min value in column
-      if (depth_raw >= range_min_ && depth_raw <= range_max_) {
-
-        if (ground_remove_enable_) {
-          if (depth_m < depth_min && depth_raw < dist_to_ground_corrected[i]) {
-            depth_min = depth_m;
-          }
-        }
-        else {
-          if (depth_m < depth_min) {
-            depth_min = depth_m;
-          }
-        }
-      }
-    }
-    return depth_min;
-  }
-
+  float getSmallestValueInColumn(const sensor_msgs::ImageConstPtr &depth_msg, int col);
   /**
   * @brief convertDepthToPolarCoords converts depth map to 2D
   */

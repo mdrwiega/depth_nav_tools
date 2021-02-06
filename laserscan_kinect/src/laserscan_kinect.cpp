@@ -194,7 +194,6 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
 
   ROS_ASSERT(img_height >= 0);
 
-  const int ground_margin_mm = ground_margin_ * 1000;
   dist_to_ground_corrected.resize(img_height);
 
   // Coefficients calculations for each row of image
@@ -211,7 +210,7 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
       dist_to_ground_corrected[i] = 100;
     }
 
-    dist_to_ground_corrected[i] -= ground_margin_mm / 1000.0;
+    dist_to_ground_corrected[i] -= ground_margin_;
   }
 }
 
@@ -240,6 +239,54 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPt
     scan_msg_index_[u] = (th - scan_msg_->angle_min) / scan_msg_->angle_increment;
   }
 }
+
+template <typename T>
+float LaserScanKinect::getSmallestValueInColumn(const sensor_msgs::ImageConstPtr &depth_msg, int col) {
+  float depth_min = std::numeric_limits<float>::max();
+  const int row_size = depth_msg->width;
+  const T* data = reinterpret_cast<const T*>(&depth_msg->data[0]);
+
+  // Loop over pixels in column. Calculate z_min in column
+  for (size_t i = image_vertical_offset_; i < image_vertical_offset_ + scan_height_; i += depth_img_row_step_) {
+
+    float depth_raw = 0.0;
+    float depth_m = 0.0;
+
+    if (typeid(T) == typeid(uint16_t)) {
+      unsigned depth_raw_mm = static_cast<unsigned>(data[row_size * i + col]);
+      depth_raw = static_cast<float>(depth_raw_mm) / 1000.0;
+    }
+    else if (typeid(T) == typeid(float)) {
+      depth_raw = static_cast<float>(data[row_size * i + col]);
+    }
+
+    if (tilt_compensation_enable_) { // Check if tilt compensation is enabled
+      depth_m = depth_raw * tilt_compensation_factor_[i];
+    }
+    else {
+      depth_m = depth_raw;
+    }
+
+    // Check if point is in ranges and find min value in column
+    if (depth_raw >= range_min_ && depth_raw <= range_max_) {
+
+      if (ground_remove_enable_) {
+        if (depth_m < depth_min && depth_raw < dist_to_ground_corrected[i]) {
+          depth_min = depth_m;
+        }
+      }
+      else {
+        if (depth_m < depth_min) {
+          depth_min = depth_m;
+        }
+      }
+    }
+  }
+  return depth_min;
+}
+
+template float LaserScanKinect::getSmallestValueInColumn<uint16_t>(const sensor_msgs::ImageConstPtr&, int);
+template float LaserScanKinect::getSmallestValueInColumn<float>(const sensor_msgs::ImageConstPtr&, int);
 
 template <typename T>
 void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr &depth_msg) {
