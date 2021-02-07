@@ -60,9 +60,13 @@ void DepthSensorPoseNode::depthCallback(const sensor_msgs::ImageConstPtr& depth_
     pub_height_.publish(height);
     pub_angle_.publish(tilt_angle);
 
-    // Publishes new depth image with added downstairs
-    if (estimator_.getPublishDepthEnable())
-      pub_.publish(estimator_.new_depth_msg_);
+    // Publish debug image
+    if (estimator_.getPublishDepthEnable()) {
+      auto dbg_image = estimator_.getDbgImage();
+      if (dbg_image != nullptr) {
+        pub_.publish(dbg_image);
+      }
+    }
   }
   catch (std::runtime_error& e) {
     ROS_ERROR_THROTTLE(1.0, "Could not to run estimation procedure: %s", e.what());

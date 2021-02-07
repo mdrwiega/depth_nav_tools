@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <list>
 
 #include <ros/console.h>
 #include <ros/ros.h>
@@ -25,16 +26,11 @@
 
 #include <Eigen/Core>
 
-//#define     DEBUG 1
-//#define 		DATA_TO_FILE
-//#define 		DEBUG_CALIBRATION
-
 namespace depth_sensor_pose {
 
-class DepthSensorPose
-{
-public:
-  DepthSensorPose() = default;
+class DepthSensorPose {
+ public:
+  DepthSensorPose();
   ~DepthSensorPose() = default;
 
   DepthSensorPose (const DepthSensorPose &) = delete;
@@ -53,7 +49,7 @@ public:
      *
      */
   void estimateParams(const sensor_msgs::ImageConstPtr& depth_msg,
-                   const sensor_msgs::CameraInfoConstPtr& info_msg);
+                      const sensor_msgs::CameraInfoConstPtr& info_msg);
   /**
      * Sets the minimum and maximum range for the sensor_msgs::LaserScan.
      *
@@ -107,7 +103,7 @@ public:
    * @brief setUsedDepthHeight
    * @param height
    */
-  void setUsedDepthHeight(const unsigned int height);
+  void setUsedDepthHeight(const unsigned height);
   /**
    * @brief setDepthImgStepRow
    * @param step
@@ -122,19 +118,21 @@ public:
    * @brief setReconfParamsUpdated
    * @param updated
    */
-  void setReconfParamsUpdated (bool updated) {reconf_serv_params_updated_ = updated; }
+  void setReconfParamsUpdated(bool updated) {reconf_serv_params_updated_ = updated; }
 
-  void setRansacMaxIter (const unsigned int u) { ransacMaxIter_ = u; }
+  void setRansacMaxIter(const unsigned u) { ransacMaxIter_ = u; }
 
-  void setRansacDistanceThresh (const float u) { ransacDistanceThresh_ = u; }
+  void setRansacDistanceThresh(const float u) { ransacDistanceThresh_ = u; }
 
-  void setGroundMaxPoints (const unsigned int u) { max_ground_points_ = u; }
+  void setGroundMaxPoints(const unsigned u) { max_ground_points_ = u; }
 
-  float getSensorTiltAngle () const { return tilt_angle_est_; }
+  float getSensorTiltAngle() const { return tilt_angle_est_; }
 
-  float getSensorMountHeight () const { return mount_height_est_; }
+  float getSensorMountHeight() const { return mount_height_est_; }
 
-protected:
+  sensor_msgs::ImageConstPtr getDbgImage() const;
+
+ protected:
   /**
      * Computes euclidean length of a cv::Point3d (as a ray from origin)
      *
@@ -156,7 +154,7 @@ protected:
      * @return The angle between the two rays (in radians)
      *
      */
-  double angleBetweenRays( const cv::Point3d& ray1, const cv::Point3d& ray2) const;
+  double angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const;
   /**
   * Calculate vertical angle_min and angle_max by measuring angles between the top
   * ray, bottom ray, and optical center ray
@@ -165,10 +163,10 @@ protected:
   * @param min_angle The minimum vertical angle
   * @param max_angle The maximum vertical angle
   */
-  void fieldOfView( double & min, double & max, double x1, double y1,
-                    double xc, double yc, double x2, double y2 );
+  void fieldOfView(double & min, double & max, double x1, double y1,
+                  double xc, double yc, double x2, double y2 );
 
-  void calcDeltaAngleForImgRows( double vertical_fov);
+  void calcDeltaAngleForImgRows(double vertical_fov);
   /**
     * @brief Calculates distances to ground for every row of depth image
     *
@@ -183,36 +181,39 @@ protected:
 
   template<typename T>
   void getGroundPoints(const sensor_msgs::ImageConstPtr& depth_msg,
-                       pcl::PointCloud<pcl::PointXYZ>::Ptr& points);
+                       pcl::PointCloud<pcl::PointXYZ>::Ptr& points,
+                       std::list<std::pair<unsigned, unsigned>>& points_indices);
 
   void sensorPoseCalibration(const sensor_msgs::ImageConstPtr& depth_msg,
                              double & tilt, double & height);
 
-public:
-  sensor_msgs::Image new_depth_msg_;
+  sensor_msgs::ImagePtr prepareDbgImage(const sensor_msgs::ImageConstPtr& depth_msg,
+    const std::list<std::pair<unsigned, unsigned>>& ground_points_indices);
 
-private:
+ private:
   // ROS parameters configurated with config files or dynamic_reconfigure
-  float        range_min_{0};                ///< Stores the current minimum range to use
-  float        range_max_{0};                ///< Stores the current maximum range to use
-  float        mount_height_min_{0};         ///< Min height of sensor mount from ground
-  float        mount_height_max_{0};         ///< Max height of sensor mount from ground
-  float        tilt_angle_min_{0};           ///< Min angle of sensor tilt in degrees
-  float        tilt_angle_max_{0};           ///< Max angle of sensor tilt in degrees
+  float     range_min_{0};                ///< Stores the current minimum range to use
+  float     range_max_{0};                ///< Stores the current maximum range to use
+  float     mount_height_min_{0};         ///< Min height of sensor mount from ground
+  float     mount_height_max_{0};         ///< Max height of sensor mount from ground
+  float     tilt_angle_min_{0};           ///< Min angle of sensor tilt in degrees
+  float     tilt_angle_max_{0};           ///< Max angle of sensor tilt in degrees
 
-  bool         publish_depth_enable_{false}; ///< Determines if modified depth image should be published
-  bool         cam_model_update_{false};     ///< Determines if continuously cam model update is required
-  unsigned int used_depth_height_{0};        ///< Used depth height from img bottom (px)
-  unsigned int depth_image_step_row_{0};     ///< Rows step in depth processing (px).
-  unsigned int depth_image_step_col_{0};     ///< Columns step in depth processing (px).
+  bool      publish_depth_enable_{false}; ///< Determines if modified depth image should be published
+  bool      cam_model_update_{false};     ///< Determines if continuously cam model update is required
+  unsigned  used_depth_height_{0};        ///< Used depth height from img bottom (px)
+  unsigned  depth_image_step_row_{0};     ///< Rows step in depth processing (px).
+  unsigned  depth_image_step_col_{0};     ///< Columns step in depth processing (px).
 
-  unsigned int max_ground_points_{0};
-  unsigned int ransacMaxIter_{0};
-  float ransacDistanceThresh_{0};
-  float groundDistTolerance_{0};
+  unsigned  max_ground_points_{0};
+  unsigned  ransacMaxIter_{0};
+  float     ransacDistanceThresh_{0};
+  float     groundDistTolerance_{0};
 
   ///< Class for managing sensor_msgs/CameraInfo messages
   image_geometry::PinholeCameraModel camera_model_;
+
+  sensor_msgs::ImagePtr dbg_image_;
 
   float mount_height_est_{0};
   float tilt_angle_est_{0};
