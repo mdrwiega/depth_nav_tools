@@ -17,16 +17,16 @@ DepthSensorPoseNode::DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pn
 
   // Lazy subscription implementation
   // Tilt angle and height publisher
-  pub_height_ = n.advertise<std_msgs::Float64>("depth_sensor_pose/height", 2,
+  pub_height_ = n.advertise<std_msgs::Float64>("height", 2,
     std::bind(&DepthSensorPoseNode::connectCallback, this),
     std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 
-  pub_angle_ = n.advertise<std_msgs::Float64>("depth_sensor_pose/tilt_angle", 2,
+  pub_angle_ = n.advertise<std_msgs::Float64>("tilt_angle", 2,
     std::bind(&DepthSensorPoseNode::connectCallback, this),
     std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 
   // New depth image publisher
-  pub_ = it_.advertise("depth_sensor_pose/depth", 1,
+  pub_ = it_.advertise("depth_dbg", 1,
     std::bind(&DepthSensorPoseNode::connectCallback, this),
     std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 }
