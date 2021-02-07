@@ -4,10 +4,9 @@
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "depth_sensor_pose");
-  ros::NodeHandle n;
   ros::NodeHandle pnh("~");
 
-  depth_sensor_pose::DepthSensorPoseNode estimator(n, pnh);
+  depth_sensor_pose::DepthSensorPoseNode estimator(pnh);
 
   while (ros::ok()) {
     ros::Rate rate(estimator.getNodeRate());

@@ -7,8 +7,8 @@
         pkg     = "depth_sensor_pose"
         type    = "depth_sensor_pose"
         output  = "screen">
-    <remap from="image" to="/camera/depth/image_raw"/>
-    <remap from="camera_info" to="/camera/depth/camera_info"/>
+    <remap from="~image" to="/camera/depth/image_raw"/>
+    <remap from="~camera_info" to="/camera/depth/camera_info"/>
     <rosparam command="load" file="$(find depth_sensor_pose)/config/params.yaml"/>
 	</node>
 </launch>

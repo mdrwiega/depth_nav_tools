@@ -21,7 +21,7 @@ namespace depth_sensor_pose {
 class DepthSensorPoseNode
 {
 public:
-  DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pnh);
+  DepthSensorPoseNode(ros::NodeHandle& pnh);
 
   ~DepthSensorPoseNode();
 

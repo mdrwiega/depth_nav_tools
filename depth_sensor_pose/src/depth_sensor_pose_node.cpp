@@ -6,8 +6,8 @@ constexpr int MAX_NODE_RATE = 30;
 
 using namespace depth_sensor_pose;
 
-DepthSensorPoseNode::DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pnh)
-  : pnh_(pnh), it_(n), dyn_rec_srv_(pnh)
+DepthSensorPoseNode::DepthSensorPoseNode(ros::NodeHandle& pnh)
+  : pnh_(pnh), it_(pnh), dyn_rec_srv_(pnh)
 {
   std::lock_guard<std::mutex> lock(connection_mutex_);
 
@@ -26,7 +26,7 @@ DepthSensorPoseNode::DepthSensorPoseNode(ros::NodeHandle& n, ros::NodeHandle& pn
     std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 
   // New depth image publisher
-  pub_ = it_.advertise("dbg_depth", 1,
+  pub_ = it_.advertise("debug_image", 1,
     std::bind(&DepthSensorPoseNode::connectCallback, this),
     std::bind(&DepthSensorPoseNode::disconnectCallback, this));
 }
@@ -98,7 +98,7 @@ void DepthSensorPoseNode::reconfigureCallback(depth_sensor_pose::DepthSensorPose
   estimator_.setSensorTiltAngleMin(config.tilt_angle_min);
   estimator_.setSensorTiltAngleMax(config.tilt_angle_max);
 
-  estimator_.setPublishDepthEnable(config.publish_depth);
+  estimator_.setPublishDepthEnable(config.publish_dbg_info);
   estimator_.setCamModelUpdate(config.cam_model_update);
   estimator_.setUsedDepthHeight((unsigned int)config.used_depth_height);
   estimator_.setDepthImgStepRow(config.depth_img_step_row);

@@ -83,7 +83,7 @@ To start a node laserscan_kinect it can be used a following command
 ### Published topics
 - */height* (double) - the sensor height (the distance from the ground to the center of optical sensor)
 - */tilt_angle* (double) - the sensor tilt angle (in deg)
-- */dbg_depth* ([sensor_msgs/Image](http://docs.ros.org/en/api/sensor_msgs/html/msg/Image.html)) - the debug message to check which points are used in the ground plane estimation, enabled only if *publish_depth* parameter is set to *true*.
+- */debug_image* ([sensor_msgs/Image](http://docs.ros.org/en/api/sensor_msgs/html/msg/Image.html)) - the debug image to check which points are used in the ground plane estimation, enabled only if *publish_dbg_info* parameter is set to *true*.
 
 ### Parameters
 - *~rate* (dobule) - Data processing frequency  (Hz)
@@ -93,7 +93,6 @@ To start a node laserscan_kinect it can be used a following command
 - *~mount_height_max* (double) - maximum height of the depth sensor (m)
 - *~tilt_angle_min* (double) - minimum sensor tilt angle (degrees)
 - *~tilt_angle_max* (double) - maximum sensor tilt angle (degrees)
-- *~publish_depth* (bool) - determines if depth should be republished
 - *~cam_model_update* (bool) - determines if continuously camera model data update is neccessary. If it's true, then camera model (sensor_msgs/CameraInfo) from topic camera_info is updated with each new depth image message. Otherwise, camera model and parameters associated with it are updated only at the start of node or when node parameter are changed by dynamic_reconfigure
 - *~used_depth_height* (int) - used depth height from img bottom (px)
 - *~depth_img_step_row* (int) - rows step in depth processing (px)
@@ -103,6 +102,7 @@ To start a node laserscan_kinect it can be used a following command
 - *~ransac_max_iter* (int) - max number of RANSAC iterations
 - *~ransac_dist_thresh* (double) - RANSAC distance threshold
 
+- *~publish_dbg_info* (bool) - determines if debug image should be published
 
 ## Tests
 Currently unit tests are implemented only for the **laserscan_kinect** package.
