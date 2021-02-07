@@ -38,6 +38,11 @@ BibTeX:
 ```
 
 ## laserscan_kinect
+### The example of obstacles detection by the laserscan_kinect
+![Laserscan Kinect detection](http://wiki.ros.org/laserscan_kinect?action=AttachFile&do=get&target=laserscan_kinect_detection.jpg)
+
+The picture shows comparison between a laser scan based on the converted depth image from a Microsoft Kinect (blue points) and a laser scan from a scanner Hokuyo URG-04LX-UG01 (black points).
+
 ### Usage
 To start a node laserscan_kinect it can be used a following command
 `roslaunch laserscan_kinect laserscan.launch`
@@ -64,6 +69,7 @@ The file /config/params.yaml contains default parameters values.
 - *~sensor_tilt_angle* (double) - depth sensor tilt angle (in degrees). If the sensor is leaning towards the ground the tilt angle should be positive. Otherwise, the value of angle should be negative.
 - *~ground_margin* (double) - margin in ground removing feature (in meters).
 - *~tilt_compensation_en* (bool) - parameter determines if sensor tilt angle compensation is enabled.
+
 
 ## depth_sensor_pose
 ### Usage
@@ -97,11 +103,7 @@ To start a node laserscan_kinect it can be used a following command
 - *~ransac_max_iter* (int) - max number of RANSAC iterations
 - *~ransac_dist_thresh* (double) - RANSAC distance threshold
 
-### The example of obstacles detection by laserscan_kinect
-![Laserscan Kinect detection](http://wiki.ros.org/laserscan_kinect?action=AttachFile&do=get&target=laserscan_kinect_detection.jpg)
 
-The picture shows comparison between a laser scan based on the converted depth image from a Microsoft Kinect (blue points) and a laser scan from a scanner Hokuyo URG-04LX-UG01 (black points).
-
-### Tests
+## Tests
 Currently unit tests are implemented only for the **laserscan_kinect** package.
 - `catkin_make run_tests_laserscan_kinect`
