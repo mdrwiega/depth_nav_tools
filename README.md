@@ -18,11 +18,11 @@ The procedure of the ground plane detection based on the RANSAC algorithm and ra
 - **cliff_detector** -- This tool detects negative objects like cliffs or downstairs.
 It uses a known sensor pose to determine obstacles placed below the ground plane.
 
-- **nav_layer_from_points** -- It creates navigation costmap layer based on received points, for example from `cliff_detector`.
+- **nav_layer_from_points** -- It creates navigation costmap layer based on received points, for example from the *cliff_detector*.
 
 - **depth_nav_msgs** -- Custom messages for other depth nav related packages.
 
-## Documentation
+## Additional documentation
 A full documentation is available at the [ROS wiki](http://wiki.ros.org/depth_nav_tools) and in the publication "[A set of depth sensor processing ROS tools for wheeled mobile robot navigation"(PDF)](http://www.jamris.org/images/ISSUES/ISSUE-2017-02/48_56%20Drwiega.pdf) by M. Drwięga and J. Jakubiak (Journal of Automation, Mobile Robotics & Intelligent Systems, 2017).
 
 BibTeX:
@@ -36,6 +36,66 @@ BibTeX:
   note = {Software available at \url{http://github.com/mdrwiega/depth_nav_tools}}
 }
 ```
+
+## laserscan_kinect
+### Usage
+To start a node laserscan_kinect it can be used a following command
+`roslaunch laserscan_kinect laserscan.launch`
+
+### Subscribed topics
+- */image* ([sensor_msgs/Image](http://docs.ros.org/en/api/sensor_msgs/html/msg/Image.html)) - depth image which will be converted to laserscan.
+- */camera_info* ([sensor_msgs/CameraInfo](http://docs.ros.org/en/api/sensor_msgs/html/msg/CameraInfo.html)) - additional information about the depth sensor.
+
+### Published topics
+- */scan* ([sensor_msgs/LaserScan](http://docs.ros.org/en/api/sensor_msgs/html/msg/LaserScan.html)) - the converted depth image in form of laser scan. It contains information about the robot surrounding in a planar scan.
+
+### Parameters
+The file /config/params.yaml contains default parameters values.
+
+- *~output_frame_id* (str) - frame id for the output laserscan message.
+- *~range_min* (double) - minimum sensor range (in meters). Pixels in depth image with values smaller than this parameter are ignored in processing.
+- *~range_max* (double) - maximum sensor range (in meters). Pixels in depth image with values greater than this parameter are ignored in processing.
+- *~depth_img_row_step* (int) - Row step in depth image processing. Increasing this parameter we decrease computational complexity of algorithm but some of data are lost.
+- *~scan_height* (int) - height of used part of depth image (in pixels).
+- *~cam_model_update* (bool) - determines if continuously camera model data update is neccessary. If it's true, then camera model (sensor_msgs/CameraInfo) from topic camera_info is updated with each new depth image message. Otherwise, camera model and parameters associated with it are updated only at the start of node or when node parameter are changed by dynamic_reconfigure.
+
+- *~ground_remove_en* (bool) - determines if ground remove from output scan feature is enabled. The ground removing method to work needs a correctly values of parameters like a sensor_tilt_angle and sensor_mount_height.
+- *~sensor_mount_height* (double) - height of depth sensor optical center mount (in meters). Parameter is necessary for the ground removing feature. It should be measured from ground to the optical center of depth sensor.
+- *~sensor_tilt_angle* (double) - depth sensor tilt angle (in degrees). If the sensor is leaning towards the ground the tilt angle should be positive. Otherwise, the value of angle should be negative.
+- *~ground_margin* (double) - margin in ground removing feature (in meters).
+- *~tilt_compensation_en* (bool) - parameter determines if sensor tilt angle compensation is enabled.
+
+## depth_sensor_pose
+### Usage
+To start a node laserscan_kinect it can be used a following command
+`roslaunch depth_sensor_pose depth_sensor_pose.launch.launch`
+
+### Subscribed topics
+- */image* ([sensor_msgs/Image](http://docs.ros.org/en/api/sensor_msgs/html/msg/Image.html)) - depth image which will be converted to laserscan.
+- */camera_info* ([sensor_msgs/CameraInfo](http://docs.ros.org/en/api/sensor_msgs/html/msg/CameraInfo.html)) - additional information about the depth sensor.
+
+### Published topics
+- */height* (double) - the sensor height (the distance from the ground to the center of optical sensor)
+- */tilt_angle* (double) - the sensor tilt angle (in deg)
+- */dbg_depth* ([sensor_msgs/Image](http://docs.ros.org/en/api/sensor_msgs/html/msg/Image.html)) - the debug message to check which points are used in the ground plane estimation, enabled only if *publish_depth* parameter is set to *true*.
+
+### Parameters
+- *~rate* (dobule) - Data processing frequency  (Hz)
+- *~range_min* (double) - minimum sensor range (in meters). Pixels in depth image with values smaller than this parameter are ignored in processing.
+- *~range_max* (double) - maximum sensor range (in meters). Pixels in depth image with values greater than this parameter are ignored in processing.
+- *~mount_height_min* (double) - minimum height of the depth sensor (m)
+- *~mount_height_max* (double) - maximum height of the depth sensor (m)
+- *~tilt_angle_min* (double) - minimum sensor tilt angle (degrees)
+- *~tilt_angle_max* (double) - maximum sensor tilt angle (degrees)
+- *~publish_depth* (bool) - determines if depth should be republished
+- *~cam_model_update* (bool) - determines if continuously camera model data update is neccessary. If it's true, then camera model (sensor_msgs/CameraInfo) from topic camera_info is updated with each new depth image message. Otherwise, camera model and parameters associated with it are updated only at the start of node or when node parameter are changed by dynamic_reconfigure
+- *~used_depth_height* (int) - used depth height from img bottom (px)
+- *~depth_img_step_row* (int) - rows step in depth processing (px)
+- *~depth_img_step_col* (int) - columns step in depth processing (px)
+
+- *~ground_max_points* (int) - max ground points in selection stage
+- *~ransac_max_iter* (int) - max number of RANSAC iterations
+- *~ransac_dist_thresh* (double) - RANSAC distance threshold
 
 ### The example of obstacles detection by laserscan_kinect
 ![Laserscan Kinect detection](http://wiki.ros.org/laserscan_kinect?action=AttachFile&do=get&target=laserscan_kinect_detection.jpg)
