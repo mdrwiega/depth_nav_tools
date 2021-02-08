@@ -1,6 +1,6 @@
 <package format="2">
   <name>depth_sensor_pose</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>Depth sensor pose calibration package</description>
   <author>Michal Drwiega (http://www.mdrwiega.com)</author>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>

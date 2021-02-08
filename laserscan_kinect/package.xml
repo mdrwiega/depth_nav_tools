@@ -1,10 +1,10 @@
 <package format="2">
   <name>laserscan_kinect</name>
-  <version>1.0.1</version>
+  <version>1.1.0</version>
   <description>
-  Package laserscan_kinect converts depth image from Microsoft Kinect sensor
-  to 2D laser scanner format. Conversion algorithm allows to remove ground from depth image 
-  and compensate sensor mount tilt angle relative to the ground.
+  Package laserscan_kinect converts depth image from the depth sensor
+  to a 2D laser scanner format. The conversion algorithm allows to remove a ground from the depth image
+  and compensate the sensor mount tilt angle relative to the ground.
   </description>
   <author>Michal Drwiega (http://www.mdrwiega.com)</author>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
