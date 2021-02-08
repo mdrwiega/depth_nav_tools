@@ -9,6 +9,8 @@
 #include <sensor_msgs/image_encodings.h>
 #include <image_geometry/pinhole_camera_model.h>
 
+#include <laserscan_kinect/math.h>
+
 namespace laserscan_kinect {
 
 class LaserScanKinect {
@@ -101,23 +103,7 @@ class LaserScanKinect {
   sensor_msgs::ImageConstPtr getDbgImage() const;
 
  protected:
- /**
-  * @brief lengthOfVector calculate length of 3D vector
-  *
-  * @param ray
-  * @return
-  */
-  double lengthOfVector(const cv::Point3d& vec) const;
- /**
-  * @brief angleBetweenRays calculate angle between two rays in degrees
-  * @return
-  */
-  double angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const;
-  /**
-  * @brief fieldOfView calculate field of view (angle)
-  */
-  void calcFieldOfView( const cv::Point2d && left, const cv::Point2d && center,
-                        const cv::Point2d && right, double & min, double & max);
+
   /**
   * @brief calcGroundDistancesForImgRows calculate coefficients used in ground removing from scan
   *

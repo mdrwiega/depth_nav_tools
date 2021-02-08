@@ -22,15 +22,13 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
     using Point = cv::Point2d;
 
     // Calculate vertical field of view angles
-    calcFieldOfView( Point(cam_model_.cx(), 0),
-                      Point(cam_model_.cx(), cam_model_.cy()),
-                      Point(cam_model_.cx(), depth_msg->height - 1), min_angle, max_angle);
+    calcFieldOfView(cam_model_, Point(cam_model_.cx(), 0), Point(cam_model_.cx(), cam_model_.cy()),
+      Point(cam_model_.cx(), depth_msg->height - 1), min_angle, max_angle);
     double vertical_fov = max_angle - min_angle;
 
     // Calculate horizontal field of view angles
-    calcFieldOfView( Point(0,                    cam_model_.cy()),
-                      Point(cam_model_.cx(),      cam_model_.cy()),
-                      Point(depth_msg->width - 1, cam_model_.cy()), min_angle, max_angle);
+    calcFieldOfView(cam_model_, Point(0, cam_model_.cy()), Point(cam_model_.cx(), cam_model_.cy()),
+      Point(depth_msg->width - 1, cam_model_.cy()), min_angle, max_angle);
 
     if (ground_remove_enable_) {
       calcGroundDistancesForImgRows(vertical_fov);
@@ -170,33 +168,6 @@ void LaserScanKinect::setGroundMargin (const float margin) {
 
 sensor_msgs::ImageConstPtr LaserScanKinect::getDbgImage() const {
   return dbg_image_;
-}
-
-double LaserScanKinect::lengthOfVector(const cv::Point3d& vec) const {
-  return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
-}
-
-double LaserScanKinect::angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const {
-  double dot = ray1.x * ray2.x + ray1.y * ray2.y + ray1.z * ray2.z;
-
-  return acos(dot / (lengthOfVector(ray1) * lengthOfVector(ray2)));
-}
-
-void LaserScanKinect::calcFieldOfView(const cv::Point2d && left, const cv::Point2d && center,
-                                      const cv::Point2d && right, double & min, double & max) {
-  cv::Point2d rect_pixel_left = cam_model_.rectifyPoint(left);
-  cv::Point3d left_ray = cam_model_.projectPixelTo3dRay(rect_pixel_left);
-
-  cv::Point2d rect_pixel_right = cam_model_.rectifyPoint(right);
-  cv::Point3d right_ray = cam_model_.projectPixelTo3dRay(rect_pixel_right);
-
-  cv::Point2d rect_pixel_center = cam_model_.rectifyPoint(center);
-  cv::Point3d center_ray = cam_model_.projectPixelTo3dRay(rect_pixel_center);
-
-  min = -angleBetweenRays(center_ray, right_ray);
-  max = angleBetweenRays(left_ray, center_ray);
-
-  ROS_ASSERT(min < 0 && max > 0);
 }
 
 void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
