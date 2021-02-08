@@ -39,9 +39,13 @@ BibTeX:
 
 ## laserscan_kinect
 ### The example of obstacles detection by the laserscan_kinect
+The picture shows comparison between a laser scan based on the converted depth image from a Microsoft Kinect (blue points) and a laser scan from a scanner Hokuyo URG-04LX-UG01 (black points).
 ![Laserscan Kinect detection](http://wiki.ros.org/laserscan_kinect?action=AttachFile&do=get&target=laserscan_kinect_detection.jpg)
 
-The picture shows comparison between a laser scan based on the converted depth image from a Microsoft Kinect (blue points) and a laser scan from a scanner Hokuyo URG-04LX-UG01 (black points).
+### Tuning
+During the tuning process additional debug image can be used. It contains lines that represent the lower and upper bounds of the detection area. Also, closest points in each image column are visible.
+![laserscan_kinect_dbg](https://user-images.githubusercontent.com/8460945/107285398-62629f80-6a5f-11eb-8d7b-2c23f7247566.png)
+
 
 ### Usage
 To start a node laserscan_kinect it can be used a following command
