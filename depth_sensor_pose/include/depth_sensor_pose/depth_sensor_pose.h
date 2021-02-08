@@ -177,7 +177,7 @@ class DepthSensorPose {
     * Calculated values are placed in vector dist_to_ground_.
     */
   void calcGroundDistancesForImgRows( double mount_height, double tilt_angle,
-                                      std::vector<unsigned int>& distances);
+                                      std::vector<double>& distances);
 
   template<typename T>
   void getGroundPoints(const sensor_msgs::ImageConstPtr& depth_msg,
@@ -185,7 +185,7 @@ class DepthSensorPose {
                        std::list<std::pair<unsigned, unsigned>>& points_indices);
 
   void sensorPoseCalibration(const sensor_msgs::ImageConstPtr& depth_msg,
-                             double & tilt, double & height);
+                             double& tilt_angle, double& height);
 
   sensor_msgs::ImagePtr prepareDbgImage(const sensor_msgs::ImageConstPtr& depth_msg,
     const std::list<std::pair<unsigned, unsigned>>& ground_points_indices);
@@ -215,13 +215,13 @@ class DepthSensorPose {
 
   sensor_msgs::ImagePtr dbg_image_;
 
-  float mount_height_est_{0};
-  float tilt_angle_est_{0};
+  double mount_height_est_{0};
+  double tilt_angle_est_{0};
   bool 	reconf_serv_params_updated_{true};
 
   std::vector<double> delta_row_;
-  std::vector<unsigned int>dist_to_ground_max_;
-  std::vector<unsigned int>dist_to_ground_min_;
+  std::vector<double>dist_to_ground_max_;
+  std::vector<double>dist_to_ground_min_;
 };
 
 } // namespace depth_sensor_pose

@@ -1,15 +1,15 @@
-rate: 0.5
+rate: 1.0
 range_min: 0.5
 range_max: 8.0
 mount_height_min: 0.7
-mount_height_max: 1.1
+mount_height_max: 1.0
 tilt_angle_min: 30.0
 tilt_angle_max: 35.0
 
 cam_model_update: false
 used_depth_height: 400
-depth_img_step_row: 4
-depth_img_step_col: 4
+depth_img_step_row: 8
+depth_img_step_col: 8
 
 ground_max_points: 2500
 ransac_max_iter: 2000

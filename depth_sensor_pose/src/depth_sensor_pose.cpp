@@ -32,13 +32,7 @@ void DepthSensorPose::estimateParams(const sensor_msgs::ImageConstPtr& depth_msg
     reconf_serv_params_updated_ = false;
   }
 
-  double tilt = 0;
-  double height = 0;
-
-  sensorPoseCalibration(depth_msg, tilt, height);
-
-  tilt_angle_est_ = tilt;
-  mount_height_est_ = height;
+  sensorPoseCalibration(depth_msg, tilt_angle_est_, mount_height_est_);
 }
 
 void DepthSensorPose::setRangeLimits(const float rmin, const float rmax) {
@@ -174,7 +168,7 @@ void DepthSensorPose::calcDeltaAngleForImgRows(double vertical_fov) {
 }
 
 void DepthSensorPose::calcGroundDistancesForImgRows(double mount_height, double tilt_angle,
-                                                    std::vector<unsigned int>& distances) {
+                                                    std::vector<double>& distances) {
   const double alpha = tilt_angle * M_PI / 180.0; // Sensor tilt angle in radians
   const unsigned img_height = camera_model_.fullResolution().height;
 
@@ -209,13 +203,16 @@ void DepthSensorPose::getGroundPoints(const sensor_msgs::ImageConstPtr& depth_ms
 
   const T* data = reinterpret_cast<const T*>(&depth_msg->data[0]);
 
+  // Set how many rows (from bottom of image) are used in ground finding
+  unsigned processed_rows = depth_image_step_row_;
+  if (used_depth_height_ < img_height && used_depth_height_ > 0) {
+    processed_rows = img_height - used_depth_height_;
+  }
+
   // Loop over each row in image from bottom of img
-  for (unsigned j = 0; j < img_height; j += depth_image_step_row_) {
+  for (unsigned row = img_height - 1; row > processed_rows; row -= depth_image_step_row_) {
     // Loop over each column in image
     for (unsigned col = 0; col < img_width; col += depth_image_step_col_) {
-      unsigned row = img_height - 1 - j;
-      ROS_ASSERT(row < img_height);
-
       float d = 0.0;
 
       if (typeid(T) == typeid(uint16_t)) {
@@ -228,7 +225,7 @@ void DepthSensorPose::getGroundPoints(const sensor_msgs::ImageConstPtr& depth_ms
 
       #ifdef DEBUG_CALIBRATION
         std::ostringstream s;
-        if (col % (depth_image_step_col_ * 10) == 0 && j % (depth_image_step_row_ * 10) == 0) {
+        if (col % (depth_image_step_col_ * 20) == 0 && row % (depth_image_step_row_ * 10) == 0) {
           s << "GroundPoints point: (" << col << ", " << row << ") "
             << "d: " << d << " dist_to_ground min/max: (" << dist_to_ground_min_[row]
             << ", " << dist_to_ground_max_[row] << ")";
@@ -237,15 +234,15 @@ void DepthSensorPose::getGroundPoints(const sensor_msgs::ImageConstPtr& depth_ms
       #endif
 
       // Check if distance to point is greater than distance to ground plane
-      if (points->size() <= max_ground_points_ && d > range_min_ && d < range_max_ &&
+      if (points->size() < max_ground_points_ && d > range_min_ && d < range_max_ &&
           d > dist_to_ground_min_[row] && d < dist_to_ground_max_[row]) {
 
-        double z = d * 0.001f;
-        double x = z * (static_cast<float>(j) - camera_model_.cx()) / camera_model_.fx();
+        double z = d;
+        double x = z * (static_cast<float>(row) - camera_model_.cx()) / camera_model_.fx();
         double y = z * (static_cast<float>(col) - camera_model_.cy()) / camera_model_.fy();
 
         points->push_back(pcl::PointXYZ(x, y, z));
-        points_indices.push_back({j, col});
+        points_indices.push_back({row, col});
       }
     }
   }
@@ -253,7 +250,7 @@ void DepthSensorPose::getGroundPoints(const sensor_msgs::ImageConstPtr& depth_ms
 
 void DepthSensorPose::sensorPoseCalibration(
     const sensor_msgs::ImageConstPtr& depth_msg,
-    [[maybe_unused]] double& tilt, [[maybe_unused]] double& height) {
+    [[maybe_unused]] double& tilt_angle, [[maybe_unused]] double& height) {
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr ground_points(new pcl::PointCloud<pcl::PointXYZ>);
   std::list<std::pair<unsigned, unsigned>> points_indices;
@@ -279,10 +276,10 @@ void DepthSensorPose::sensorPoseCalibration(
   if (ground_points->size() >= 3) {
     // Estimate model parameters with RANSAC
     pcl::SampleConsensusModelPlane<pcl::PointXYZ>::Ptr
-        model (new pcl::SampleConsensusModelPlane<pcl::PointXYZ> (ground_points));
+        model(new pcl::SampleConsensusModelPlane<pcl::PointXYZ>(ground_points));
 
     pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model);
-    ransac.setDistanceThreshold (ransacDistanceThresh_);
+    ransac.setDistanceThreshold(ransacDistanceThresh_);
     ransac.setMaxIterations(ransacMaxIter_);
     ransac.computeModel();
 
@@ -294,31 +291,33 @@ void DepthSensorPose::sensorPoseCalibration(
     float c = ground_coeffs[2], d = ground_coeffs[3];
 
     // Dot product two vectors v=[a,b,c], w=[1,1,0]
-    tilt_angle_est_ =  std::acos ((b*b + a*a) / (std::sqrt(b*b + a*a) * std::sqrt(a*a+b*b+c*c))) * 180.0 / M_PI;
-    mount_height_est_ = std::abs(d) / std::sqrt(a*a+b*b+c*c);
+    tilt_angle =  std::acos ((b*b + a*a) / (std::sqrt(b*b + a*a) * std::sqrt(a*a+b*b+c*c))) * 180.0 / M_PI;
+    height = std::abs(d) / std::sqrt(a*a+b*b+c*c);
 
-    ROS_DEBUG("height = %.4f angle = %.4f", mount_height_est_, tilt_angle_est_);
+    ROS_DEBUG_THROTTLE(1, "Estimated height = %.2f angle = %.2f", height, tilt_angle);
 
-    #ifdef DEBUG_CALIBRATION
     std::ostringstream s;
-    s << " sensorLocationCalibration: points_size = " << ground_points->size()
+    s << " sensorLocationCalibration: ground_points size = " << ground_points->size()
       << "\n a = " << ground_coeffs[0]
       << "\n b = " << ground_coeffs[1]
       << "\n c = " << ground_coeffs[2]
       << "\n d = " << ground_coeffs[3]
-      << "\n t1 = " << acos((a+b)/(sqrt(2)*sqrt(a*a+b*b+c*c))) * 180.0 / M_PI
-      << "\n t2 = " << acos((a+c)/(sqrt(2)*sqrt(a*a+b*b+c*c))) * 180.0 / M_PI
-      << "\n t3 = " << acos((b+c)/(sqrt(2)*sqrt(a*a+b*b+c*c))) * 180.0 / M_PI
-      << "\n t4 = " << acos((a)/(sqrt(1)*sqrt(a*a+b*b+c*c))) * 180.0 / M_PI
-      << "\n t5 = " << acos((b)/(sqrt(1)*sqrt(a*a+b*b+c*c))) * 180.0 / M_PI
-      << "\n t6 = " << acos((c)/(sqrt(1)*sqrt(a*a+b*b+c*c))) * 180.0 / M_PI
       << "\n height = " << height
-      << "\n tilt = " << tilt;
-    ROS_INFO_STREAM_THROTTLE(1, s.str());
-    #endif
+      << "\n tilt = " << tilt_angle;
+    ROS_DEBUG_STREAM_THROTTLE(1, s.str());
   }
   else {
-    ROS_ERROR("Ground points not detected");
+    ROS_ERROR("Ground points not detected. Please check parameters");
+  }
+
+  if (height < mount_height_min_ || height > mount_height_max_) {
+    height = mount_height_min_;
+    ROS_WARN("Estimated height (%.2f) not in range. Lowest value from range used instead of estimated.", height);
+  }
+
+  if (tilt_angle < tilt_angle_min_ || tilt_angle > tilt_angle_max_) {
+    tilt_angle = tilt_angle_min_;
+    ROS_WARN("Estimated tilt angle (%.2f) not in range. Lowest value from range used instead of estimated.", tilt_angle);
   }
 }
 
@@ -366,12 +365,17 @@ sensor_msgs::ImagePtr DepthSensorPose::prepareDbgImage(const sensor_msgs::ImageC
     const auto row = pt.first;
     const auto col = pt.second;
     rgb_data[row * img->width + col][0] = 255;
+    rgb_data[row * img->width + col][1] = 0;
+    rgb_data[row * img->width + col][2] = 0;
   }
 
   // Add line which is the border of the ground detection area
   std::list<std::pair<unsigned, unsigned>> pts;
   for (unsigned i = 0; i < img->width; ++i) {
-    pts.push_back({img->height - used_depth_height_, i});
+    const auto line_row = img->height - used_depth_height_;
+    if (line_row >= 0 && line_row < img->height) {
+      pts.push_back({line_row, i});
+    }
   }
 
   for (const auto pt : pts) {

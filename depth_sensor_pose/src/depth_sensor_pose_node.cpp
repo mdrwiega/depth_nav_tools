@@ -59,6 +59,7 @@ void DepthSensorPoseNode::depthCallback(const sensor_msgs::ImageConstPtr& depth_
 
     pub_height_.publish(height);
     pub_angle_.publish(tilt_angle);
+    ROS_DEBUG("Publish sensor height (%.2f) and tilt angle (%.2f)", height.data, tilt_angle.data);
 
     // Publish debug image
     if (estimator_.getPublishDepthEnable()) {
