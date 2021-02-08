@@ -18,10 +18,9 @@ class LaserScanKinectNode {
   /**
    * @brief LaserScanKinectNode constructor.
    *
-   * @param n  Node handler.
    * @param pnh Private node handler.
    */
-  LaserScanKinectNode(ros::NodeHandle& n, ros::NodeHandle& pnh);
+  LaserScanKinectNode(ros::NodeHandle& pnh);
   ~LaserScanKinectNode();
 
 private:
@@ -41,18 +40,14 @@ private:
    *
    * It allow to subscribe depth image and publish laserscan message only when
    * is laserscan subscriber appear.
-   *
-   * @param pub Publisher which subscribers are checked.
    */
-  void connectCb(const ros::SingleSubscriberPublisher& pub);
+  void connectCb();
   /**
    * @brief disconnectCb is called when a subscriber stop subscribing
    *
    * When no one subscribers subscribe laserscan topic, then it stop to subscribe depth image.
-   *
-   * @param pub Publisher which subscribers are checked.
    */
-  void disconnectCb(const ros::SingleSubscriberPublisher& pub);
+  void disconnectCb();
   /**
    * @brief reconfigureCb is dynamic reconfigure callback
    *
@@ -71,6 +66,8 @@ private:
   image_transport::CameraSubscriber sub_;
   /// Publisher for output LaserScan messages
   ros::Publisher pub_;
+  /// Publisher for image_transport
+  image_transport::Publisher pub_dbg_img_;
   /// Dynamic reconfigure server
   dynamic_reconfigure::Server<laserscan_kinect::LaserscanKinectConfig> srv_;
   /// Object which convert depth image to laserscan and store all parameters

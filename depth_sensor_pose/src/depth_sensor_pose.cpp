@@ -4,10 +4,6 @@
 
 namespace depth_sensor_pose {
 
-DepthSensorPose::DepthSensorPose()
-  : dbg_image_(new sensor_msgs::Image()) {
-}
-
 void DepthSensorPose::estimateParams(const sensor_msgs::ImageConstPtr& depth_msg,
                                     const sensor_msgs::CameraInfoConstPtr& info_msg) {
   // Update data based on depth sensor parameters only if new params values

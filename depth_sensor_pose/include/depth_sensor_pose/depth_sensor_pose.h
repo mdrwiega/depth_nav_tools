@@ -30,7 +30,7 @@ namespace depth_sensor_pose {
 
 class DepthSensorPose {
  public:
-  DepthSensorPose();
+  DepthSensorPose() = default;
   ~DepthSensorPose() = default;
 
   DepthSensorPose (const DepthSensorPose &) = delete;
@@ -199,7 +199,7 @@ class DepthSensorPose {
   float     tilt_angle_min_{0};           ///< Min angle of sensor tilt in degrees
   float     tilt_angle_max_{0};           ///< Max angle of sensor tilt in degrees
 
-  bool      publish_depth_enable_{false}; ///< Determines if modified depth image should be published
+  bool      publish_depth_enable_{false}; ///< Determines if debug image should be published
   bool      cam_model_update_{false};     ///< Determines if continuously cam model update is required
   unsigned  used_depth_height_{0};        ///< Used depth height from img bottom (px)
   unsigned  depth_image_step_row_{0};     ///< Rows step in depth processing (px).

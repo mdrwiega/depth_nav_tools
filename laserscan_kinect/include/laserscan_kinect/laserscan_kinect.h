@@ -90,6 +90,15 @@ class LaserScanKinect {
   * @param enable
   */
   void setScanConfigurated (const bool configured) { is_scan_msg_configured_ = configured; }
+  /**
+   * @brief setPublishDbgImgEnable
+   * @param enable
+   */
+  void setPublishDbgImgEnable (const bool enable) { publish_dbg_image_ = enable; }
+
+  bool getPublishDbgImgEnable () const { return publish_dbg_image_; }
+
+  sensor_msgs::ImageConstPtr getDbgImage() const;
 
  protected:
  /**
@@ -138,6 +147,9 @@ class LaserScanKinect {
   template <typename T>
   void convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr& depth_msg);
 
+  sensor_msgs::ImagePtr prepareDbgImage(const sensor_msgs::ImageConstPtr& depth_msg,
+    const std::list<std::pair<int, int>>& min_dist_points_indices);
+
 private:
   // ROS parameters configurated with configuration file or dynamic_reconfigure
   std::string output_frame_id_;           ///< Output frame_id for laserscan message.
@@ -151,6 +163,7 @@ private:
   bool  ground_remove_enable_{false};     ///< Determines if remove ground from output scan
   float ground_margin_{0};                ///< Margin for floor remove feature (in meters)
   bool  tilt_compensation_enable_{false}; ///< Determines if tilt compensation feature is on
+  bool  publish_dbg_image_{false};        ///< Determines if debug image should be published
 
   /// Published scan message
   sensor_msgs::LaserScanPtr scan_msg_;
@@ -172,6 +185,9 @@ private:
 
   /// The vertical offset of image based on calibration data
   int image_vertical_offset_{0};
+
+  sensor_msgs::ImagePtr dbg_image_;
+  std::list<std::pair<int, int>> min_dist_points_indices_;
 };
 
 } // namespace laserscan_kinect

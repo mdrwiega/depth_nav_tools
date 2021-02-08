@@ -1,19 +1,25 @@
 #include <laserscan_kinect/laserscan_kinect_node.h>
 #include <boost/bind.hpp>
+#include <functional>
 
 namespace laserscan_kinect {
 
-LaserScanKinectNode::LaserScanKinectNode(ros::NodeHandle& n, ros::NodeHandle& pnh) :
-    pnh_(pnh), it_(n), srv_(pnh) {
+LaserScanKinectNode::LaserScanKinectNode(ros::NodeHandle& pnh) :
+    pnh_(pnh), it_(pnh), srv_(pnh) {
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
   // Dynamic reconfigure server callback
   srv_.setCallback(boost::bind(&LaserScanKinectNode::reconfigureCb, this, _1, _2));
 
   // Subscription to depth image topic
-  pub_ = n.advertise<sensor_msgs::LaserScan>("scan", 10,
-                                              boost::bind(&LaserScanKinectNode::connectCb, this, _1),
-                                              boost::bind(&LaserScanKinectNode::disconnectCb, this, _1));
+  pub_ = pnh.advertise<sensor_msgs::LaserScan>("scan", 10,
+                                              std::bind(&LaserScanKinectNode::connectCb, this),
+                                              std::bind(&LaserScanKinectNode::disconnectCb, this));
+
+  // New depth image publisher
+  pub_dbg_img_ = it_.advertise("debug_image", 1,
+    std::bind(&LaserScanKinectNode::connectCb, this),
+    std::bind(&LaserScanKinectNode::disconnectCb, this));
 }
 
 LaserScanKinectNode::~LaserScanKinectNode() {
@@ -25,26 +31,34 @@ void LaserScanKinectNode::depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
   try {
     sensor_msgs::LaserScanPtr laserscan_msg = converter_.getLaserScanMsg(depth_msg, info_msg);
     pub_.publish(laserscan_msg);
+
+    // Publish debug image
+    if (converter_.getPublishDbgImgEnable()) {
+      auto dbg_image = converter_.getDbgImage();
+      if (dbg_image != nullptr) {
+        pub_dbg_img_.publish(dbg_image);
+      }
+    }
   }
   catch (std::runtime_error& e) {
     ROS_ERROR_THROTTLE(1.0, "Could not convert depth image to laserscan: %s", e.what());
   }
 }
 
-void LaserScanKinectNode::connectCb([[maybe_unused]] const ros::SingleSubscriberPublisher& pub) {
+void LaserScanKinectNode::connectCb() {
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
-  if (sub_ == nullptr && pub_.getNumSubscribers() > 0) {
+  if (sub_ == nullptr && (pub_.getNumSubscribers() > 0 || pub_dbg_img_.getNumSubscribers() > 0)) {
     ROS_DEBUG("Connecting to depth topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
     sub_ = it_.subscribeCamera("image", 10, &LaserScanKinectNode::depthCb, this, hints);
   }
 }
 
-void LaserScanKinectNode::disconnectCb([[maybe_unused]] const ros::SingleSubscriberPublisher& pub) {
+void LaserScanKinectNode::disconnectCb() {
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
-  if (pub_.getNumSubscribers() == 0) {
+  if (pub_.getNumSubscribers() == 0 && pub_dbg_img_.getNumSubscribers() == 0) {
     ROS_DEBUG("Unsubscribing from depth topic.");
     sub_.shutdown();
   }
@@ -65,6 +79,7 @@ void LaserScanKinectNode::reconfigureCb(laserscan_kinect::LaserscanKinectConfig&
   converter_.setTiltCompensation(config.tilt_compensation_en);
 
   converter_.setScanConfigurated(false);
+  converter_.setPublishDbgImgEnable(config.publish_dbg_info);
 }
 
 } // namespace laserscan_kinect

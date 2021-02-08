@@ -22,3 +22,4 @@ ground_margin: 0.05
 # Sensor tilt angle compensation.
 tilt_compensation_en: true
 
+publish_dbg_info: true

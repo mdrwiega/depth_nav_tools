@@ -91,6 +91,13 @@ sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
     ss << "Depth image has unsupported encoding: " << depth_msg->encoding;
     throw std::runtime_error(ss.str());
   }
+
+  // Generate and publish debug image if necessary
+  if (publish_dbg_image_) {
+    dbg_image_ = prepareDbgImage(depth_msg, min_dist_points_indices_);
+  }
+  min_dist_points_indices_.clear();
+
   return scan_msg_;
 }
 
@@ -161,6 +168,10 @@ void LaserScanKinect::setGroundMargin (const float margin) {
   }
 }
 
+sensor_msgs::ImageConstPtr LaserScanKinect::getDbgImage() const {
+  return dbg_image_;
+}
+
 double LaserScanKinect::lengthOfVector(const cv::Point3d& vec) const {
   return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 }
@@ -201,8 +212,8 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
     // Angle between ray and optical center
     double delta = vertical_fov * (i - cam_model_.cy() - 0.5) / (static_cast<double>(img_height) - 1);
 
-    if ((delta + alpha) > 0) {
-      dist_to_ground_corrected[i] = sensor_mount_height_ * sin(M_PI / 2 - delta) / cos(M_PI / 2 - delta - alpha);
+    if ((delta - alpha) > 0) {
+      dist_to_ground_corrected[i] = sensor_mount_height_ * sin(M_PI / 2 - delta) / cos(M_PI / 2 - delta + alpha);
 
       ROS_ASSERT(dist_to_ground_corrected[i] > 0);
     }
@@ -212,6 +223,13 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
 
     dist_to_ground_corrected[i] -= ground_margin_;
   }
+
+  std::ostringstream s;
+  s << " calcGroundDistancesForImgRows:";
+  for (int i = 0; i < img_height; i+=10) {
+    s << i << " : " << dist_to_ground_corrected[i] << "  ";
+  }
+  ROS_INFO_STREAM_THROTTLE(1, s.str());
 }
 
 void LaserScanKinect::calcTiltCompensationFactorsForImgRows(double vertical_fov) {
@@ -243,6 +261,8 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPt
 template <typename T>
 float LaserScanKinect::getSmallestValueInColumn(const sensor_msgs::ImageConstPtr &depth_msg, int col) {
   float depth_min = std::numeric_limits<float>::max();
+  int depth_min_row = -1;
+
   const int row_size = depth_msg->width;
   const T* data = reinterpret_cast<const T*>(&depth_msg->data[0]);
 
@@ -273,15 +293,19 @@ float LaserScanKinect::getSmallestValueInColumn(const sensor_msgs::ImageConstPtr
       if (ground_remove_enable_) {
         if (depth_m < depth_min && depth_raw < dist_to_ground_corrected[i]) {
           depth_min = depth_m;
+          depth_min_row = i;
         }
       }
       else {
         if (depth_m < depth_min) {
           depth_min = depth_m;
+          depth_min_row = i;
         }
       }
     }
   }
+
+  min_dist_points_indices_.push_back({depth_min_row, col});
   return depth_min;
 }
 
@@ -326,6 +350,78 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr
   #else
     process_columns(0, static_cast<size_t>(depth_msg->width));
   #endif
+}
+
+sensor_msgs::ImagePtr LaserScanKinect::prepareDbgImage(const sensor_msgs::ImageConstPtr& depth_msg,
+  const std::list<std::pair<int, int>>& min_dist_points_indices) {
+
+  sensor_msgs::ImagePtr img(new sensor_msgs::Image);
+  img->header = depth_msg->header;
+  img->height = depth_msg->height;
+  img->width = depth_msg->width;
+  img->encoding = "rgb8"; // image_encodings::RGB8
+  img->is_bigendian = depth_msg->is_bigendian;
+  img->step = img->width * 3; // 3 bytes per pixel
+
+  img->data.resize(img->step * img->height);
+  uint8_t(*rgb_data)[3] = reinterpret_cast<uint8_t(*)[3]>(&img->data[0]);
+
+  // Convert depth image to RGB
+  if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
+    const uint16_t* depth_data = reinterpret_cast<const uint16_t*>(&depth_msg->data[0]);
+    for (unsigned i = 0; i < (img->width * img->height); ++i) {
+      // Scale value to cover full range of RGB 8
+      uint8_t val = 255 * (depth_data[i] - range_min_ * 1000)  / (range_max_ * 1000 - range_min_ * 1000);
+      rgb_data[i][0] = 255 - val;
+      rgb_data[i][1] = 255 - val;
+      rgb_data[i][2] = 255 - val;
+    }
+  }
+  else if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1) {
+    const float* depth_data = reinterpret_cast<const float*>(&depth_msg->data[0]);
+    for (unsigned i = 0; i < (img->width * img->height); ++i) {
+      // Scale value to cover full range of RGB 8
+      uint8_t val = 255 * (depth_data[i] - range_min_)  / (range_max_ - range_min_);
+      rgb_data[i][0] = 255 - val;
+      rgb_data[i][1] = 255 - val;
+      rgb_data[i][2] = 255 - val;
+    }
+  }
+  else {
+    throw std::runtime_error("Unsupported depth image encoding");
+  }
+
+  // Add ground points to debug image (as red points)
+  for (const auto pt : min_dist_points_indices) {
+    const auto row = pt.first;
+    const auto col = pt.second;
+    if (row >= 0 && col >= 0) {
+      rgb_data[row * img->width + col][0] = 255;
+      rgb_data[row * img->width + col][1] = 0;
+      rgb_data[row * img->width + col][2] = 0;
+    }
+  }
+
+  // Add line which is the border of the detection area
+  std::list<std::pair<unsigned, unsigned>> pts;
+  for (unsigned i = 0; i < img->width; ++i) {
+    const auto line1_row = cam_model_.cy() - scan_height_ / 2.0;
+    const auto line2_row = cam_model_.cy() + scan_height_ / 2.0;
+    if (line1_row >= 0 && line1_row < img->height && line2_row >= 0 && line2_row < img->height) {
+      pts.push_back({line1_row, i});
+      pts.push_back({line2_row, i});
+    }
+  }
+
+  for (const auto pt : pts) {
+    const auto row = pt.first;
+    const auto col = pt.second;
+    rgb_data[row * img->width + col][0] = 0;
+    rgb_data[row * img->width + col][1] = 255;
+    rgb_data[row * img->width + col][2] = 0;
+  }
+
+  return img;
 }
 
 } // namespace laserscan_kinect
