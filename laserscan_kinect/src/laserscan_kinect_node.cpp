@@ -80,6 +80,7 @@ void LaserScanKinectNode::reconfigureCb(laserscan_kinect::LaserscanKinectConfig&
 
   converter_.setScanConfigurated(false);
   converter_.setPublishDbgImgEnable(config.publish_dbg_info);
+  converter_.setThreadsNum(config.threads_num);
 }
 
 } // namespace laserscan_kinect

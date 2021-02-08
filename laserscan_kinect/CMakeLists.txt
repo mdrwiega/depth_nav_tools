@@ -10,8 +10,6 @@ add_compile_options(
   -Werror
 )
 
-add_definitions(-DMULTITHREAD=0) # Set to 1 for multithreading
-
 set(CATKIN_PACKAGE_DEPENDENCIES
   roscpp
   image_geometry

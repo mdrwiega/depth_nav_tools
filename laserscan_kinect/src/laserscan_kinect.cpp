@@ -166,6 +166,16 @@ void LaserScanKinect::setGroundMargin (const float margin) {
   }
 }
 
+void LaserScanKinect::setThreadsNum(unsigned threads_num) {
+  if (threads_num >= 1) {
+    threads_num_ = threads_num;
+  }
+  else {
+    threads_num_ = 1;
+    ROS_ERROR("Incorrect number of threads. Set default value: 1.");
+  }
+}
+
 sensor_msgs::ImageConstPtr LaserScanKinect::getDbgImage() const {
   return dbg_image_;
 }
@@ -276,12 +286,18 @@ float LaserScanKinect::getSmallestValueInColumn(const sensor_msgs::ImageConstPtr
     }
   }
 
-  min_dist_points_indices_.push_back({depth_min_row, col});
+  {
+    std::lock_guard<std::mutex> guard(points_indices_mutex_);
+    min_dist_points_indices_.push_back({depth_min_row, col});
+  }
   return depth_min;
 }
 
 template float LaserScanKinect::getSmallestValueInColumn<uint16_t>(const sensor_msgs::ImageConstPtr&, int);
 template float LaserScanKinect::getSmallestValueInColumn<float>(const sensor_msgs::ImageConstPtr&, int);
+
+#include <chrono>
+using namespace std::chrono;
 
 template <typename T>
 void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr &depth_msg) {
@@ -300,27 +316,42 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr
 
   // Processing for specified columns from [left, right]
   auto process_columns = [&](size_t left, size_t right) {
-    for (size_t i = left; i < right; ++i) {
-      float depth_min = getSmallestValueInColumn<T>(depth_msg, i);
-      scan_msg_->ranges[scan_msg_index_[i]] = convert_to_polar(i, depth_min);
+    for (size_t i = left; i <= right; ++i) {
+      const auto depth_min = getSmallestValueInColumn<T>(depth_msg, i);
+      const auto range_in_polar = convert_to_polar(i, depth_min);
+      {
+        std::lock_guard<std::mutex> guard(scan_msg_mutex_);
+        scan_msg_->ranges[scan_msg_index_[i]] = range_in_polar;
+      }
     }
   };
 
-  #if MULTITHREAD
-    const size_t thread_num = 2;
+  std::stringstream log;
+  auto start = high_resolution_clock::now();
+
+  if (threads_num_ <= 1) {
+    process_columns(0, static_cast<size_t>(depth_msg->width - 1));
+  }
+  else {
     std::vector<std::thread> workers;
-    size_t step = static_cast<size_t>(depth_msg->width) / thread_num;
     size_t left = 0;
-    for (size_t i = 0; i < thread_num - 1; ++i)
-    {
+    size_t step = static_cast<size_t>(depth_msg->width) / threads_num_;
+    log << "step: " << step;
+
+    for (size_t i = 0; i < threads_num_; ++i) {
         workers.push_back(std::thread(process_columns, left, left + step - 1));
-        left = step;
+        log << " w" << i << ": (" << left << ", " << left + step -1 << ") ";
+        left += step;
     }
-    process_columns(left, static_cast<size_t>(depth_msg->width));
-    for (auto &t : workers) { t.join(); }
-  #else
-    process_columns(0, static_cast<size_t>(depth_msg->width));
-  #endif
+
+    for (auto &t : workers) {
+      t.join();
+    }
+  }
+
+  auto end = (high_resolution_clock::now() - start);
+  log << " time[ms]: " << std::chrono::duration<double, std::milli>(end).count() << "\n";
+  ROS_DEBUG_STREAM(log.str());
 }
 
 sensor_msgs::ImagePtr LaserScanKinect::prepareDbgImage(const sensor_msgs::ImageConstPtr& depth_msg,

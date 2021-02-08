@@ -23,3 +23,4 @@ ground_margin: 0.05
 tilt_compensation_en: true
 
 publish_dbg_info: true
+threads_num: 1

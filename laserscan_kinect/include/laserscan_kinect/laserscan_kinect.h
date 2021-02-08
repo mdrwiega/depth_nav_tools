@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <mutex>
 
 #include <ros/console.h>
 #include <sensor_msgs/Image.h>
@@ -57,48 +58,50 @@ class LaserScanKinect {
    *
    * @param enable
    */
-  void setCamModelUpdate (const bool enable) { cam_model_update_ = enable; }
+  void setCamModelUpdate(const bool enable) { cam_model_update_ = enable; }
   /**
    * @brief setSensorMountHeight sets the height of sensor mount (in meters)
    */
-  void setSensorMountHeight (const float height);
+  void setSensorMountHeight(const float height);
   /**
    * @brief setSensorTiltAngle sets the sensor tilt angle (in degrees)
    *
    * @param angle
    */
-  void setSensorTiltAngle (const float angle);
+  void setSensorTiltAngle(const float angle);
   /**
    * @brief setGroundRemove enables or disables the feature which remove ground from scan
    *
    * @param enable
    */
-  void setGroundRemove (const bool enable) { ground_remove_enable_ = enable; }
+  void setGroundRemove(const bool enable) { ground_remove_enable_ = enable; }
   /**
    * @brief setGroundMargin sets the floor margin (in meters)
    *
    * @param margin
    */
-  void setGroundMargin (const float margin);
+  void setGroundMargin(const float margin);
   /**
    * @brief setTiltCompensation enables or disables the feature which compensates sensor tilt
    *
    * @param enable
    */
-  void setTiltCompensation (const bool enable) { tilt_compensation_enable_ = enable; }
+  void setTiltCompensation(const bool enable) { tilt_compensation_enable_ = enable; }
  /**
   * @brief setScanConfigurated sets the configuration status
   *
   * @param enable
   */
-  void setScanConfigurated (const bool configured) { is_scan_msg_configured_ = configured; }
+  void setScanConfigurated(const bool configured) { is_scan_msg_configured_ = configured; }
   /**
    * @brief setPublishDbgImgEnable
    * @param enable
    */
-  void setPublishDbgImgEnable (const bool enable) { publish_dbg_image_ = enable; }
+  void setPublishDbgImgEnable(const bool enable) { publish_dbg_image_ = enable; }
 
-  bool getPublishDbgImgEnable () const { return publish_dbg_image_; }
+  void setThreadsNum(unsigned threads_num);
+
+  bool getPublishDbgImgEnable() const { return publish_dbg_image_; }
 
   sensor_msgs::ImageConstPtr getDbgImage() const;
 
@@ -150,6 +153,7 @@ private:
   float ground_margin_{0};                ///< Margin for floor remove feature (in meters)
   bool  tilt_compensation_enable_{false}; ///< Determines if tilt compensation feature is on
   bool  publish_dbg_image_{false};        ///< Determines if debug image should be published
+  unsigned threads_num_{1};                ///< Determines threads number used in image processing
 
   /// Published scan message
   sensor_msgs::LaserScanPtr scan_msg_;
@@ -174,6 +178,9 @@ private:
 
   sensor_msgs::ImagePtr dbg_image_;
   std::list<std::pair<int, int>> min_dist_points_indices_;
+
+  std::mutex points_indices_mutex_;
+  std::mutex scan_msg_mutex_;
 };
 
 } // namespace laserscan_kinect
