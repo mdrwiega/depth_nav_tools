@@ -8,6 +8,7 @@ Changelog for package laserscan_kinect
 * Add parameter publish_dbg_info to enable/disable debug image publishing
 * Fixed bug in ground removal feature
 * Moved topics to the private namespace
+* Units unification
 
 1.0.1 (2016-11-11)
 ------------------
