@@ -27,9 +27,9 @@ ament_target_dependencies(LaserScanKinect
   "rclcpp"
   "rcutils"
   "std_msgs")
-  install(TARGETS LaserScanKinect
-  DESTINATION lib/${PROJECT_NAME}
-)
+# install(TARGETS LaserScanKinect
+  # DESTINATION lib/${PROJECT_NAME}
+# )
 
 add_library(LaserScanKinectNode src/laserscan_kinect_node.cpp)
 target_link_libraries(LaserScanKinectNode LaserScanKinect ${catkin_LIBRARIES})
@@ -37,9 +37,9 @@ ament_target_dependencies(LaserScanKinectNode
   "rclcpp"
   "rcutils"
   "std_msgs")
-  install(TARGETS LaserScanKinectNode
-  DESTINATION lib/${PROJECT_NAME}
-)
+# install(TARGETS LaserScanKinectNode
+  # DESTINATION lib/${PROJECT_NAME}
+# )
 
 add_executable(laserscan_kinect src/main.cpp)
 target_link_libraries(laserscan_kinect LaserScanKinectNode ${catkin_LIBRARIES})
@@ -47,9 +47,9 @@ ament_target_dependencies(laserscan_kinect
   "rclcpp"
   "rcutils"
   "std_msgs")
-  install(TARGETS laserscan_kinect
-  DESTINATION lib/${PROJECT_NAME}
-)
+# install(TARGETS laserscan_kinect
+#   DESTINATION lib/${PROJECT_NAME}
+# )
 
 # Unit tests
 if (BUILD_TESTING)

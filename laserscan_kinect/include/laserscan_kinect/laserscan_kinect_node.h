@@ -32,8 +32,8 @@ private:
    * @param depth_msg Depth image provided by image_transport.
    * @param info_msg CameraInfo provided by image_transport.
    */
-  void depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
-               const sensor_msgs::CameraInfoConstPtr& info_msg);
+  void depthCb(const sensor_msgs::msg::Image::SharedPtr& depth_msg,
+               const sensor_msgs::msg::CameraInfo::SharedPtrr& info_msg);
   /**
    * @brief connectCb is callback which is called when new subscriber connected.
    *
@@ -57,8 +57,6 @@ private:
    */
   void reconfigureCb(laserscan_kinect::LaserscanKinectConfig &config, uint32_t level);
 
-  /// Private node handler used to generate the transport hints in the connectCb.
-  ros::NodeHandle pnh_;
   /// Subscribes to synchronized Image CameraInfo pairs.
   image_transport::ImageTransport it_;
   /// Subscriber for image_transport
