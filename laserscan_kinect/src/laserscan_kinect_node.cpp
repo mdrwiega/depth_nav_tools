@@ -41,7 +41,7 @@ void LaserScanKinectNode::depthCb(const sensor_msgs::ImageConstPtr& depth_msg,
     }
   }
   catch (std::runtime_error& e) {
-    ROS_ERROR_THROTTLE(1.0, "Could not convert depth image to laserscan: %s", e.what());
+    RCLCPP_ERROR_THROTTLE(1.0, "Could not convert depth image to laserscan: %s", e.what());
   }
 }
 
@@ -49,7 +49,7 @@ void LaserScanKinectNode::connectCb() {
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
   if (sub_ == nullptr && (pub_.getNumSubscribers() > 0 || pub_dbg_img_.getNumSubscribers() > 0)) {
-    ROS_DEBUG("Connecting to depth topic.");
+    RCLCPP_DEBUG("Connecting to depth topic.");
     image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
     sub_ = it_.subscribeCamera("image", 10, &LaserScanKinectNode::depthCb, this, hints);
   }
@@ -59,7 +59,7 @@ void LaserScanKinectNode::disconnectCb() {
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
   if (pub_.getNumSubscribers() == 0 && pub_dbg_img_.getNumSubscribers() == 0) {
-    ROS_DEBUG("Unsubscribing from depth topic.");
+    RCLCPP_DEBUG("Unsubscribing from depth topic.");
     sub_.shutdown();
   }
 }

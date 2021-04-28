@@ -1,51 +1,63 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(laserscan_kinect)
 
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_options(
-  -Wall
-  -O3
-  -Werror
-)
+add_compile_options(-Wall -O3 -Werror)
 
-set(CATKIN_PACKAGE_DEPENDENCIES
-  roscpp
-  image_geometry
-  image_transport
-  nodelet
-  dynamic_reconfigure
-  sensor_msgs
-)
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(image_geometry REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
-find_package(catkin REQUIRED COMPONENTS ${CATKIN_PACKAGE_DEPENDENCIES})
+ament_export_dependencies(image_geometry image_transport sensor_msgs)
+ament_export_include_directories(include)
+ament_export_libraries(LaserScanKinect LaserScanKinectNode)
 
-# Dynamic reconfigure config
-generate_dynamic_reconfigure_options( cfg/LaserscanKinect.cfg )
+ament_package()
 
-catkin_package(
-  INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
-  LIBRARIES LaserScanKinect LaserScanKinectNode
-  CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
-)
-
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include)
 
 add_library(LaserScanKinect src/laserscan_kinect.cpp)
-add_dependencies(LaserScanKinect ${PROJECT_NAME}_gencfg)
 target_link_libraries(LaserScanKinect ${catkin_LIBRARIES})
+ament_target_dependencies(LaserScanKinect
+  "rclcpp"
+  "rcutils"
+  "std_msgs")
+  install(TARGETS LaserScanKinect
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 add_library(LaserScanKinectNode src/laserscan_kinect_node.cpp)
-add_dependencies(LaserScanKinectNode ${PROJECT_NAME}_gencfg)
 target_link_libraries(LaserScanKinectNode LaserScanKinect ${catkin_LIBRARIES})
+ament_target_dependencies(LaserScanKinectNode
+  "rclcpp"
+  "rcutils"
+  "std_msgs")
+  install(TARGETS LaserScanKinectNode
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 add_executable(laserscan_kinect src/main.cpp)
 target_link_libraries(laserscan_kinect LaserScanKinectNode ${catkin_LIBRARIES})
+ament_target_dependencies(laserscan_kinect
+  "rclcpp"
+  "rcutils"
+  "std_msgs")
+  install(TARGETS laserscan_kinect
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # Unit tests
-if (CATKIN_ENABLE_TESTING)
-    catkin_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
+if (BUILD_TESTING)
+    find_package(ament_cmake_gtest REQUIRED)
+
+    ament_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
+    ament_target_dependencies(laserscanKinectTest
+      "rclcpp"
+      "std_msgs")
     target_link_libraries(laserscanKinectTest LaserScanKinect)
 endif()
-

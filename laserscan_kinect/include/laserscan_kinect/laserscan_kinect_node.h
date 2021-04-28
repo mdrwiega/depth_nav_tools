@@ -2,18 +2,17 @@
 
 #include <mutex>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/LaserScan.h>
-#include <dynamic_reconfigure/server.h>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 
-#include <laserscan_kinect/LaserscanKinectConfig.h>
+// #include <laserscan_kinect/LaserscanKinectConfig.h>
 #include <laserscan_kinect/laserscan_kinect.h>
 
 namespace laserscan_kinect {
 
-class LaserScanKinectNode {
+class LaserScanKinectNode : public rclcpp::Node {
  public:
   /**
    * @brief LaserScanKinectNode constructor.
@@ -69,7 +68,7 @@ private:
   /// Publisher for image_transport
   image_transport::Publisher pub_dbg_img_;
   /// Dynamic reconfigure server
-  dynamic_reconfigure::Server<laserscan_kinect::LaserscanKinectConfig> srv_;
+  // dynamic_reconfigure::Server<laserscan_kinect::LaserscanKinectConfig> srv_;
   /// Object which convert depth image to laserscan and store all parameters
   laserscan_kinect::LaserScanKinect converter_;
   /// Prevents the connectCb and disconnectCb from being called until everything is initialized.

@@ -1,11 +1,13 @@
 #include <laserscan_kinect/laserscan_kinect_node.h>
 
+#include <rclcpp/rclcpp.hpp>
+
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "laserscan_kinect");
-  ros::NodeHandle pnh("~");
+  rclcpp::init(argc, argv);
+  auto node = rclcpp::Node::make_shared("laserscan_kinect");
 
-  laserscan_kinect::LaserScanKinectNode converter(pnh);
+  laserscan_kinect::LaserScanKinectNode converter(node);
 
   ros::spin();
 

@@ -4,10 +4,10 @@
 #include <string>
 #include <mutex>
 
-#include <ros/console.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/LaserScan.h>
-#include <sensor_msgs/image_encodings.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.h>
+#include <sensor_msgs/msg/laser_scan.h>
+#include <sensor_msgs/image_encodings.hpp>
 #include <image_geometry/pinhole_camera_model.h>
 
 #include <laserscan_kinect/math.h>
