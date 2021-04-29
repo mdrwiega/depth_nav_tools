@@ -16,7 +16,7 @@ namespace laserscan_kinect {
 
 class LaserScanKinect {
  public:
-  LaserScanKinect(): scan_msg_(new sensor_msgs::LaserScan()) { }
+  LaserScanKinect(): scan_msg_(new sensor_msgs::msg::LaserScan()) { }
   ~LaserScanKinect() = default;
 
   /**
@@ -27,8 +27,9 @@ class LaserScanKinect {
    *
    * @return Return pointer to LaserScan message.
    */
-  sensor_msgs::LaserScanPtr getLaserScanMsg(const sensor_msgs::ImageConstPtr& depth_msg,
-                                            const sensor_msgs::CameraInfoConstPtr& info_msg);
+  sensor_msgs::msg::LaserScan::SharedPtr getLaserScanMsg(
+    const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
+    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info_msg);
   /**
    * @brief setOutputFrame sets the frame to output laser scan
    * @param frame
@@ -103,7 +104,7 @@ class LaserScanKinect {
 
   bool getPublishDbgImgEnable() const { return publish_dbg_image_; }
 
-  sensor_msgs::ImageConstPtr getDbgImage() const;
+  sensor_msgs::msg::Image::SharedPtr getDbgImage() const;
 
  protected:
 
@@ -124,19 +125,19 @@ class LaserScanKinect {
   *
   * @param depth_msg
   */
-  void calcScanMsgIndexForImgCols(const sensor_msgs::ImageConstPtr& depth_msg);
+  void calcScanMsgIndexForImgCols(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg);
   /**
   * @brief getSmallestValueInColumn finds smallest values in depth image columns
     */
   template <typename T>
-  float getSmallestValueInColumn(const sensor_msgs::ImageConstPtr &depth_msg, int col);
+  float getSmallestValueInColumn(const sensor_msgs::msg::Image::ConstSharedPtr &depth_msg, int col);
   /**
   * @brief convertDepthToPolarCoords converts depth map to 2D
   */
   template <typename T>
-  void convertDepthToPolarCoords(const sensor_msgs::ImageConstPtr& depth_msg);
+  void convertDepthToPolarCoords(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg);
 
-  sensor_msgs::ImagePtr prepareDbgImage(const sensor_msgs::ImageConstPtr& depth_msg,
+  sensor_msgs::msg::Image::SharedPtr prepareDbgImage(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
     const std::list<std::pair<int, int>>& min_dist_points_indices);
 
 private:
@@ -156,7 +157,7 @@ private:
   unsigned threads_num_{1};                ///< Determines threads number used in image processing
 
   /// Published scan message
-  sensor_msgs::LaserScanPtr scan_msg_;
+  sensor_msgs::msg::LaserScan::SharedPtr scan_msg_;
 
   /// Class for managing CameraInfo messages
   image_geometry::PinholeCameraModel cam_model_;
@@ -176,7 +177,7 @@ private:
   /// The vertical offset of image based on calibration data
   int image_vertical_offset_{0};
 
-  sensor_msgs::ImagePtr dbg_image_;
+  sensor_msgs::msg::Image::SharedPtr dbg_image_;
   std::list<std::pair<int, int>> min_dist_points_indices_;
 
   std::mutex points_indices_mutex_;

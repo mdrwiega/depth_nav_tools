@@ -12,6 +12,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(image_geometry REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 ament_export_dependencies(image_geometry image_transport sensor_msgs)
 ament_export_include_directories(include)
@@ -26,7 +27,8 @@ target_link_libraries(LaserScanKinect ${catkin_LIBRARIES})
 ament_target_dependencies(LaserScanKinect
   "rclcpp"
   "rcutils"
-  "std_msgs")
+  "std_msgs"
+  "cv_bridge")
 # install(TARGETS LaserScanKinect
   # DESTINATION lib/${PROJECT_NAME}
 # )
@@ -36,7 +38,9 @@ target_link_libraries(LaserScanKinectNode LaserScanKinect ${catkin_LIBRARIES})
 ament_target_dependencies(LaserScanKinectNode
   "rclcpp"
   "rcutils"
-  "std_msgs")
+  "std_msgs"
+  "sensor_msgs"
+  "image_geometry")
 # install(TARGETS LaserScanKinectNode
   # DESTINATION lib/${PROJECT_NAME}
 # )
@@ -52,12 +56,12 @@ ament_target_dependencies(laserscan_kinect
 # )
 
 # Unit tests
-if (BUILD_TESTING)
-    find_package(ament_cmake_gtest REQUIRED)
+# if (BUILD_TESTING)
+#     find_package(ament_cmake_gtest REQUIRED)
 
-    ament_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
-    ament_target_dependencies(laserscanKinectTest
-      "rclcpp"
-      "std_msgs")
-    target_link_libraries(laserscanKinectTest LaserScanKinect)
-endif()
+#     ament_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
+#     ament_target_dependencies(laserscanKinectTest
+#       "rclcpp"
+#       "std_msgs")
+#     target_link_libraries(laserscanKinectTest LaserScanKinect)
+# endif()

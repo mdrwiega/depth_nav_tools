@@ -19,7 +19,7 @@ class LaserScanKinectNode : public rclcpp::Node {
    *
    * @param pnh Private node handler.
    */
-  LaserScanKinectNode(ros::NodeHandle& pnh);
+  LaserScanKinectNode();
   ~LaserScanKinectNode();
 
 private:
@@ -32,8 +32,8 @@ private:
    * @param depth_msg Depth image provided by image_transport.
    * @param info_msg CameraInfo provided by image_transport.
    */
-  void depthCb(const sensor_msgs::msg::Image::SharedPtr& depth_msg,
-               const sensor_msgs::msg::CameraInfo::SharedPtrr& info_msg);
+  void depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
+               const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info_msg);
   /**
    * @brief connectCb is callback which is called when new subscriber connected.
    *
@@ -55,14 +55,14 @@ private:
    * @param config Dynamic Reconfigure object.
    * @param level Dynamic Reconfigure level.
    */
-  void reconfigureCb(laserscan_kinect::LaserscanKinectConfig &config, uint32_t level);
+  // void reconfigureCb(laserscan_kinect::LaserscanKinectConfig &config, uint32_t level);
 
   /// Subscribes to synchronized Image CameraInfo pairs.
-  image_transport::ImageTransport it_;
+  // image_transport::ImageTransport it_;
   /// Subscriber for image_transport
-  image_transport::CameraSubscriber sub_;
+  // image_transport::CameraSubscriber sub_;
   /// Publisher for output LaserScan messages
-  ros::Publisher pub_;
+  rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr publisher_;
   /// Publisher for image_transport
   image_transport::Publisher pub_dbg_img_;
   /// Dynamic reconfigure server

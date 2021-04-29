@@ -11,9 +11,9 @@
 
 namespace laserscan_kinect {
 
-sensor_msgs::LaserScanPtr LaserScanKinect::getLaserScanMsg(
-        const sensor_msgs::msg::Image::SharedPtr & depth_msg,
-        const sensor_msgs::CameraInfoConstPtr & info_msg) {
+sensor_msgs::msg::LaserScan::SharedPtr LaserScanKinect::getLaserScanMsg(
+        const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg,
+        const sensor_msgs::msg::CameraInfo::ConstSharedPtr & info_msg) {
   // Configure message if necessary
   if (!is_scan_msg_configured_ || cam_model_update_) {
     cam_model_.fromCameraInfo(info_msg);
@@ -217,19 +217,15 @@ void LaserScanKinect::calcTiltCompensationFactorsForImgRows(double vertical_fov)
   const double alpha = sensor_tilt_angle_ * M_PI / 180.0;
   const int img_height = cam_model_.fullResolution().height;
 
-  static_assert(img_height >= 0);
-
   tilt_compensation_factor_.resize(img_height);
 
   for(int i = 0; i < img_height; ++i) { // Processing all rows
     double delta = vertical_fov * (i - cam_model_.cy() - 0.5) / ((double)img_height - 1);
-
     tilt_compensation_factor_[i] = sin(M_PI/2 - delta - alpha) / sin(M_PI/2 - delta);
-    // static_assert(tilt_compensation_factor_[i] > 0 && tilt_compensation_factor_[i] < 10);
   }
 }
 
-void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::msg::Image::SharedPtr& depth_msg)
+void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg)
 {
   scan_msg_index_.resize((int)depth_msg->width);
 
@@ -240,7 +236,7 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(const sensor_msgs::msg::Image::
 }
 
 template <typename T>
-float LaserScanKinect::getSmallestValueInColumn(const sensor_msgs::msg::Image::SharedPtr &depth_msg, int col) {
+float LaserScanKinect::getSmallestValueInColumn(const sensor_msgs::msg::Image::ConstSharedPtr &depth_msg, int col) {
   float depth_min = std::numeric_limits<float>::max();
   int depth_min_row = -1;
 
@@ -293,14 +289,14 @@ float LaserScanKinect::getSmallestValueInColumn(const sensor_msgs::msg::Image::S
   return depth_min;
 }
 
-template float LaserScanKinect::getSmallestValueInColumn<uint16_t>(const sensor_msgs::msg::Image::SharedPtr&, int);
-template float LaserScanKinect::getSmallestValueInColumn<float>(const sensor_msgs::msg::Image::SharedPtr&, int);
+template float LaserScanKinect::getSmallestValueInColumn<uint16_t>(const sensor_msgs::msg::Image::ConstSharedPtr&, int);
+template float LaserScanKinect::getSmallestValueInColumn<float>(const sensor_msgs::msg::Image::ConstSharedPtr&, int);
 
 #include <chrono>
 using namespace std::chrono;
 
 template <typename T>
-void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::msg::Image::SharedPtr &depth_msg) {
+void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::msg::Image::ConstSharedPtr &depth_msg) {
 
   // Converts depth from specific column to polar coordinates
   auto convert_to_polar = [&](size_t col, float depth) -> float {
@@ -354,10 +350,11 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::msg::Image::S
   // RCLCPP_DEBUG_STREAM(log.str());
 }
 
-sensor_msgs::msg::Image::SharedPtr LaserScanKinect::prepareDbgImage(const sensor_msgs::msg::Image::SharedPtr& depth_msg,
+sensor_msgs::msg::Image::SharedPtr LaserScanKinect::prepareDbgImage(
+  const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
   const std::list<std::pair<int, int>>& min_dist_points_indices) {
 
-  sensor_msgs::ImagePtr img(new sensor_msgs::Image);
+  sensor_msgs::msg::Image::SharedPtr img(new sensor_msgs::msg::Image);
   img->header = depth_msg->header;
   img->height = depth_msg->height;
   img->width = depth_msg->width;

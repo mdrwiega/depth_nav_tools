@@ -1,6 +1,6 @@
 <package format="2">
   <name>depth_nav_tools</name>
-  <version>2.0.0</version>
+  <version>1.1.0</version>
   <description>The depth_nav_tools metapackage.</description>
   <author>Michal Drwiega (http://www.mdrwiega.com)</author>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
