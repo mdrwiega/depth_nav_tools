@@ -55,6 +55,12 @@ ament_target_dependencies(laserscan_kinect
 #   DESTINATION lib/${PROJECT_NAME}
 # )
 
+# Install launch files.
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
+
 # Unit tests
 # if (BUILD_TESTING)
 #     find_package(ament_cmake_gtest REQUIRED)
