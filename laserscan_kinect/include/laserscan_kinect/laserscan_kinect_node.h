@@ -7,7 +7,7 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 
-// #include <laserscan_kinect/LaserscanKinectConfig.h>
+#include "rcl_interfaces/msg/set_parameters_result.hpp"
 #include <laserscan_kinect/laserscan_kinect.h>
 
 namespace laserscan_kinect {
@@ -23,6 +23,7 @@ class LaserScanKinectNode : public rclcpp::Node {
   ~LaserScanKinectNode();
 
 private:
+
   /**
    * @brief depthCb is callback which is called when new depth image appear
    *
@@ -48,14 +49,12 @@ private:
    */
   void disconnectCb();
   /**
-   * @brief reconfigureCb is dynamic reconfigure callback
+   * @brief parametersCallback is dynamic reconfigure callback
    *
-   * Callback is necessary to set ROS parameters with dynamic reconfigure server.
-   *
-   * @param config Dynamic Reconfigure object.
-   * @param level Dynamic Reconfigure level.
+   * Callback is necessary to set ROS parameters dynamically.
    */
-  // void reconfigureCb(laserscan_kinect::LaserscanKinectConfig &config, uint32_t level);
+  rcl_interfaces::msg::SetParametersResult parametersCallback(
+      const std::vector<rclcpp::Parameter> &parameters);
 
   /// Subscribes to synchronized Image CameraInfo pairs.
   // image_transport::ImageTransport it_;

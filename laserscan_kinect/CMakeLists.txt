@@ -50,15 +50,24 @@ target_link_libraries(laserscan_kinect LaserScanKinectNode ${catkin_LIBRARIES})
 ament_target_dependencies(laserscan_kinect
   "rclcpp"
   "rcutils"
-  "std_msgs")
-# install(TARGETS laserscan_kinect
-#   DESTINATION lib/${PROJECT_NAME}
-# )
+  "std_msgs"
+)
+
+install(TARGETS
+  laserscan_kinect
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # Install launch files.
 install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/
+)
+
+# Install config
+install(DIRECTORY
+  config
+  DESTINATION share/${PROJECT_NAME}
 )
 
 # Unit tests

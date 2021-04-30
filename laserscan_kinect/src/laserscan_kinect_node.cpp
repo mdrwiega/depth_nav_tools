@@ -9,9 +9,14 @@ LaserScanKinectNode::LaserScanKinectNode()
   // , it_(this)
     // pnh_(pnh), it_(pnh), srv_(pnh)
 {
+  RCLCPP_ERROR(this->get_logger(), "Initialize laserscan_kinect node");
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
+
+
   // Dynamic reconfigure server callback
+  this->set_on_parameters_set_callback(
+      std::bind(&LaserScanKinectNode::parametersCallback, this, std::placeholders::_1));
   // srv_.setCallback(boost::bind(&LaserScanKinectNode::reconfigureCb, this, _1, _2));
 
   // Subscription to depth image topic
@@ -66,6 +71,26 @@ void LaserScanKinectNode::disconnectCb() {
   //   RCLCPP_DEBUG("Unsubscribing from depth topic.");
   //   // sub_.shutdown();
   // }
+}
+
+rcl_interfaces::msg::SetParametersResult LaserScanKinectNode::parametersCallback(
+    const std::vector<rclcpp::Parameter> &parameters)
+{
+  RCLCPP_ERROR(this->get_logger(), "Parameters callback");
+
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  result.reason = "success";
+  for (const auto &parameter : parameters)
+  {
+      if (parameter.get_name() == "my_str" &&
+          parameter.get_type() == rclcpp::ParameterType::PARAMETER_STRING)
+      {
+          auto my_str_ = parameter.as_string();
+          RCLCPP_INFO(this->get_logger(), "Parameter 'my_str' changed: %s", my_str_.c_str());
+      }
+  }
+  return result;
 }
 
 // void LaserScanKinectNode::reconfigureCb(laserscan_kinect::LaserscanKinectConfig& config,
