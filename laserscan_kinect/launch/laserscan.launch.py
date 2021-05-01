@@ -20,7 +20,8 @@ def generate_launch_description():
     remappings=[
       ('/image', '/camera/depth/image_raw'),
       ('/camera_info', '/camera/depth/camera_info'),
-    ]
+    ],
+    arguments=[('--ros-args --log-level debug')]
   )
   ld.add_action(laserscan_node)
 

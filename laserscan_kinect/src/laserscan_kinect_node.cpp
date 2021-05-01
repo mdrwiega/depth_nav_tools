@@ -12,12 +12,23 @@ LaserScanKinectNode::LaserScanKinectNode()
   RCLCPP_ERROR(this->get_logger(), "Initialize laserscan_kinect node");
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
-
-
-  // Dynamic reconfigure server callback
-  this->set_on_parameters_set_callback(
+  set_on_parameters_set_callback(
       std::bind(&LaserScanKinectNode::parametersCallback, this, std::placeholders::_1));
-  // srv_.setCallback(boost::bind(&LaserScanKinectNode::reconfigureCb, this, _1, _2));
+
+  // Declare all node parameters
+  declare_parameter("output_frame_id", "camera_depth_frame");
+  declare_parameter("range_min", 0.5);
+  declare_parameter("range_max", 5.0);
+  declare_parameter("scan_height", 440);
+  declare_parameter("depth_img_row_step", 2);
+  declare_parameter("cam_model_update", false);
+  declare_parameter("sensor_mount_height", 0.4);
+  declare_parameter("sensor_tilt_angle", 0.0);
+  declare_parameter("ground_remove_en", false);
+  declare_parameter("ground_margin", 0.05);
+  declare_parameter("tilt_compensation_en", false);
+  declare_parameter("publish_dbg_info", false);
+  declare_parameter("threads_num", 1);
 
   // Subscription to depth image topic
   publisher_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
@@ -76,40 +87,54 @@ void LaserScanKinectNode::disconnectCb() {
 rcl_interfaces::msg::SetParametersResult LaserScanKinectNode::parametersCallback(
     const std::vector<rclcpp::Parameter> &parameters)
 {
-  RCLCPP_ERROR(this->get_logger(), "Parameters callback");
-
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
   result.reason = "success";
-  for (const auto &parameter : parameters)
-  {
-      if (parameter.get_name() == "my_str" &&
-          parameter.get_type() == rclcpp::ParameterType::PARAMETER_STRING)
-      {
-          auto my_str_ = parameter.as_string();
-          RCLCPP_INFO(this->get_logger(), "Parameter 'my_str' changed: %s", my_str_.c_str());
+  for (const auto &parameter : parameters) {
+      if (parameter.get_name() == "output_frame_id") {
+          converter_.setOutputFrame(parameter.as_string());
       }
+      if (parameter.get_name() == "range_min") {
+          converter_.setMinRange(parameter.as_double());
+      }
+      if (parameter.get_name() == "range_max") {
+          converter_.setMaxRange(parameter.as_double());
+      }
+      if (parameter.get_name() == "scan_height") {
+          converter_.setScanHeight(parameter.as_int());
+      }
+      if (parameter.get_name() == "depth_img_row_step") {
+          converter_.setDepthImgRowStep(parameter.as_int());
+      }
+      if (parameter.get_name() == "cam_model_update") {
+          converter_.setCamModelUpdate(parameter.as_bool());
+      }
+      if (parameter.get_name() == "sensor_mount_height") {
+          converter_.setSensorMountHeight(parameter.as_double());
+      }
+      if (parameter.get_name() == "sensor_tilt_angle") {
+          converter_.setSensorTiltAngle(parameter.as_double());
+      }
+      if (parameter.get_name() == "ground_remove_en") {
+          converter_.setGroundRemove(parameter.as_bool());
+      }
+      if (parameter.get_name() == "ground_margin") {
+          converter_.setGroundMargin(parameter.as_double());
+      }
+      if (parameter.get_name() == "tilt_compensation_en") {
+          converter_.setTiltCompensation(parameter.as_bool());
+      }
+      if (parameter.get_name() == "publish_dbg_info") {
+          converter_.setScanConfigurated(parameter.as_bool());
+      }
+      if (parameter.get_name() == "threads_num") {
+          converter_.setThreadsNum(parameter.as_int());
+      }
+
+      // RCLCPP_INFO(get_logger(), "Parameter %s changed: %s",
+      //   parameter.get_name().c_str(), parameter.as_string().c_str());
   }
   return result;
 }
-
-// void LaserScanKinectNode::reconfigureCb(laserscan_kinect::LaserscanKinectConfig& config,
-//                                         [[maybe_unused]] uint32_t level) {
-//   converter_.setOutputFrame(config.output_frame_id);
-//   converter_.setRangeLimits(config.range_min, config.range_max);
-//   converter_.setScanHeight(config.scan_height);
-//   converter_.setDepthImgRowStep(config.depth_img_row_step);
-//   converter_.setCamModelUpdate(config.cam_model_update);
-
-//   converter_.setSensorMountHeight(config.sensor_mount_height);
-//   converter_.setSensorTiltAngle(config.sensor_tilt_angle);
-//   converter_.setGroundRemove(config.ground_remove_en);
-//   converter_.setGroundMargin(config.ground_margin);
-//   converter_.setTiltCompensation(config.tilt_compensation_en);
-
-//   converter_.setScanConfigurated(false);
-//   converter_.setPublishDbgImgEnable(config.publish_dbg_info);
-//   converter_.setThreadsNum(config.threads_num);
-// }
 
 } // namespace laserscan_kinect
