@@ -36,12 +36,18 @@ class LaserScanKinect {
    */
   void setOutputFrame(const std::string& frame) { output_frame_id_ = frame; }
   /**
-   * @brief setRangeLimits sets depth sensor min and max ranges
+   * @brief setMinRange sets depth sensor min range
    *
    * @param rmin Minimum sensor range (below it is death zone) in meters.
+   */
+
+  void setMinRange(const float rmin);
+  /**
+   * @brief setMaxRange sets depth sensor max range
+   *
    * @param rmax Maximum sensor range in meters.
    */
-  void setRangeLimits(const float rmin, const float rmax);
+  void setMaxRange(const float rmax);
   /**
    * @brief setScanHeight sets height of depth image which will be used in conversion process
    *

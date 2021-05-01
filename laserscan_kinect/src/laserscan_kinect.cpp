@@ -99,15 +99,18 @@ sensor_msgs::msg::LaserScan::SharedPtr LaserScanKinect::getLaserScanMsg(
   return scan_msg_;
 }
 
-void LaserScanKinect::setRangeLimits(const float rmin, const float rmax) {
-  if (rmin >= 0 && rmin < rmax) {
+void LaserScanKinect::setMinRange(const float rmin) {
+  if (rmin >= 0) {
     range_min_ = rmin;
   }
   else {
     range_min_ = 0;
     // RCLCPP_ERROR("Incorrect value of range minimal parameter. Set default value: 0.");
   }
-  if (rmax >= 0 && rmin < rmax) {
+}
+
+void LaserScanKinect::setMaxRange(const float rmax) {
+  if (rmax >= 0) {
     range_max_ = rmax;
   }
   else {
