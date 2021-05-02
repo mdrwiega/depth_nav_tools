@@ -1,34 +1,41 @@
 #pragma once
 
+#include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.h>
-#include <std_msgs/msg/float64.hpp>
 #include <sensor_msgs/msg/image.hpp>
+#include <geometry_msgs/msg/polygon_stamped.hpp>
 
 #include <cliff_detector/cliff_detector.h>
 
 namespace cliff_detector {
 
-class CliffDetectorNode {
+class CliffDetectorNode : public rclcpp::Node {
  public:
   CliffDetectorNode();
   ~CliffDetectorNode();
+
+  CliffDetectorNode (const CliffDetectorNode&) = delete;
+  CliffDetectorNode & operator= (const CliffDetectorNode&) = delete;
 
  protected:
   /**
    * @brief depthCb is callback which is called when new depth image appear
    *
-   * @param depth_msg Depth image provided by image_transport.
-   * @param info_msg CameraInfo provided by image_transport.
+   * @param image Depth image provided by image_transport.
+   * @param info CameraInfo provided by image_transport.
    */
-  void depthCb( const sensor_msgs::ImageConstPtr& depth_msg,
-                const sensor_msgs::CameraInfoConstPtr& info_msg);
+  void depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& image,
+               const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
 
-  /// Subscriber for image_transport
-  image_transport::CameraSubscriber sub_;
-  /// Publisher for image_transport
+  rcl_interfaces::msg::SetParametersResult parametersCallback(
+      const std::vector<rclcpp::Parameter> &parameters);
+
+  /// Subscriber for depth image
+  image_transport::CameraSubscriber image_sub_;
+  /// Publisher for debug image
   image_transport::Publisher pub_;
   /// Publisher for publishing messages with stairs points
-  ros::Publisher pub_points_;
+  rclcpp::Publisher<geometry_msgs::msg::PolygonStamped>::SharedPtr pub_points_;
   /// Contains cliff detection method implementation
   cliff_detector::CliffDetector detector_;
 };

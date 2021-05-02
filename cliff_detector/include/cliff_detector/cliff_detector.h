@@ -1,7 +1,6 @@
 #pragma once
 
 #include <sensor_msgs/msg/image.hpp>
-#include <sensor_msgs/image_encodings.h>
 #include <image_geometry/pinhole_camera_model.h>
 
 #include <sstream>
@@ -16,6 +15,7 @@
 #include <vector>
 
 namespace cliff_detector {
+
 /**
  * @brief The CliffDetector class detect cliff based on depth image
  */
@@ -26,21 +26,28 @@ class CliffDetector {
    * @brief detectCliff detects descending stairs based on the information in a depth image
    *
    * This function detects descending stairs based on the information
-   * in the depth encoded image (UInt16 encoding). To do this, it requires
-   * the synchornized Image/CameraInfo pair associated with the image.
+   * in the depth encoded image. It requires the synchronized
+   * Image/CameraInfo pair associated with the image.
    *
-   * @param depth_msg UInt16 encoded depth image.
-   * @param info_msg CameraInfo associated with depth_msg
+   * @param image UInt16 encoded depth image.
+   * @param info CameraInfo associated with depth_msg
    */
-  void detectCliff(const sensor_msgs::ImageConstPtr& depth_msg,
-                   const sensor_msgs::CameraInfoConstPtr& info_msg);
+  geometry_msgs::msg::PolygonStamped detectCliff(
+    const sensor_msgs::msg::Image::ConstSharedPtr& image,
+    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
   /**
-   * @brief setRangeLimits sets the minimum and maximum range of depth value from RGBD sensor.
+   * @brief setMinRange sets depth sensor min range
    *
-   * @param rmin Minimum of depth value which will be used in data processing.
-   * @param rmin Maximum of depth value which will be used in data processing.
+   * @param rmin Minimum sensor range (below it is death zone) in meters.
    */
-  void setRangeLimits(const float rmin, const float rmax);
+
+  void setMinRange(const float rmin);
+  /**
+   * @brief setMaxRange sets depth sensor max range
+   *
+   * @param rmax Maximum sensor range in meters.
+   */
+  void setMaxRange(const float rmax);
   /**
    * @brief setSensorMountHeight sets the height of sensor mount (in meters) from ground
    *
@@ -155,7 +162,7 @@ class CliffDetector {
     * @param depth_msg The UInt16 encoded depth message.
     */
   template<typename T>
-  void findCliffInDepthImage(const sensor_msgs::ImageConstPtr& depth_msg);
+  void findCliffInDepthImage(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg);
   /**
     * Calculate vertical angle_min and angle_max by measuring angles between
     * the top ray, bottom ray, and optical center ray
@@ -188,18 +195,17 @@ class CliffDetector {
 
  private:
   // ROS parameters configurated with config file or dynamic_reconfigure
-  std::string  outputFrameId_;        ///< Output frame_id for laserscan.
   float        range_min_;            ///< Stores the current minimum range to use
   float        range_max_;            ///< Stores the current maximum range to use
   float        sensor_mount_height_;  ///< Height of sensor mount from ground
   float        sensor_tilt_angle_;    ///< Sensor tilt angle (degrees)
   bool         publish_depth_enable_; ///< Determines if depth should be republished
   bool         cam_model_update_;     ///< Determines if continuously cam model update required
-  unsigned int used_depth_height_;    ///< Used depth height from img bottom (px)
-  unsigned int block_size_;           ///< Square block (subimage) size (px).
-  unsigned int block_points_thresh_;  ///< Threshold value of points in block to admit stairs
-  unsigned int depth_image_step_row_; ///< Rows step in depth processing (px).
-  unsigned int depth_image_step_col_; ///< Columns step in depth processing (px).
+  unsigned     used_depth_height_;    ///< Used depth height from img bottom (px)
+  unsigned     block_size_;           ///< Square block (subimage) size (px).
+  unsigned     block_points_thresh_;  ///< Threshold value of points in block to admit stairs
+  unsigned     depth_image_step_row_; ///< Rows step in depth processing (px).
+  unsigned     depth_image_step_col_; ///< Columns step in depth processing (px).
   float        ground_margin_;        ///< Margin for ground points feature detector (m)
 
   bool depth_sensor_params_update;
@@ -213,11 +219,12 @@ class CliffDetector {
   std::vector<double> delta_row_;
 
  public:
-  sensor_msgs::Image new_depth_msg_;
-  sensor_msgs::ImageConstPtr depth_msg_to_pub_;
+  sensor_msgs::msg::Image new_depth_msg_;
+  sensor_msgs::msg::Image::ConstSharedPtr depth_msg_to_pub_;
 
-  ///< Store points which contain stairs
-  // depth_nav_msgs::Point32List stairs_points_msg_;
+ private:
+  /// Store points which contain obstacle
+  geometry_msgs::msg::PolygonStamped stairs_points_msg_;
 };
 
 } // namespace cliff_detector
