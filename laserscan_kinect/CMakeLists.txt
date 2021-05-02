@@ -40,7 +40,8 @@ ament_target_dependencies(LaserScanKinectNode
   "rcutils"
   "std_msgs"
   "sensor_msgs"
-  "image_geometry")
+  "image_geometry"
+  "image_transport")
 # install(TARGETS LaserScanKinectNode
   # DESTINATION lib/${PROJECT_NAME}
 # )

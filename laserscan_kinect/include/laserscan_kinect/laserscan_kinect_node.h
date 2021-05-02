@@ -1,7 +1,5 @@
 #pragma once
 
-#include <mutex>
-
 #include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/msg/image.hpp>
@@ -33,21 +31,8 @@ private:
    * @param depth_msg Depth image provided by image_transport.
    * @param info_msg CameraInfo provided by image_transport.
    */
-  void depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-               const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info_msg);
-  /**
-   * @brief connectCb is callback which is called when new subscriber connected.
-   *
-   * It allow to subscribe depth image and publish laserscan message only when
-   * is laserscan subscriber appear.
-   */
-  void connectCb();
-  /**
-   * @brief disconnectCb is called when a subscriber stop subscribing
-   *
-   * When no one subscribers subscribe laserscan topic, then it stop to subscribe depth image.
-   */
-  void disconnectCb();
+  void depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& image,
+               const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
   /**
    * @brief parametersCallback is dynamic reconfigure callback
    *
@@ -57,19 +42,13 @@ private:
       const std::vector<rclcpp::Parameter> &parameters);
 
   /// Subscribes to synchronized Image CameraInfo pairs.
-  // image_transport::ImageTransport it_;
-  /// Subscriber for image_transport
-  // image_transport::CameraSubscriber sub_;
+  image_transport::CameraSubscriber sub_;
   /// Publisher for output LaserScan messages
   rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr publisher_;
   /// Publisher for image_transport
   image_transport::Publisher pub_dbg_img_;
-  /// Dynamic reconfigure server
-  // dynamic_reconfigure::Server<laserscan_kinect::LaserscanKinectConfig> srv_;
   /// Object which convert depth image to laserscan and store all parameters
   laserscan_kinect::LaserScanKinect converter_;
-  /// Prevents the connectCb and disconnectCb from being called until everything is initialized.
-  std::mutex connect_mutex_;
 };
 
 } // namespace laserscan_kinect

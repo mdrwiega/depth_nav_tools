@@ -1,17 +1,12 @@
 #include <laserscan_kinect/laserscan_kinect_node.h>
-#include <boost/bind.hpp>
+
 #include <functional>
 
 namespace laserscan_kinect {
 
 LaserScanKinectNode::LaserScanKinectNode()
   : Node("laserscan_kinect")
-  // , it_(this)
-    // pnh_(pnh), it_(pnh), srv_(pnh)
 {
-  RCLCPP_ERROR(this->get_logger(), "Initialize laserscan_kinect node");
-  std::lock_guard<std::mutex> lock(connect_mutex_);
-
   set_on_parameters_set_callback(
       std::bind(&LaserScanKinectNode::parametersCallback, this, std::placeholders::_1));
 
@@ -32,22 +27,23 @@ LaserScanKinectNode::LaserScanKinectNode()
 
   // Subscription to depth image topic
   publisher_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
-  // pub_ = pnh.advertise<sensor_msgs::LaserScan>("scan", 10,
-  //                                             std::bind(&LaserScanKinectNode::connectCb, this),
-  //                                             std::bind(&LaserScanKinectNode::disconnectCb, this));
 
-  // New depth image publisher
-  // pub_dbg_img_ = it_.advertise("debug_image", 1,
-  //   std::bind(&LaserScanKinectNode::connectCb, this),
-  //   std::bind(&LaserScanKinectNode::disconnectCb, this));
+  using namespace std::placeholders;
+  sub_ = image_transport::create_camera_subscription(this, "image",
+          std::bind(&LaserScanKinectNode::depthCb, this, _1, _2), "raw");
+
+  // Debug depth image publisher
+  pub_dbg_img_ = image_transport::create_publisher(this, "debug_image");
+
+  RCLCPP_INFO(this->get_logger(), "Node laserscan_kinect initialized.");
 }
 
 LaserScanKinectNode::~LaserScanKinectNode() {
   // sub_.shutdown();
 }
 
-void LaserScanKinectNode::depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-                                  const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info_msg) {
+void LaserScanKinectNode::depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& image,
+                                  const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info) {
   // try {
   //   sensor_msgs::LaserScanPtr laserscan_msg = converter_.getLaserScanMsg(depth_msg, info_msg);
   //   pub_.publish(laserscan_msg);
@@ -62,25 +58,6 @@ void LaserScanKinectNode::depthCb(const sensor_msgs::msg::Image::ConstSharedPtr&
   // }
   // catch (std::runtime_error& e) {
   //   RCLCPP_ERROR_THROTTLE(1.0, "Could not convert depth image to laserscan: %s", e.what());
-  // }
-}
-
-void LaserScanKinectNode::connectCb() {
-  std::lock_guard<std::mutex> lock(connect_mutex_);
-
-  // if (sub_ == nullptr && (pub_.getNumSubscribers() > 0 || pub_dbg_img_.getNumSubscribers() > 0)) {
-  //   RCLCPP_DEBUG("Connecting to depth topic.");
-  //   image_transport::TransportHints hints("raw", ros::TransportHints(), pnh_);
-  //   sub_ = it_.subscribeCamera("image", 10, &LaserScanKinectNode::depthCb, this, hints);
-  // }
-}
-
-void LaserScanKinectNode::disconnectCb() {
-  std::lock_guard<std::mutex> lock(connect_mutex_);
-
-  // if (pub_.getNumSubscribers() == 0 && pub_dbg_img_.getNumSubscribers() == 0) {
-  //   RCLCPP_DEBUG("Unsubscribing from depth topic.");
-  //   // sub_.shutdown();
   // }
 }
 
@@ -130,9 +107,6 @@ rcl_interfaces::msg::SetParametersResult LaserScanKinectNode::parametersCallback
       if (parameter.get_name() == "threads_num") {
           converter_.setThreadsNum(parameter.as_int());
       }
-
-      // RCLCPP_INFO(get_logger(), "Parameter %s changed: %s",
-      //   parameter.get_name().c_str(), parameter.as_string().c_str());
   }
   return result;
 }
