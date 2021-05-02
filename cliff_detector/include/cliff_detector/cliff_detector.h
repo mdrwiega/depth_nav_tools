@@ -3,8 +3,6 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/image_encodings.h>
 #include <image_geometry/pinhole_camera_model.h>
-#include <depth_nav_msgs/Point32List.h>
-#include <geometry_msgs/Point32.h>
 
 #include <sstream>
 #include <limits.h>
@@ -219,7 +217,7 @@ class CliffDetector {
   sensor_msgs::ImageConstPtr depth_msg_to_pub_;
 
   ///< Store points which contain stairs
-  depth_nav_msgs::Point32List stairs_points_msg_;
+  // depth_nav_msgs::Point32List stairs_points_msg_;
 };
 
 } // namespace cliff_detector

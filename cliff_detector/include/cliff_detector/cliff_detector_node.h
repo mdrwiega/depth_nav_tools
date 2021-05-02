@@ -3,7 +3,6 @@
 #include <image_transport/image_transport.h>
 #include <std_msgs/msg/float64.hpp>
 #include <sensor_msgs/msg/image.hpp>
-#include <depth_nav_msgs/Point32List.h>
 
 #include <cliff_detector/cliff_detector.h>
 
