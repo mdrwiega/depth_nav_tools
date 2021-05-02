@@ -43,9 +43,12 @@ public:
 
   image_transport::CameraSubscriber subscriber_; ///< Subscriber for image_transport
 
-  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_height_; ///< Publisher for estimated sensor height
-  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_angle_; ///< Publisher for estimated sensor tilt angle
-  image_transport::Publisher pub_; ///< Publisher for image_transport
+  /// Publisher for estimated sensor height
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_height_;
+  /// Publisher for estimated sensor tilt angle
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_angle_;
+  ///< Publisher for depth image
+  image_transport::Publisher pub_;
 
   depth_sensor_pose::DepthSensorPose estimator_;
 };

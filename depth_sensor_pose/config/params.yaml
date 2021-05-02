@@ -1,6 +1,5 @@
 depth_sensor_pose:
   ros__parameters:
-    rate: 1.0
     range_min: 0.5
     range_max: 8.0
     mount_height_min: 0.7

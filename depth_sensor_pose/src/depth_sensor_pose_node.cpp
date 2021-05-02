@@ -11,37 +11,52 @@ using namespace depth_sensor_pose;
 DepthSensorPoseNode::DepthSensorPoseNode()
   : Node("depth_sensor_pose")
 {
-  // set_on_parameters_set_callback(
-  //     std::bind(&DepthSensorPoseNode::parametersCallback, this, std::placeholders::_1));
+  set_on_parameters_set_callback(
+      std::bind(&DepthSensorPoseNode::parametersCallback, this, std::placeholders::_1));
 
-  // // Tilt angle and height publishers
-  // pub_height_ = this->create_publisher<std_msgs::Float64>("height", 2);
-  // pub_angle_ = this->create_publisher<std_msgs::Float64>("tilt_angle", 2);
+  declare_parameter("output_frame_id", "camera_depth_frame");
+  declare_parameter("range_min", 0.5);
+  declare_parameter("range_max", 5.0);
+  declare_parameter("mount_height_min", 0.4);
+  declare_parameter("mount_height_max", 0.8);
+  declare_parameter("tilt_angle_min", 30.0);
+  declare_parameter("tilt_angle_max", 35.0);
+  declare_parameter("cam_model_update", false);
+  declare_parameter("used_depth_height", 400);
+  declare_parameter("depth_img_step_row", 8);
+  declare_parameter("depth_img_step_col", 8);
+  declare_parameter("ground_max_points", 2500);
+  declare_parameter("ransac_max_iter", 2000);
+  declare_parameter("ransac_dist_thresh", 0.001);
 
-  // using namespace std::placeholders;
-  // subscriber_ = image_transport::create_camera_subscription(this, "image",
-  //         std::bind(&DepthSensorPoseNode::depthCallback, this, _1, _2), "raw");
+  // Tilt angle and height publishers
+  pub_height_ = this->create_publisher<std_msgs::msg::Float64>("height", 2);
+  pub_angle_ = this->create_publisher<std_msgs::msg::Float64>("tilt_angle", 2);
 
-  // // Debug depth image publisher
-  // pub_ = image_transport::create_publisher(this, "debug_image");
+  using namespace std::placeholders;
+  subscriber_ = image_transport::create_camera_subscription(this, "image",
+          std::bind(&DepthSensorPoseNode::depthCallback, this, _1, _2), "raw");
+
+  // Debug depth image publisher
+  pub_ = image_transport::create_publisher(this, "debug_image");
 }
 
 DepthSensorPoseNode::~DepthSensorPoseNode() {
   subscriber_.shutdown();
 }
 
-void DepthSensorPoseNode::depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-                                        const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info_msg) {
+void DepthSensorPoseNode::depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image,
+                                        const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info) {
   try {
     // Estimation of parameters -- sensor pose
-    estimator_.estimateParams(depth_msg, info_msg);
+    estimator_.estimateParams(image, info);
 
     std_msgs::msg::Float64 height, tilt_angle;
     height.data = estimator_.getSensorMountHeight();
     tilt_angle.data = estimator_.getSensorTiltAngle();
 
-    // pub_height_->publish(*height);
-    // pub_angle_->publish(*tilt_angle);
+    pub_height_->publish(height);
+    pub_angle_->publish(tilt_angle);
     RCLCPP_DEBUG(this->get_logger(),
       "Publish sensor height (%.2f) and tilt angle (%.2f)", height.data, tilt_angle.data);
 
@@ -54,7 +69,7 @@ void DepthSensorPoseNode::depthCallback(const sensor_msgs::msg::Image::ConstShar
     }
   }
   catch (std::runtime_error& e) {
-    // RCLCPP(1.0, "Could not to run estimation procedure: %s", e.what());
+    RCLCPP_ERROR_ONCE(this->get_logger(), "Could not to run estimation procedure: %s", e.what());
   }
 }
 
@@ -67,59 +82,50 @@ rcl_interfaces::msg::SetParametersResult DepthSensorPoseNode::parametersCallback
 
   try {
     for (const auto &parameter : parameters) {
-        if (parameter.get_name() == "range_min") {
-            // converter_.setMinRange(parameter.as_double());
-        }
-        if (parameter.get_name() == "range_max") {
-            // converter_.setMaxRange(parameter.as_double());
-        }
-        if (parameter.get_name() == "scan_height") {
-            // converter_.setScanHeight(parameter.as_int());
-        }
-        if (parameter.get_name() == "depth_img_row_step") {
-            // converter_.setDepthImgRowStep(parameter.as_int());
-        }
-        if (parameter.get_name() == "cam_model_update") {
-            // converter_.setCamModelUpdate(parameter.as_bool());
-        }
-        if (parameter.get_name() == "sensor_mount_height") {
-            // converter_.setSensorMountHeight(parameter.as_double());
-        }
-        if (parameter.get_name() == "sensor_tilt_angle") {
-            // converter_.setSensorTiltAngle(parameter.as_double());
-        }
-        if (parameter.get_name() == "ground_remove_en") {
-            // converter_.setGroundRemove(parameter.as_bool());
-        }
-        if (parameter.get_name() == "ground_margin") {
-            // converter_.setGroundMargin(parameter.as_double());
-        }
-        if (parameter.get_name() == "tilt_compensation_en") {
-            // converter_.setTiltCompensation(parameter.as_bool());
-        }
-        if (parameter.get_name() == "publish_dbg_info") {
-            // converter_.setScanConfigurated(parameter.as_bool());
-        }
-        if (parameter.get_name() == "threads_num") {
-        }
-
-      // estimator_.setSensorMountHeightMin(config.mount_height_min);
-      // estimator_.setSensorMountHeightMax(config.mount_height_max);
-      // estimator_.setSensorTiltAngleMin(config.tilt_angle_min);
-      // estimator_.setSensorTiltAngleMax(config.tilt_angle_max);
-
-      // estimator_.setPublishDepthEnable(config.publish_dbg_info);
-      // estimator_.setCamModelUpdate(config.cam_model_update);
-      // estimator_.setUsedDepthHeight((unsigned int)config.used_depth_height);
-      // estimator_.setDepthImgStepRow(config.depth_img_step_row);
-      // estimator_.setDepthImgStepCol(config.depth_img_step_col);
-
-      // estimator_.setRansacDistanceThresh(config.ransac_dist_thresh);
-      // estimator_.setRansacMaxIter(config.ransac_max_iter);
-      // estimator_.setGroundMaxPoints(config.ground_max_points);
-
-      // estimator_.setReconfParamsUpdated(true);
+      if (parameter.get_name() == "range_min") {
+        estimator_.setMinRange(parameter.as_double());
+      }
+      if (parameter.get_name() == "range_max") {
+        estimator_.setMaxRange(parameter.as_double());
+      }
+      if (parameter.get_name() == "mount_height_min") {
+        estimator_.setSensorMountHeightMin(parameter.as_double());
+      }
+      if (parameter.get_name() == "mount_height_max") {
+        estimator_.setSensorMountHeightMax(parameter.as_double());
+      }
+      if (parameter.get_name() == "tilt_angle_min") {
+        estimator_.setSensorTiltAngleMin(parameter.as_double());
+      }
+      if (parameter.get_name() == "tilt_angle_max") {
+        estimator_.setSensorMountHeightMax(parameter.as_double());
+      }
+      if (parameter.get_name() == "cam_model_update") {
+        estimator_.setCamModelUpdate(parameter.as_bool());
+      }
+      if (parameter.get_name() == "used_depth_height") {
+        estimator_.setUsedDepthHeight(parameter.as_int());
+      }
+      if (parameter.get_name() == "depth_img_step_row") {
+        estimator_.setDepthImgStepRow(parameter.as_int());
+      }
+      if (parameter.get_name() == "depth_img_step_col") {
+        estimator_.setDepthImgStepCol(parameter.as_int());
+      }
+      if (parameter.get_name() == "publish_dbg_info") {
+        estimator_.setPublishDepthEnable(parameter.as_bool());
+      }
+      if (parameter.get_name() == "ransac_dist_thresh") {
+        estimator_.setRansacDistanceThresh(parameter.as_double());
+      }
+      if (parameter.get_name() == "ransac_max_iter") {
+        estimator_.setRansacMaxIter(parameter.as_int());
+      }
+      if (parameter.get_name() == "ground_max_points") {
+        estimator_.setGroundMaxPoints(parameter.as_int());
+      }
     }
+    estimator_.setReconfParamsUpdated(true);
   }
   catch (const std::exception& e) {
     RCLCPP_ERROR(this->get_logger(), e.what());

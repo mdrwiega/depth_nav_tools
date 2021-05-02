@@ -31,15 +31,18 @@ void DepthSensorPose::estimateParams(const sensor_msgs::msg::Image::ConstSharedP
   sensorPoseCalibration(image, tilt_angle_est_, mount_height_est_);
 }
 
-void DepthSensorPose::setRangeLimits(const float rmin, const float rmax) {
-  if (rmin >= 0 && rmin < rmax) {
+void DepthSensorPose::setMinRange(const float rmin) {
+  if (rmin >= 0) {
     range_min_ = rmin;
   }
   else {
     range_min_ = 0;
     throw std::runtime_error("Incorrect value of range minimal parameter. Set default value: 0.");
   }
-  if (rmax >= 0 && rmin < rmax) {
+}
+
+void DepthSensorPose::setMaxRange(const float rmax) {
+  if (rmax >= 0) {
     range_max_ = rmax;
   }
   else {
@@ -352,7 +355,7 @@ sensor_msgs::msg::Image::SharedPtr DepthSensorPose::prepareDbgImage(
   }
 
   // Add ground points to debug image (as red points)
-  for (const auto pt : ground_points_indices) {
+  for (const auto& pt : ground_points_indices) {
     const auto row = pt.first;
     const auto col = pt.second;
     rgb_data[row * img->width + col][0] = 255;

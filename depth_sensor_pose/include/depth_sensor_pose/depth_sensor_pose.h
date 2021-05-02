@@ -33,25 +33,25 @@ class DepthSensorPose {
   DepthSensorPose & operator= (const DepthSensorPose &) = delete;
 
   /**
-     * Estimates depth sensor height and tilt angle
-     *
-     * @param image UInt16 or Float32 encoded depth image.
-     * @param info CameraInfo associated with the image
-     */
+    * Estimates depth sensor height and tilt angle
+    *
+    * @param image UInt16 or Float32 encoded depth image.
+    * @param info CameraInfo associated with the image
+    */
   void estimateParams(const sensor_msgs::msg::Image::ConstSharedPtr& image,
                       const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
   /**
-     * Sets the minimum and maximum range for the sensor_msgs::LaserScan.
-     *
-     * rangeMin is used to determine how close of a value to allow through when multiple radii
-     * correspond to the same angular increment.  rangeMax is used to set the output message.
-     *
-     * @param rangeMin Minimum range to assign points to the laserscan, also minimum range to use points in the output scan.
-     * @param rangeMax Maximum range to use points in the output scan.
-     *
-     */
-  void setRangeLimits(const float rmin, const float rmax);
-
+   * @brief setMinRange sets depth sensor min range
+   *
+   * @param rmin Minimum sensor range (below it is death zone) in meters.
+   */
+  void setMinRange(const float rmin);
+  /**
+   * @brief setMaxRange sets depth sensor max range
+   *
+   * @param rmax Maximum sensor range in meters.
+   */
+  void setMaxRange(const float rmax);
   /**
    * @brief setSensorMountHeight sets the height of sensor mount (in meters) from ground
    *
@@ -166,8 +166,8 @@ class DepthSensorPose {
     *
     * Calculated values are placed in vector dist_to_ground_.
     */
-  void calcGroundDistancesForImgRows( double mount_height, double tilt_angle,
-                                      std::vector<double>& distances);
+  void calcGroundDistancesForImgRows(double mount_height, double tilt_angle,
+                                     std::vector<double>& distances);
 
 //   template<typename T>
 //   void getGroundPoints(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
@@ -182,7 +182,6 @@ class DepthSensorPose {
      const std::list<std::pair<unsigned, unsigned>>& ground_points_indices);
 
  private:
-  // ROS parameters configurated with config files or dynamic_reconfigure
   float     range_min_{0};                ///< Stores the current minimum range to use
   float     range_max_{0};                ///< Stores the current maximum range to use
   float     mount_height_min_{0};         ///< Min height of sensor mount from ground
