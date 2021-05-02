@@ -15,7 +15,6 @@
   <depend>tf2_ros</depend>
 
 <export>
-  <costmap_2d plugin="${prefix}/costmap_plugins.xml" />
   <build_type>ament_cmake</build_type>
 </export>
 

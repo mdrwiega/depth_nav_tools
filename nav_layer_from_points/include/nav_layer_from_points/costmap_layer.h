@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mutex>
+#include <algorithm>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -13,12 +14,7 @@
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 
-#include <tf2_ros/transform_listener.h>
-
-#include <math.h>
-#include <algorithm>
-
-#include <angles/angles.h>
+#include <tf2_ros/buffer.h>
 
 namespace nav_layer_from_points {
 

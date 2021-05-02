@@ -1,6 +1,7 @@
-<library path="lib/libcostmap_layers">
-  <class type="nav_layer_from_points::NavLayerFromPoints" base_class_type="costmap_2d::Layer">
-    <description>Uses points information to change the costmap</description>
-  </class>
-</library>
-
+<class_libraries>
+  <library path="libcostmap_layers">
+    <class type="nav_layer_from_points::NavLayerFromPoints"  base_class_type="nav2_costmap_2d::Layer">
+      <description>Represensts obstacles based on points list.</description>
+    </class>
+  </library>
+</class_libraries>

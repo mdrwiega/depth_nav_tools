@@ -58,7 +58,7 @@ void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
     clearTransformedPoints();
 
   // Add points to PointStamped list transformed_points_
-  for (const auto point : points_list_.polygon.points) {
+  for (const auto& point : points_list_.polygon.points) {
     geometry_msgs::msg::PointStamped tpt;
     geometry_msgs::msg::PointStamped pt, out_pt;
 
@@ -115,17 +115,13 @@ void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
 }
 
 void NavLayerFromPoints::updateBoundsFromPoints(double* min_x, double* min_y, double* max_x, double* max_y) {
-  std::list<geometry_msgs::msg::PointStamped>::iterator p_it;
-
   double radius = point_radius_ + robot_radius_;
 
-  for (p_it = transformed_points_.begin(); p_it != transformed_points_.end(); ++p_it) {
-    geometry_msgs::msg::PointStamped pt = *p_it;
-
-    *min_x = std::min(*min_x, pt.point.x - radius);
-    *min_y = std::min(*min_y, pt.point.y - radius);
-    *max_x = std::max(*max_x, pt.point.x + radius);
-    *max_y = std::max(*max_y, pt.point.y + radius);
+  for (const auto& point : transformed_points_) {
+    *min_x = std::min(*min_x, point.point.x - radius);
+    *min_y = std::min(*min_y, point.point.y - radius);
+    *max_x = std::max(*max_x, point.point.x + radius);
+    *max_y = std::max(*max_y, point.point.y + radius);
   }
 }
 
@@ -140,12 +136,12 @@ void NavLayerFromPoints::updateCosts([[maybe_unused]] nav2_costmap_2d::Costmap2D
     return;
 
   auto costmap = layered_costmap_->getCostmap();
-  double res = costmap->getResolution();
+  const auto resolution = costmap->getResolution();
 
-  for (auto p_it = transformed_points_.begin(); p_it != transformed_points_.end(); ++p_it) {
-    geometry_msgs::msg::Point pt = (*p_it).point;
+  for (const auto& point : transformed_points_) {
+    geometry_msgs::msg::Point pt = point.point;
 
-    int size = std::max(1, int( (point_radius_ + robot_radius_) / res ));
+    int size = std::max(1, int( (point_radius_ + robot_radius_) / resolution ));
     unsigned map_x, map_y;
     int size_x = size, size_y = size;
     int start_x, start_y, end_x, end_y;
@@ -158,14 +154,10 @@ void NavLayerFromPoints::updateCosts([[maybe_unused]] nav2_costmap_2d::Costmap2D
       end_x = map_x + size_x / 2;
       end_y = map_y + size_y / 2;
 
-      if (start_x < min_i)
-        start_x = min_i;
-      if (end_x > max_i)
-        end_x = max_i;
-      if (start_y < min_j)
-        start_y = min_j;
-      if (end_y > max_j)
-        end_y = max_j;
+      if (start_x < min_i) start_x = min_i;
+      if (end_x > max_i)   end_x = max_i;
+      if (start_y < min_j) start_y = min_j;
+      if (end_y > max_j)   end_y = max_j;
 
       for(int j = start_y; j < end_y; j++) {
         for(int i = start_x; i < end_x; i++) {
