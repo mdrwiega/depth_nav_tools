@@ -45,12 +45,12 @@ install(DIRECTORY config
 )
 
 # Unit tests
-# if (BUILD_TESTING)
-#   find_package(ament_cmake_gtest REQUIRED)
+if (BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
 
-#   ament_add_gtest(CliffDetectorTest test/cliff_detector_test.cpp)
-#   target_link_libraries(CliffDetectorTest CliffDetectorNode)
-# endif()
+  ament_add_gtest(CliffDetectorTest test/cliff_detector_test.cpp)
+  target_link_libraries(CliffDetectorTest CliffDetectorNode)
+endif()
 
 # Export package
 ament_export_dependencies(image_geometry image_transport sensor_msgs geometry_msgs)
