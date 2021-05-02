@@ -1,45 +1,44 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(nav_layer_from_points)
 
-set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_options(
-  -Wall
-  -O3
-  # -Werror
-)
+add_compile_options(-Wall -O3 -Werror)
 
-set(CATKIN_PACKAGE_DEPENDENCIES
-  roscpp
-  costmap_2d
-  dynamic_reconfigure
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
+
+include_directories(include)
+
+add_library(nav_layer_from_points src/costmap_layer.cpp )
+ament_target_dependencies(nav_layer_from_points
+  rclcpp
   geometry_msgs
-  depth_nav_msgs
-  tf
+  nav2_costmap_2d
+  tf2_ros
 )
 
-find_package(catkin REQUIRED COMPONENTS ${CATKIN_PACKAGE_DEPENDENCIES})
-
-include_directories(include ${catkin_INCLUDE_DIRS})
-
-# Dynamic reconfigure config
-generate_dynamic_reconfigure_options( cfg/NavLayerFromPoints.cfg )
-
-catkin_package(
-  	 INCLUDE_DIRS include
-    LIBRARIES costmap_layers
-    CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
+install(TARGETS nav_layer_from_points
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-add_library(costmap_layers src/costmap_layer.cpp )
-
-add_dependencies(costmap_layers depth_nav_msgs_gencpp ${${PROJECT_NAME}_EXPORTED_TARGETS})
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
 
 install(FILES costmap_plugins.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
 
-install(TARGETS costmap_layers
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
+# Export package
+ament_export_dependencies(tf2_ros geometry_msgs nav2_costmap_2d)
+ament_export_include_directories(include)
+ament_export_libraries(laserscan_kinect)
+pluginlib_export_plugin_description_file(nav_layer_from_points costmap_plugins.xml)
+
+ament_package()

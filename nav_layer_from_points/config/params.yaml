@@ -1,0 +1,5 @@
+nav_layer_from_points:
+  ros__parameters:
+    keep_time: 0.75 # Delay before clearing points from list
+    point_radius: 0.2 # Radius of points
+    robot_radius: 0.6 # Radius of the robot
