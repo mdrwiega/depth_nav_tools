@@ -4,8 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include <sensor_msgs/msg/image.hpp>
-#include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 
 #include <laserscan_kinect/laserscan_kinect.h>
 

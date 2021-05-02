@@ -1,9 +1,11 @@
-#include <laserscan_kinect/laserscan_kinect_node.h>
+#include <laserscan_kinect/laserscan_kinect.h>
 
 #include <cmath>
 #include <algorithm>
 #include <typeinfo>
 #include <thread>
+
+#include <sensor_msgs/image_encodings.hpp>
 
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)

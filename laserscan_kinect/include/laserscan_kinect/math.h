@@ -1,6 +1,8 @@
-namespace laserscan_kinect {
+#pragma once
 
 #include <image_geometry/pinhole_camera_model.h>
+
+namespace laserscan_kinect {
 
 /**
 * @brief lengthOfVector calculate the length of the 3D vector

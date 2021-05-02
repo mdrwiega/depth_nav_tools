@@ -3,11 +3,10 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <list>
 
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/image.h>
-#include <sensor_msgs/msg/laser_scan.h>
-#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 #include <image_geometry/pinhole_camera_model.h>
 
 #include <laserscan_kinect/math.h>
