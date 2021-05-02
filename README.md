@@ -20,8 +20,6 @@ It uses a known sensor pose to determine obstacles placed below the ground plane
 
 - **nav_layer_from_points** -- It creates navigation costmap layer based on received points, for example from the *cliff_detector*.
 
-- **depth_nav_msgs** -- Custom messages for other depth nav related packages.
-
 ## Additional documentation
 A full documentation is available at the [ROS wiki](http://wiki.ros.org/depth_nav_tools) and in the publication "[A set of depth sensor processing ROS tools for wheeled mobile robot navigation"(PDF)](http://www.jamris.org/images/ISSUES/ISSUE-2017-02/48_56%20Drwiega.pdf) by M. Drwięga and J. Jakubiak (Journal of Automation, Mobile Robotics & Intelligent Systems, 2017).
 
