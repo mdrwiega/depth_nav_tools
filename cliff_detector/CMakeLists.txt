@@ -4,50 +4,62 @@ project(cliff_detector)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_options(
-  -Wall
-  -O3
-  -Werror
-)
+add_compile_options(-Wall -O3 -Werror)
 
-set(CATKIN_PACKAGE_DEPENDENCIES
-  roscpp
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(image_geometry REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(depth_nav_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
+
+include_directories(include)
+
+add_library(CliffDetectorNode
+  src/depth_sensor_pose.cpp
+  src/depth_sensor_pose_node.cpp
+)
+ament_target_dependencies(CliffDetectorNode
+  rclcpp
+  sensor_msgs
   image_geometry
   image_transport
-  nodelet
-  dynamic_reconfigure
-  sensor_msgs
-  depth_nav_msgs
 )
 
-find_package(catkin REQUIRED COMPONENTS ${CATKIN_PACKAGE_DEPENDENCIES})
+add_executable(cliff_detector
+  src/main.cpp
+)
+target_link_libraries(cliff_detector CliffDetectorNode)
 
-# Dynamic reconfigure config
-generate_dynamic_reconfigure_options(cfg/CliffDetector.cfg)
-
-find_package( OpenCV REQUIRED )
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES CliffDetector CliffDetectorNode
-  CATKIN_DEPENDS ${CATKIN_PACKAGE_DEPENDENCIES}
+install(TARGETS
+  depth_sensor_pose
+  DESTINATION lib/${PROJECT_NAME}
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+# Install launch files.
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
 
-add_library(CliffDetector src/cliff_detector.cpp)
-add_dependencies(CliffDetector ${PROJECT_NAME}_gencfg)
-target_link_libraries(CliffDetector ${catkin_LIBRARIES})
-
-add_library(CliffDetectorNode src/cliff_detector_node.cpp)
-add_dependencies(CliffDetectorNode ${PROJECT_NAME}_gencfg)
-target_link_libraries(CliffDetectorNode CliffDetector ${OpenCV_LIBS} ${catkin_LIBRARIES})
-
-add_executable(cliff_detector src/main.cpp)
-target_link_libraries(cliff_detector CliffDetectorNode ${catkin_LIBRARIES})
+# Install config
+install(DIRECTORY
+  config
+  DESTINATION share/${PROJECT_NAME}
+)
 
 # Unit tests
-if (CATKIN_ENABLE_TESTING)
-    catkin_add_gtest(CliffDetectorTest test/cliff_detector_test.cpp)
-    target_link_libraries(CliffDetectorTest CliffDetector)
+if (BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(CliffDetectorTest test/cliff_detector_test.cpp)
+  target_link_libraries(CliffDetectorTest CliffDetectorNode)
 endif()
+
+# Export package
+ament_export_dependencies(image_geometry image_transport sensor_msgs)
+ament_export_include_directories(include)
+ament_export_libraries(CliffDetectorNode)
+
+ament_package()

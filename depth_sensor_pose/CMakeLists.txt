@@ -62,12 +62,12 @@ if (BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(depthSensorPoseTest test/depth_sensor_pose_test.cpp)
-  target_link_libraries(depthSensorPoseTest DepthSensorPose)
+  target_link_libraries(depthSensorPoseTest DepthSensorPoseNode)
 endif()
 
 # Export package
 ament_export_dependencies(image_geometry image_transport sensor_msgs)
 ament_export_include_directories(include)
-ament_export_libraries(LaserScanKinect LaserScanKinectNode)
+ament_export_libraries(DepthSensorPoseNode)
 
 ament_package()

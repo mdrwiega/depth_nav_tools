@@ -7,8 +7,6 @@
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/depth_nav_tools</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
-
   <exec_depend>laserscan_kinect</exec_depend>
   <exec_depend>cliff_detector</exec_depend>
   <exec_depend>depth_nav_msgs</exec_depend>
