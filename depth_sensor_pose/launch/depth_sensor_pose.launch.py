@@ -8,14 +8,14 @@ def generate_launch_description():
   ld = launch.LaunchDescription()
 
   config = os.path.join(
-      get_package_share_directory('laserscan_kinect'),
+      get_package_share_directory('depth_sensor_pose'),
       'config',
       'params.yaml'
   )
 
   laserscan_node = Node(
-    package='laserscan_kinect',
-    node_executable='laserscan_kinect',
+    package='depth_sensor_pose',
+    node_executable='depth_sensor_pose',
     parameters=[config],
     remappings=[
       ('/image', '/camera/depth/image_raw'),
