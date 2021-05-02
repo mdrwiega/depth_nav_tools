@@ -27,7 +27,7 @@ public:
    * It runs sensor mount parameters estimation algorithms
    *
    * @param image Depth image provided by image_transport.
-   * @param info_msg CameraInfo provided by image_transport.
+   * @param info CameraInfo provided by image_transport.
    */
   void depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image,
                      const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
@@ -36,7 +36,7 @@ public:
   /**
    * @brief parametersCallback is a node reconfigure callback
    *
-   * Callback is necessary to set ROS parameters dynamically.
+   * Callback to set ROS parameters dynamically.
    */
   rcl_interfaces::msg::SetParametersResult parametersCallback(
       const std::vector<rclcpp::Parameter> &parameters);

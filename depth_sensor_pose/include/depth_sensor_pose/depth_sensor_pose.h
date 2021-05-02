@@ -1,13 +1,8 @@
 #pragma once
 
-#include <sstream>
-#include <limits>
+#include <list>
 #include <vector>
 #include <cmath>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <list>
 
 #include <std_msgs/msg/float64.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -57,38 +52,38 @@ class DepthSensorPose {
    *
    * @param height Value of sensor mount height (in meters).
    */
-  void setSensorMountHeightMin (const float height);
+  void setSensorMountHeightMin(const float height);
   /**
    * @brief setSensorMountHeight sets the height of sensor mount (in meters) from ground
    *
    * @param height Value of sensor mount height (in meters).
    */
-  void setSensorMountHeightMax (const float height);
+  void setSensorMountHeightMax(const float height);
   /**
    * @brief setSensorTiltAngle sets the sensor tilt angle (in degrees)
    * @param angle
    */
-  void setSensorTiltAngleMin (const float angle);
+  void setSensorTiltAngleMin(const float angle);
   /**
    * @brief setSensorTiltAngle sets the sensor tilt angle (in degrees)
    * @param angle
    */
-  void setSensorTiltAngleMax (const float angle);
+  void setSensorTiltAngleMax(const float angle);
   /**
    * @brief setPublishDepthEnable
    * @param enable
    */
-  void setPublishDepthEnable (const bool enable) { publish_depth_enable_ = enable; }
+  void setPublishDepthEnable(const bool enable) { publish_depth_enable_ = enable; }
   /**
    * @brief getPublishDepthEnable
    * @return
    */
-  bool getPublishDepthEnable () const { return publish_depth_enable_; }
+  bool getPublishDepthEnable() const { return publish_depth_enable_; }
   /**
    * @brief setCamModelUpdate
    * @param u
    */
-  void setCamModelUpdate (const bool u) { cam_model_update_ = u; }
+  void setCamModelUpdate(const bool u) { cam_model_update_ = u; }
   /**
    * @brief setUsedDepthHeight
    * @param height
@@ -132,7 +127,7 @@ class DepthSensorPose {
      * @return Returns the magnitude of the ray.
      *
      */
-  double lengthOfVector( const cv::Point3d& vec) const;
+  double lengthOfVector(const cv::Point3d& vec) const;
   /**
      * Computes the angle between two cv::Point3d
      *
@@ -142,7 +137,6 @@ class DepthSensorPose {
      * @param ray1 The first ray
      * @param ray2 The second ray
      * @return The angle between the two rays (in radians)
-     *
      */
   double angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const;
   /**
@@ -154,7 +148,7 @@ class DepthSensorPose {
   * @param max_angle The maximum vertical angle
   */
   void fieldOfView(double & min, double & max, double x1, double y1,
-                  double xc, double yc, double x2, double y2 );
+                   double xc, double yc, double x2, double y2 );
 
   void calcDeltaAngleForImgRows(double vertical_fov);
   /**

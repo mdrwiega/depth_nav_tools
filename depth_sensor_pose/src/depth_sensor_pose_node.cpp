@@ -2,11 +2,7 @@
 
 #include "depth_sensor_pose/depth_sensor_pose_node.h"
 
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <cv_bridge/cv_bridge.h>
-
-using namespace depth_sensor_pose;
+namespace depth_sensor_pose {
 
 DepthSensorPoseNode::DepthSensorPoseNode()
   : Node("depth_sensor_pose")
@@ -132,4 +128,6 @@ rcl_interfaces::msg::SetParametersResult DepthSensorPoseNode::parametersCallback
   }
 
   return result;
+}
+
 }
