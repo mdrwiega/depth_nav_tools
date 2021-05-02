@@ -6,47 +6,42 @@ PLUGINLIB_EXPORT_CLASS(nav_layer_from_points::NavLayerFromPoints, nav2_costmap_2
 
 namespace nav_layer_from_points {
 
+NavLayerFromPoints::NavLayerFromPoints()
+  : tf_buffer_(node_->get_clock())
+{
+  layered_costmap_ = nullptr;
+}
+
 void NavLayerFromPoints::onInitialize() {
   current_ = true;
   first_time_ = true;
 
-  node_->declare_parameter(name_ + "." + "enabled", rclcpp::ParameterValue(true));
+  node_->declare_parameter(name_ + "." + "enabled", true);
+  node_->declare_parameter(name_ + "." + "keep_time", 0.75);
+  node_->declare_parameter(name_ + "." + "point_radius", 0.2);
+  node_->declare_parameter(name_ + "." + "robot_radius", 0.6);
 
-  // sub_points_ = nh.subscribe("/downstairs_detector/points", 1,
-                              // &NavLayerFromPoints::pointsCallback, this);
-
-  // rec_server_ = new dynamic_reconfigure::Server<NavLayerFromPointsConfig>(nh);
-  // f_ = boost::bind(&NavLayerFromPoints::configure, this, _1, _2);
-  // rec_server_->setCallback(f_);
+  sub_points_ = node_->create_subscription<geometry_msgs::msg::PolygonStamped>(
+    "points", 1, std::bind(&NavLayerFromPoints::pointsCallback, this, std::placeholders::_1));
 }
 
-// void NavLayerFromPoints::configure(NavLayerFromPointsConfig &config, [[maybe_unused]] uint32_t level) {
-//   points_keep_time_ = ros::Duration(config.keep_time);
-//   enabled_ = config.enabled;
-
-//   point_radius_ = config.point_radius;
-//   robot_radius_ = config.robot_radius;
-// }
-
-void NavLayerFromPoints::pointsCallback(const geometry_msgs::msg::PolygonStamped& points) {
+void NavLayerFromPoints::pointsCallback(const geometry_msgs::msg::PolygonStamped::SharedPtr points) {
   std::lock_guard<std::recursive_mutex> lk(lock_);
-  points_list_ = points;
+  points_list_ = *points;
 }
 
 void NavLayerFromPoints::clearTransformedPoints() {
-  std::list<geometry_msgs::msg::PointStamped>::iterator p_it;
-  p_it = transformed_points_.begin();
-
   if (transformed_points_.size() > 10000)
     transformed_points_.clear();
 
+  auto p_it = transformed_points_.begin();
   while (p_it != transformed_points_.end()) {
-    // if (node_->get_clock()->now() - (*p_it).header.stamp > points_keep_time_) {
-    //   p_it = transformed_points_.erase(p_it);
-    // }
-    // else {
-    //   ++p_it;
-    // }
+    if (node_->get_clock()->now() - (*p_it).header.stamp > points_keep_time_) {
+      p_it = transformed_points_.erase(p_it);
+    }
+    else {
+      ++p_it;
+    }
   }
 }
 
@@ -75,13 +70,12 @@ void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
       pt.point.z =  tpt.point.z;
       pt.header.frame_id = points_list_.header.frame_id;
 
-      // tf_.transformPoint(global_frame, pt, out_pt);
+      tf_buffer_.transform(pt, out_pt, global_frame);
       tpt.point.x = out_pt.point.x;
       tpt.point.y = out_pt.point.y;
       tpt.point.z = out_pt.point.z;
 
       tpt.header.stamp = pt.header.stamp;
-      //s << " ( " << tpt.point.x << " , " << tpt.point.y << " , " << tpt.point.z << " ) ";
       transformed_points_.push_back(tpt);
     }
     catch(tf2::LookupException& ex) {
@@ -118,12 +112,6 @@ void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
     last_max_x_ = c;
     last_max_y_ = d;
   }
-  // std::ostringstream s;
-  // s << " list_size = " << transformed_points_.size() << "   ";
-  // s << " min_x = " << *min_x << " max_x = " << *max_x <<
-        // " min_y = " << *min_y << " max_y = " << *max_y << "      ";
-  // ROS_INFO_STREAM_THROTTLE(2,"transformed_points = " << s.str());
-
 }
 
 void NavLayerFromPoints::updateBoundsFromPoints(double* min_x, double* min_y, double* max_x, double* max_y) {
@@ -150,7 +138,6 @@ void NavLayerFromPoints::updateCosts([[maybe_unused]] nav2_costmap_2d::Costmap2D
 
   if (points_list_.polygon.points.empty())
     return;
-
 
   auto costmap = layered_costmap_->getCostmap();
   double res = costmap->getResolution();

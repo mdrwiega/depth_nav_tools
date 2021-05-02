@@ -24,7 +24,7 @@ namespace nav_layer_from_points {
 
 class NavLayerFromPoints : public nav2_costmap_2d::CostmapLayer {
 public:
-  NavLayerFromPoints() { layered_costmap_ = nullptr; }
+  NavLayerFromPoints();
 
   void onInitialize() override;
 
@@ -41,7 +41,7 @@ public:
 
 protected:
 
-  void pointsCallback(const geometry_msgs::msg::PolygonStamped& points);
+  void pointsCallback(const geometry_msgs::msg::PolygonStamped::SharedPtr points);
 
   /**
    * @brief clearTransformedPoints clears points from list transformed_points_ after some time
@@ -53,12 +53,12 @@ protected:
 
   geometry_msgs::msg::PolygonStamped points_list_;  ///< List of received points
 
-  // tf2_ros::TransformListener tf_;
+  tf2_ros::Buffer tf_buffer_;
 
   std::list<geometry_msgs::msg::PointStamped> transformed_points_;
 
   // After this time points will be delete
-  // rclcpp::Duration points_keep_time_;
+  rclcpp::Duration points_keep_time_{0};
 
   std::recursive_mutex lock_;
   bool first_time_;
