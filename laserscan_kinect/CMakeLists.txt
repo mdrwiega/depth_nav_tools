@@ -23,18 +23,15 @@ ament_package()
 include_directories(include)
 
 add_library(LaserScanKinect src/laserscan_kinect.cpp)
-target_link_libraries(LaserScanKinect ${catkin_LIBRARIES})
+target_link_libraries(LaserScanKinect)
 ament_target_dependencies(LaserScanKinect
   "rclcpp"
   "rcutils"
   "std_msgs"
   "cv_bridge")
-# install(TARGETS LaserScanKinect
-  # DESTINATION lib/${PROJECT_NAME}
-# )
 
 add_library(LaserScanKinectNode src/laserscan_kinect_node.cpp)
-target_link_libraries(LaserScanKinectNode LaserScanKinect ${catkin_LIBRARIES})
+target_link_libraries(LaserScanKinectNode LaserScanKinect)
 ament_target_dependencies(LaserScanKinectNode
   "rclcpp"
   "rcutils"
@@ -42,12 +39,9 @@ ament_target_dependencies(LaserScanKinectNode
   "sensor_msgs"
   "image_geometry"
   "image_transport")
-# install(TARGETS LaserScanKinectNode
-  # DESTINATION lib/${PROJECT_NAME}
-# )
 
 add_executable(laserscan_kinect src/main.cpp)
-target_link_libraries(laserscan_kinect LaserScanKinectNode ${catkin_LIBRARIES})
+target_link_libraries(laserscan_kinect LaserScanKinectNode)
 ament_target_dependencies(laserscan_kinect
   "rclcpp"
   "rcutils"
@@ -72,12 +66,11 @@ install(DIRECTORY
 )
 
 # Unit tests
-# if (BUILD_TESTING)
-#     find_package(ament_cmake_gtest REQUIRED)
+if (BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
 
-#     ament_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
-#     ament_target_dependencies(laserscanKinectTest
-#       "rclcpp"
-#       "std_msgs")
-#     target_link_libraries(laserscanKinectTest LaserScanKinect)
-# endif()
+  ament_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
+  target_link_libraries(laserscanKinectTest LaserScanKinect)
+  ament_target_dependencies(laserscanKinectTest
+    rclcpp sensors_msgs image_geometry)
+endif()
