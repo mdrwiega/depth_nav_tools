@@ -14,8 +14,6 @@ class LaserScanKinectNode : public rclcpp::Node {
  public:
   /**
    * @brief LaserScanKinectNode constructor.
-   *
-   * @param pnh Private node handler.
    */
   LaserScanKinectNode();
   ~LaserScanKinectNode();
@@ -23,7 +21,7 @@ class LaserScanKinectNode : public rclcpp::Node {
 private:
 
   /**
-   * @brief depthCb is callback which is called when new depth image appear
+   * @brief depthCb is a callback which is called when new depth image appear
    *
    * Callback for depth image and camera info.
    * It converts depth image to laserscan and publishes it at the end.
@@ -34,7 +32,7 @@ private:
   void depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& image,
                const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
   /**
-   * @brief parametersCallback is dynamic reconfigure callback
+   * @brief parametersCallback is a node reconfigure callback
    *
    * Callback is necessary to set ROS parameters dynamically.
    */
@@ -42,7 +40,7 @@ private:
       const std::vector<rclcpp::Parameter> &parameters);
 
   /// Subscribes to synchronized Image CameraInfo pairs.
-  image_transport::CameraSubscriber sub_;
+  image_transport::CameraSubscriber subscriber_;
   /// Publisher for output LaserScan messages
   rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr publisher_;
   /// Publisher for image_transport

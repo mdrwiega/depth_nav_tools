@@ -29,7 +29,7 @@ LaserScanKinectNode::LaserScanKinectNode()
   publisher_ = this->create_publisher<sensor_msgs::msg::LaserScan>("scan", 10);
 
   using namespace std::placeholders;
-  sub_ = image_transport::create_camera_subscription(this, "image",
+  subscriber_ = image_transport::create_camera_subscription(this, "image",
           std::bind(&LaserScanKinectNode::depthCb, this, _1, _2), "raw");
 
   // Debug depth image publisher
@@ -39,26 +39,26 @@ LaserScanKinectNode::LaserScanKinectNode()
 }
 
 LaserScanKinectNode::~LaserScanKinectNode() {
-  // sub_.shutdown();
+  subscriber_.shutdown();
 }
 
 void LaserScanKinectNode::depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& image,
                                   const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info) {
-  // try {
-  //   sensor_msgs::LaserScanPtr laserscan_msg = converter_.getLaserScanMsg(depth_msg, info_msg);
-  //   pub_.publish(laserscan_msg);
+  try {
+    auto laserscan_msg = converter_.getLaserScanMsg(image, info);
+    publisher_->publish(*laserscan_msg);
 
-  //   // Publish debug image
-  //   if (converter_.getPublishDbgImgEnable()) {
-  //     auto dbg_image = converter_.getDbgImage();
-  //     if (dbg_image != nullptr) {
-  //       pub_dbg_img_.publish(dbg_image);
-  //     }
-  //   }
-  // }
-  // catch (std::runtime_error& e) {
-  //   RCLCPP_ERROR_THROTTLE(1.0, "Could not convert depth image to laserscan: %s", e.what());
-  // }
+    // Publish debug image
+    if (converter_.getPublishDbgImgEnable()) {
+      auto dbg_image = converter_.getDbgImage();
+      if (dbg_image != nullptr) {
+        pub_dbg_img_.publish(dbg_image);
+      }
+    }
+  }
+  catch (std::runtime_error& e) {
+    RCLCPP_ERROR_ONCE(this->get_logger(), "Could not convert depth image to laserscan: %s", e.what());
+  }
 }
 
 rcl_interfaces::msg::SetParametersResult LaserScanKinectNode::parametersCallback(
