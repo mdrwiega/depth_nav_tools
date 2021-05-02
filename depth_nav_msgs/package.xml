@@ -1,17 +1,22 @@
-<package format="2">
+<package format="3">
   <name>depth_nav_msgs</name>
   <version>1.0.0</version>
-  <description>Messages used by nodes in the depth_nav_tools.</description>
+  <description>Messages used in the depth_nav_tools.</description>
   <author>Michal Drwiega</author>
   <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/depth_nav_tools</url>
 
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <depend>std_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>message_generation</depend>
+  <build_depend>geometry_msgs</build_depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+      <build_type>ament_cmake</build_type>
+  </export>
 </package>
