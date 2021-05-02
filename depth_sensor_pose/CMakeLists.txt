@@ -58,12 +58,12 @@ install(DIRECTORY
 )
 
 # Unit tests
-if (BUILD_TESTING)
-  find_package(ament_cmake_gtest REQUIRED)
+# if (BUILD_TESTING)
+#   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(depthSensorPoseTest test/depth_sensor_pose_test.cpp)
-  target_link_libraries(depthSensorPoseTest DepthSensorPoseNode)
-endif()
+#   ament_add_gtest(depthSensorPoseTest test/depth_sensor_pose_test.cpp)
+#   target_link_libraries(depthSensorPoseTest DepthSensorPoseNode)
+# endif()
 
 # Export package
 ament_export_dependencies(image_geometry image_transport sensor_msgs)

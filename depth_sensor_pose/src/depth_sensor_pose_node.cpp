@@ -11,37 +11,37 @@ using namespace depth_sensor_pose;
 DepthSensorPoseNode::DepthSensorPoseNode()
   : Node("depth_sensor_pose")
 {
-  set_on_parameters_set_callback(
-      std::bind(&DepthSensorPoseNode::parametersCallback, this, std::placeholders::_1));
+  // set_on_parameters_set_callback(
+  //     std::bind(&DepthSensorPoseNode::parametersCallback, this, std::placeholders::_1));
 
-  // Tilt angle and height publishers
-  pub_height_ = this->create_publisher<std_msgs::Float64>("height", 2);
-  pub_angle_ = this->create_publisher<std_msgs::Float64>("tilt_angle", 2);
+  // // Tilt angle and height publishers
+  // pub_height_ = this->create_publisher<std_msgs::Float64>("height", 2);
+  // pub_angle_ = this->create_publisher<std_msgs::Float64>("tilt_angle", 2);
 
-  using namespace std::placeholders;
-  subscriber_ = image_transport::create_camera_subscription(this, "image",
-          std::bind(&DepthSensorPoseNode::depthCallback, this, _1, _2), "raw");
+  // using namespace std::placeholders;
+  // subscriber_ = image_transport::create_camera_subscription(this, "image",
+  //         std::bind(&DepthSensorPoseNode::depthCallback, this, _1, _2), "raw");
 
-  // Debug depth image publisher
-  pub_ = image_transport::create_publisher(this, "debug_image");
+  // // Debug depth image publisher
+  // pub_ = image_transport::create_publisher(this, "debug_image");
 }
 
 DepthSensorPoseNode::~DepthSensorPoseNode() {
-  sub_.shutdown();
+  subscriber_.shutdown();
 }
 
-void DepthSensorPoseNode::depthCallback(const sensor_msgs::ImageConstPtr& depth_msg,
-                                        const sensor_msgs::CameraInfoConstPtr& info_msg) {
+void DepthSensorPoseNode::depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
+                                        const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info_msg) {
   try {
     // Estimation of parameters -- sensor pose
     estimator_.estimateParams(depth_msg, info_msg);
 
-    std_msgs::Float64 height, tilt_angle;
+    std_msgs::msg::Float64 height, tilt_angle;
     height.data = estimator_.getSensorMountHeight();
     tilt_angle.data = estimator_.getSensorTiltAngle();
 
-    pub_height_->publish(*height);
-    pub_angle_->publish(*tilt_angle);
+    // pub_height_->publish(*height);
+    // pub_angle_->publish(*tilt_angle);
     RCLCPP_DEBUG(this->get_logger(),
       "Publish sensor height (%.2f) and tilt angle (%.2f)", height.data, tilt_angle.data);
 
@@ -54,7 +54,7 @@ void DepthSensorPoseNode::depthCallback(const sensor_msgs::ImageConstPtr& depth_
     }
   }
   catch (std::runtime_error& e) {
-    ROS_ERROR_THROTTLE(1.0, "Could not to run estimation procedure: %s", e.what());
+    // RCLCPP(1.0, "Could not to run estimation procedure: %s", e.what());
   }
 }
 

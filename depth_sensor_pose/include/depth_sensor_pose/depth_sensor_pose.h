@@ -15,14 +15,12 @@
 #include <sensor_msgs/image_encodings.hpp>
 #include <image_geometry/pinhole_camera_model.h>
 
-#include <pcl/point_types.h>
-#include <pcl/sample_consensus/ransac.h>
-#include <pcl/sample_consensus/sac_model_plane.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
-
-#include <Eigen/Core>
+// #include <pcl/point_types.h>
+// #include <pcl/sample_consensus/ransac.h>
+// #include <pcl/sample_consensus/sac_model_plane.h>
+// #include <pcl/sample_consensus/method_types.h>
+// #include <pcl/sample_consensus/model_types.h>
+// #include <pcl/segmentation/sac_segmentation.h>
 
 namespace depth_sensor_pose {
 
@@ -122,7 +120,7 @@ class DepthSensorPose {
 
   float getSensorMountHeight() const { return mount_height_est_; }
 
-  sensor_msgs::msgs::Image::SharedPtr getDbgImage() const;
+  sensor_msgs::msg::Image::ConstSharedPtr getDbgImage() const;
 
  protected:
   /**
@@ -171,16 +169,17 @@ class DepthSensorPose {
   void calcGroundDistancesForImgRows( double mount_height, double tilt_angle,
                                       std::vector<double>& distances);
 
-  template<typename T>
-  void getGroundPoints(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-                       pcl::PointCloud<pcl::PointXYZ>::Ptr& points,
-                       std::list<std::pair<unsigned, unsigned>>& points_indices);
+//   template<typename T>
+//   void getGroundPoints(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
+//                        pcl::PointCloud<pcl::PointXYZ>::Ptr& points,
+//                        std::list<std::pair<unsigned, unsigned>>& points_indices);
 
   void sensorPoseCalibration(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
                              double& tilt_angle, double& height);
 
-  sensor_msgs::msg::Image::SharedPtr prepareDbgImage(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-    const std::list<std::pair<unsigned, unsigned>>& ground_points_indices);
+  sensor_msgs::msg::Image::SharedPtr prepareDbgImage(
+     const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
+     const std::list<std::pair<unsigned, unsigned>>& ground_points_indices);
 
  private:
   // ROS parameters configurated with config files or dynamic_reconfigure

@@ -7,7 +7,6 @@
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
-
 #include <depth_sensor_pose/depth_sensor_pose.h>
 
 namespace depth_sensor_pose {
@@ -27,11 +26,11 @@ public:
    * Callback for depth image and camera info.
    * It runs sensor mount parameters estimation algorithms
    *
-   * @param depth_msg Depth image provided by image_transport.
+   * @param image Depth image provided by image_transport.
    * @param info_msg CameraInfo provided by image_transport.
    */
-  void depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-                     const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info_msg);
+  void depthCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image,
+                     const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
  private:
 
   /**
