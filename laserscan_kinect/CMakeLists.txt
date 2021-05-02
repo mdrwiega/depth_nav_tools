@@ -55,8 +55,6 @@ if (BUILD_TESTING)
 
   ament_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
   target_link_libraries(laserscanKinectTest LaserScanKinectNode)
-  ament_target_dependencies(laserscanKinectTest
-    rclcpp sensors_msgs image_geometry)
 endif()
 
 # Export package

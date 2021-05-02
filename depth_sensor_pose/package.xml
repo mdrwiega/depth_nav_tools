@@ -7,17 +7,19 @@
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/depth_nav_tools</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>cmake_modules</depend>
-  <depend>costmap_2d</depend>
-  <depend>roscpp</depend>
-  <depend>nodelet</depend>
-  <depend>dynamic_reconfigure</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>image_geometry</depend>
   <depend>image_transport</depend>
   <depend>libpcl-all</depend>
   <depend>pcl_ros</depend>
 
+  <test_depend>ament_cmake_gtest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
