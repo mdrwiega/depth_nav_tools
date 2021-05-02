@@ -5,6 +5,23 @@ namespace cliff_detector {
 CliffDetectorNode::CliffDetectorNode()
   : Node("cliff_detector")
 {
+  set_on_parameters_set_callback(
+    std::bind(&CliffDetectorNode::parametersCallback, this, std::placeholders::_1));
+
+  // Declare all node parameters
+  declare_parameter("range_min", 0.5);
+  declare_parameter("range_max", 5.0);
+  declare_parameter("depth_img_row_step", 2);
+  declare_parameter("depth_img_col_step", 2);
+  declare_parameter("cam_model_update", false);
+  declare_parameter("sensor_mount_height", 0.4);
+  declare_parameter("sensor_tilt_angle", 0.0);
+  declare_parameter("ground_margin", 0.05);
+  declare_parameter("block_size", 2);
+  declare_parameter("publish_depth", false);
+  declare_parameter("used_depth_height", 200);
+  declare_parameter("block_points_thresh", 10);
+
   // New depth image publisher
   pub_ = image_transport::create_publisher(this, "depth");
 
@@ -14,6 +31,8 @@ CliffDetectorNode::CliffDetectorNode()
   using namespace std::placeholders;
   image_sub_ = image_transport::create_camera_subscription(this, "image",
                 std::bind(&CliffDetectorNode::depthCb, this, _1, _2), "raw");
+
+  RCLCPP_INFO(this->get_logger(), "Cliff detector initialized.");
 }
 
 CliffDetectorNode::~CliffDetectorNode() {

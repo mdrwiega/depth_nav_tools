@@ -20,7 +20,7 @@ geometry_msgs::msg::PolygonStamped CliffDetector::detectCliff(
     double angle_min, angle_max, vertical_fov;
     double cx = camera_model_.cx(), cy = camera_model_.cy();
 
-    // Calculate fields of views angles - vertical and horizontal
+    // Calculate field of views angles - vertical and horizontal
     fieldOfView(angle_min, angle_max, cx, 0, cx, cy, cx, image->height -1);
     vertical_fov = angle_max - angle_min;
 
@@ -361,7 +361,6 @@ void CliffDetector::findCliffInDepthImage(const sensor_msgs::msg::Image::ConstSh
       new_depth_row[row_size * (*it)[Row] + (*it)[Col]] = 10000U;
     }
   }
-  // ROS_DEBUG_STREAM("Stairs points: " << stairs_points.size());
 }
 
 template void CliffDetector::findCliffInDepthImage<uint16_t>(const sensor_msgs::msg::Image::ConstSharedPtr&);

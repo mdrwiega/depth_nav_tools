@@ -4,8 +4,9 @@
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/msg/image.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
-
+#include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <cliff_detector/cliff_detector.h>
+
 
 namespace cliff_detector {
 

@@ -11,13 +11,7 @@ find_package(image_geometry REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(OpenCV REQUIRED)
-
-# Export package
-ament_export_dependencies(image_geometry image_transport sensor_msgs geometry_msgs)
-ament_export_include_directories(include)
-ament_export_libraries(CliffDetectorNode)
-ament_package()
+find_package(cv_bridge REQUIRED)
 
 include_directories(include)
 
@@ -57,3 +51,9 @@ install(DIRECTORY config
 #   ament_add_gtest(CliffDetectorTest test/cliff_detector_test.cpp)
 #   target_link_libraries(CliffDetectorTest CliffDetectorNode)
 # endif()
+
+# Export package
+ament_export_dependencies(image_geometry image_transport sensor_msgs geometry_msgs)
+ament_export_include_directories(include)
+ament_export_libraries(CliffDetectorNode)
+ament_package()

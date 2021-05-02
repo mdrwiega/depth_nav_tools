@@ -1,18 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include <sensor_msgs/msg/image.hpp>
 #include <image_geometry/pinhole_camera_model.h>
-
-#include <sstream>
-#include <limits.h>
-#include <math.h>
-#include <cmath>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <utility>
-#include <cstdlib>
-#include <vector>
+#include <geometry_msgs/msg/polygon_stamped.hpp>
 
 namespace cliff_detector {
 
@@ -81,15 +73,6 @@ class CliffDetector {
    * @return
    */
   bool getPublishDepthEnable() const { return publish_depth_enable_; }
-  /**
-     * @brief Sets the number of image rows to use in data processing.
-     *
-     * scan_height is the number of rows (pixels) to use in the output.
-     *
-     * @param scan_height Number of pixels centered around the center of
-     * the image to data processing
-     *
-     */
   /**
    * @brief setCamModelUpdate
    */
@@ -194,33 +177,29 @@ class CliffDetector {
   void calcTiltCompensationFactorsForImgRows();
 
  private:
-  // ROS parameters configurated with config file or dynamic_reconfigure
-  float        range_min_;            ///< Stores the current minimum range to use
-  float        range_max_;            ///< Stores the current maximum range to use
-  float        sensor_mount_height_;  ///< Height of sensor mount from ground
-  float        sensor_tilt_angle_;    ///< Sensor tilt angle (degrees)
-  bool         publish_depth_enable_; ///< Determines if depth should be republished
-  bool         cam_model_update_;     ///< Determines if continuously cam model update required
-  unsigned     used_depth_height_;    ///< Used depth height from img bottom (px)
-  unsigned     block_size_;           ///< Square block (subimage) size (px).
-  unsigned     block_points_thresh_;  ///< Threshold value of points in block to admit stairs
-  unsigned     depth_image_step_row_; ///< Rows step in depth processing (px).
-  unsigned     depth_image_step_col_; ///< Columns step in depth processing (px).
-  float        ground_margin_;        ///< Margin for ground points feature detector (m)
+  float    range_min_;            ///< Stores the current minimum range to use
+  float    range_max_;            ///< Stores the current maximum range to use
+  float    sensor_mount_height_;  ///< Height of sensor mount from ground
+  float    sensor_tilt_angle_;    ///< Sensor tilt angle (degrees)
+  bool     publish_depth_enable_; ///< Determines if depth should be republished
+  bool     cam_model_update_;     ///< Determines if continuously cam model update required
+  unsigned used_depth_height_;    ///< Used depth height from img bottom (px)
+  unsigned block_size_;           ///< Square block (subimage) size (px).
+  unsigned block_points_thresh_;  ///< Threshold value of points in block to admit stairs
+  unsigned depth_image_step_row_; ///< Rows step in depth processing (px).
+  unsigned depth_image_step_col_; ///< Columns step in depth processing (px).
+  float    ground_margin_;        ///< Margin for ground points feature detector (m)
 
   bool depth_sensor_params_update;
   /// Class for managing sensor_msgs/CameraInfo messages
   image_geometry::PinholeCameraModel camera_model_;
   /// Calculated distances to ground for every row of depth image in mm
   std::vector<unsigned int> dist_to_ground_;
-  /// Calculated sensor tilt compensation factors
   std::vector<double> tilt_compensation_factor_;
-
   std::vector<double> delta_row_;
 
  public:
   sensor_msgs::msg::Image new_depth_msg_;
-  sensor_msgs::msg::Image::ConstSharedPtr depth_msg_to_pub_;
 
  private:
   /// Store points which contain obstacle
