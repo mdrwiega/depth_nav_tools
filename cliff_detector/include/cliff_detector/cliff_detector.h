@@ -1,7 +1,6 @@
 #pragma once
 
-#include <ros/console.h>
-#include <sensor_msgs/Image.h>
+#include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/image_encodings.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <depth_nav_msgs/Point32List.h>
