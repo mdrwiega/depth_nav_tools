@@ -105,7 +105,7 @@ void LaserScanKinect::setMinRange(const float rmin) {
   }
   else {
     range_min_ = 0;
-    // RCLCPP_ERROR("Incorrect value of range minimal parameter. Set default value: 0.");
+    throw std::runtime_error("Incorrect value of range minimal parameter. Set default value: 0.");
   }
 }
 
@@ -115,7 +115,7 @@ void LaserScanKinect::setMaxRange(const float rmax) {
   }
   else {
     range_max_ = 10;
-    // RCLCPP_ERROR("Incorrect value of range maximum parameter. Set default value: 10.");
+    throw std::runtime_error("Incorrect value of range maximum parameter. Set default value: 10.");
   }
 }
 
@@ -125,7 +125,7 @@ void LaserScanKinect::setScanHeight(const int scan_height) {
   }
   else {
     scan_height_ = 10;
-    // RCLCPP_ERROR("Incorrect value of scan height parameter. Set default value: 100.");
+    throw std::runtime_error("Incorrect value of scan height parameter. Set default value: 100.");
   }
 }
 
@@ -135,7 +135,7 @@ void LaserScanKinect::setDepthImgRowStep(const int row_step) {
   }
   else {
     depth_img_row_step_ = 1;
-    // RCLCPP_ERROR("Incorrect value depth imgage row step parameter. Set default value: 1.");
+    std::runtime_error("Incorrect value depth imgage row step parameter. Set default value: 1.");
   }
 }
 
@@ -145,7 +145,7 @@ void LaserScanKinect::setSensorMountHeight (const float height) {
   }
   else {
     sensor_mount_height_ = 0;
-    // RCLCPP_ERROR("Incorrect value of sensor mount height parameter. Set default value: 0.");
+    std::runtime_error("Incorrect value of sensor mount height parameter. Set default value: 0.");
   }
 }
 
@@ -155,7 +155,7 @@ void LaserScanKinect::setSensorTiltAngle (const float angle) {
   }
   else {
     sensor_tilt_angle_ 	= 0;
-    // RCLCPP_ERROR("Incorrect value of sensor tilt angle parameter. Set default value: 0.");
+    std::runtime_error("Incorrect value of sensor tilt angle parameter. Set default value: 0.");
   }
 }
 
@@ -165,7 +165,7 @@ void LaserScanKinect::setGroundMargin (const float margin) {
   }
   else {
     ground_margin_ = 0;
-    // RCLCPP_ERROR("Incorrect value of ground margin parameter. Set default value: 0.");
+    std::runtime_error("Incorrect value of ground margin parameter. Set default value: 0.");
   }
 }
 
@@ -175,7 +175,7 @@ void LaserScanKinect::setThreadsNum(unsigned threads_num) {
   }
   else {
     threads_num_ = 1;
-    // RCLCPP_ERROR("Incorrect number of threads. Set default value: 1.");
+    std::runtime_error("Incorrect number of threads. Set default value: 1.");
   }
 }
 
@@ -187,8 +187,6 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
   const double alpha = sensor_tilt_angle_ * M_PI / 180.0; // Sensor tilt angle in radians
   const int img_height = cam_model_.fullResolution().height;
 
-  // RCLCPP_ASSERT(img_height >= 0);
-
   dist_to_ground_corrected.resize(img_height);
 
   // Coefficients calculations for each row of image
@@ -199,7 +197,6 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
     if ((delta - alpha) > 0) {
       dist_to_ground_corrected[i] = sensor_mount_height_ * sin(M_PI / 2 - delta) / cos(M_PI / 2 - delta + alpha);
 
-      // RCLCPP_ASSERT(dist_to_ground_corrected[i] > 0);
     }
     else {
       dist_to_ground_corrected[i] = 100;
@@ -207,13 +204,6 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov) {
 
     dist_to_ground_corrected[i] -= ground_margin_;
   }
-
-  std::ostringstream s;
-  s << " calcGroundDistancesForImgRows:";
-  for (int i = 0; i < img_height; i+=10) {
-    s << i << " : " << dist_to_ground_corrected[i] << "  ";
-  }
-  // RCLCPP_INFO_STREAM_THROTTLE(1, s.str());
 }
 
 void LaserScanKinect::calcTiltCompensationFactorsForImgRows(double vertical_fov) {

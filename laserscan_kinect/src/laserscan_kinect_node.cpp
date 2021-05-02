@@ -67,47 +67,54 @@ rcl_interfaces::msg::SetParametersResult LaserScanKinectNode::parametersCallback
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
   result.reason = "success";
-  for (const auto &parameter : parameters) {
-      if (parameter.get_name() == "output_frame_id") {
-          converter_.setOutputFrame(parameter.as_string());
-      }
-      if (parameter.get_name() == "range_min") {
-          converter_.setMinRange(parameter.as_double());
-      }
-      if (parameter.get_name() == "range_max") {
-          converter_.setMaxRange(parameter.as_double());
-      }
-      if (parameter.get_name() == "scan_height") {
-          converter_.setScanHeight(parameter.as_int());
-      }
-      if (parameter.get_name() == "depth_img_row_step") {
-          converter_.setDepthImgRowStep(parameter.as_int());
-      }
-      if (parameter.get_name() == "cam_model_update") {
-          converter_.setCamModelUpdate(parameter.as_bool());
-      }
-      if (parameter.get_name() == "sensor_mount_height") {
-          converter_.setSensorMountHeight(parameter.as_double());
-      }
-      if (parameter.get_name() == "sensor_tilt_angle") {
-          converter_.setSensorTiltAngle(parameter.as_double());
-      }
-      if (parameter.get_name() == "ground_remove_en") {
-          converter_.setGroundRemove(parameter.as_bool());
-      }
-      if (parameter.get_name() == "ground_margin") {
-          converter_.setGroundMargin(parameter.as_double());
-      }
-      if (parameter.get_name() == "tilt_compensation_en") {
-          converter_.setTiltCompensation(parameter.as_bool());
-      }
-      if (parameter.get_name() == "publish_dbg_info") {
-          converter_.setScanConfigurated(parameter.as_bool());
-      }
-      if (parameter.get_name() == "threads_num") {
-          converter_.setThreadsNum(parameter.as_int());
-      }
+
+  try {
+    for (const auto &parameter : parameters) {
+        if (parameter.get_name() == "output_frame_id") {
+            converter_.setOutputFrame(parameter.as_string());
+        }
+        if (parameter.get_name() == "range_min") {
+            converter_.setMinRange(parameter.as_double());
+        }
+        if (parameter.get_name() == "range_max") {
+            converter_.setMaxRange(parameter.as_double());
+        }
+        if (parameter.get_name() == "scan_height") {
+            converter_.setScanHeight(parameter.as_int());
+        }
+        if (parameter.get_name() == "depth_img_row_step") {
+            converter_.setDepthImgRowStep(parameter.as_int());
+        }
+        if (parameter.get_name() == "cam_model_update") {
+            converter_.setCamModelUpdate(parameter.as_bool());
+        }
+        if (parameter.get_name() == "sensor_mount_height") {
+            converter_.setSensorMountHeight(parameter.as_double());
+        }
+        if (parameter.get_name() == "sensor_tilt_angle") {
+            converter_.setSensorTiltAngle(parameter.as_double());
+        }
+        if (parameter.get_name() == "ground_remove_en") {
+            converter_.setGroundRemove(parameter.as_bool());
+        }
+        if (parameter.get_name() == "ground_margin") {
+            converter_.setGroundMargin(parameter.as_double());
+        }
+        if (parameter.get_name() == "tilt_compensation_en") {
+            converter_.setTiltCompensation(parameter.as_bool());
+        }
+        if (parameter.get_name() == "publish_dbg_info") {
+            converter_.setScanConfigurated(parameter.as_bool());
+        }
+        if (parameter.get_name() == "threads_num") {
+            converter_.setThreadsNum(parameter.as_int());
+        }
+    }
   }
+  catch (const std::exception& e) {
+    RCLCPP_ERROR(this->get_logger(), e.what());
+  }
+
   return result;
 }
 
