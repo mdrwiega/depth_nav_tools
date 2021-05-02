@@ -92,7 +92,7 @@ sensor_msgs::msg::LaserScan::SharedPtr LaserScanKinect::getLaserScanMsg(
     throw std::runtime_error(ss.str());
   }
 
-  // Generate and publish debug image if necessary
+  // Generate and publish debug image
   if (publish_dbg_image_) {
     dbg_image_ = prepareDbgImage(depth_msg, min_dist_points_indices_);
   }
@@ -317,9 +317,6 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::msg::Image::C
     }
   };
 
-  std::stringstream log;
-  auto start = high_resolution_clock::now();
-
   if (threads_num_ <= 1) {
     process_columns(0, static_cast<size_t>(depth_msg->width - 1));
   }
@@ -327,11 +324,9 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::msg::Image::C
     std::vector<std::thread> workers;
     size_t left = 0;
     size_t step = static_cast<size_t>(depth_msg->width) / threads_num_;
-    log << "step: " << step;
 
     for (size_t i = 0; i < threads_num_; ++i) {
         workers.push_back(std::thread(process_columns, left, left + step - 1));
-        log << " w" << i << ": (" << left << ", " << left + step -1 << ") ";
         left += step;
     }
 
@@ -339,10 +334,6 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::msg::Image::C
       t.join();
     }
   }
-
-  auto end = (high_resolution_clock::now() - start);
-  log << " time[ms]: " << std::chrono::duration<double, std::milli>(end).count() << "\n";
-  // RCLCPP_DEBUG_STREAM(log.str());
 }
 
 sensor_msgs::msg::Image::SharedPtr LaserScanKinect::prepareDbgImage(
@@ -407,7 +398,7 @@ sensor_msgs::msg::Image::SharedPtr LaserScanKinect::prepareDbgImage(
     }
   }
 
-  for (const auto pt : pts) {
+  for (const auto& pt : pts) {
     const auto row = pt.first;
     const auto col = pt.second;
     rgb_data[row * img->width + col][0] = 0;

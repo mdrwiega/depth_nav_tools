@@ -1,7 +1,5 @@
 #include <depth_sensor_pose/depth_sensor_pose.h>
 
-// #define 		DEBUG_CALIBRATION
-
 namespace depth_sensor_pose {
 
 void DepthSensorPose::estimateParams(const sensor_msgs::msg::Image::ConstSharedPtr& image,
@@ -20,10 +18,6 @@ void DepthSensorPose::estimateParams(const sensor_msgs::msg::Image::ConstSharedP
     calcDeltaAngleForImgRows(vertical_fov);
     calcGroundDistancesForImgRows(mount_height_max_, tilt_angle_min_, dist_to_ground_max_);
     calcGroundDistancesForImgRows(mount_height_min_, tilt_angle_max_, dist_to_ground_min_);
-
-    // ROS_DEBUG_STREAM("Recalculate parameters because of camera model update. Parameters:\n"
-    //                   << "\n cx = " << camera_model_.cx() << " cy = " << camera_model_.cy()
-    //                   << "\nvertical FOV: " << vertical_fov );
 
     reconf_serv_params_updated_ = false;
   }
@@ -72,7 +66,7 @@ void DepthSensorPose::setSensorMountHeightMax(const float height) {
 }
 
 void DepthSensorPose::setSensorTiltAngleMin(const float angle) {
-  if( angle < 90 && angle > -90) {
+  if (angle < 90 && angle > -90) {
     tilt_angle_min_ 	= angle;
   }
   else {
@@ -82,7 +76,7 @@ void DepthSensorPose::setSensorTiltAngleMin(const float angle) {
 }
 
 void DepthSensorPose::setSensorTiltAngleMax(const float angle) {
-  if( angle < 90 && angle > -90) {
+  if (angle < 90 && angle > -90) {
     tilt_angle_max_ 	= angle;
   }
   else {
@@ -92,7 +86,7 @@ void DepthSensorPose::setSensorTiltAngleMax(const float angle) {
 }
 
 void DepthSensorPose::setUsedDepthHeight(const unsigned height) {
-  if( height > 0) {
+  if (height > 0) {
     used_depth_height_ = height;
   }
   else {
