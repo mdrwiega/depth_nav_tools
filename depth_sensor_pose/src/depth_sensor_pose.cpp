@@ -21,9 +21,9 @@ void DepthSensorPose::estimateParams(const sensor_msgs::ImageConstPtr& depth_msg
     calcGroundDistancesForImgRows(mount_height_max_, tilt_angle_min_, dist_to_ground_max_);
     calcGroundDistancesForImgRows(mount_height_min_, tilt_angle_max_, dist_to_ground_min_);
 
-    ROS_DEBUG_STREAM("Recalculate parameters because of camera model update. Parameters:\n"
-                      << "\n cx = " << camera_model_.cx() << " cy = " << camera_model_.cy()
-                      << "\nvertical FOV: " << vertical_fov );
+    // ROS_DEBUG_STREAM("Recalculate parameters because of camera model update. Parameters:\n"
+    //                   << "\n cx = " << camera_model_.cx() << " cy = " << camera_model_.cy()
+    //                   << "\nvertical FOV: " << vertical_fov );
 
     reconf_serv_params_updated_ = false;
   }
@@ -37,14 +37,14 @@ void DepthSensorPose::setRangeLimits(const float rmin, const float rmax) {
   }
   else {
     range_min_ = 0;
-    ROS_ERROR("Incorrect value of range minimal parameter. Set default value: 0.");
+    throw std::runtime_error("Incorrect value of range minimal parameter. Set default value: 0.");
   }
   if (rmax >= 0 && rmin < rmax) {
     range_max_ = rmax;
   }
   else {
     range_max_ = 10;
-    ROS_ERROR("Incorrect value of range maximum parameter. Set default value: 10.");
+    throw std::runtime_error("Incorrect value of range maximum parameter. Set default value: 10.");
   }
 }
 
@@ -54,7 +54,7 @@ void DepthSensorPose::setSensorMountHeightMin(const float height) {
   }
   else {
     mount_height_min_ = 0;
-    ROS_ERROR("Incorrect value of sensor mount height parameter. Set default value: 0.");
+    throw std::runtime_error("Incorrect value of sensor mount height parameter. Set default value: 0.");
   }
 }
 
@@ -64,7 +64,7 @@ void DepthSensorPose::setSensorMountHeightMax(const float height) {
   }
   else {
     mount_height_max_ = 1;
-    ROS_ERROR("Incorrect value of sensor mount height parameter. Set default value: 1m.");
+    throw std::runtime_error("Incorrect value of sensor mount height parameter. Set default value: 1m.");
   }
 }
 
@@ -74,7 +74,7 @@ void DepthSensorPose::setSensorTiltAngleMin(const float angle) {
   }
   else {
     tilt_angle_min_ 	= 0;
-    ROS_ERROR("Incorrect value of sensor tilt angle parameter. Set default value: 0.");
+    throw std::runtime_error("Incorrect value of sensor tilt angle parameter. Set default value: 0.");
   }
 }
 
@@ -84,7 +84,7 @@ void DepthSensorPose::setSensorTiltAngleMax(const float angle) {
   }
   else {
     tilt_angle_max_ 	= 0;
-    ROS_ERROR("Incorrect value of sensor tilt angle parameter. Set default value: 0.");
+    throw std::runtime_error("Incorrect value of sensor tilt angle parameter. Set default value: 0.");
   }
 }
 
@@ -94,7 +94,7 @@ void DepthSensorPose::setUsedDepthHeight(const unsigned height) {
   }
   else {
     used_depth_height_ = 200;
-    ROS_ERROR("Incorrect value of used depth height parameter. Set default value: 200.");
+    throw std::runtime_error("Incorrect value of used depth height parameter. Set default value: 200.");
   }
 }
 
@@ -104,7 +104,7 @@ void DepthSensorPose::setDepthImgStepRow(const int step) {
   }
   else {
     depth_image_step_row_ = 1;
-    ROS_ERROR("Incorrect value depth image row step parameter. Set default value: 1.");
+    throw std::runtime_error("Incorrect value depth image row step parameter. Set default value: 1.");
   }
 }
 
@@ -114,7 +114,7 @@ void DepthSensorPose::setDepthImgStepCol(const int step) {
   }
   else {
     depth_image_step_col_ = 1;
-    ROS_ERROR("Incorrect value depth image column step parameter. Set default value: 1.");
+    throw std::runtime_error("Incorrect value depth image column step parameter. Set default value: 1.");
   }
 }
 
@@ -290,30 +290,30 @@ void DepthSensorPose::sensorPoseCalibration(
     tilt_angle =  std::acos ((b*b + a*a) / (std::sqrt(b*b + a*a) * std::sqrt(a*a+b*b+c*c))) * 180.0 / M_PI;
     height = std::abs(d) / std::sqrt(a*a+b*b+c*c);
 
-    ROS_DEBUG_THROTTLE(1, "Estimated height = %.2f angle = %.2f", height, tilt_angle);
+    // ROS_DEBUG_THROTTLE(1, "Estimated height = %.2f angle = %.2f", height, tilt_angle);
 
-    std::ostringstream s;
-    s << " sensorLocationCalibration: ground_points size = " << ground_points->size()
-      << "\n a = " << ground_coeffs[0]
-      << "\n b = " << ground_coeffs[1]
-      << "\n c = " << ground_coeffs[2]
-      << "\n d = " << ground_coeffs[3]
-      << "\n height = " << height
-      << "\n tilt = " << tilt_angle;
-    ROS_DEBUG_STREAM_THROTTLE(1, s.str());
+    // std::ostringstream s;
+    // s << " sensorLocationCalibration: ground_points size = " << ground_points->size()
+    //   << "\n a = " << ground_coeffs[0]
+    //   << "\n b = " << ground_coeffs[1]
+    //   << "\n c = " << ground_coeffs[2]
+    //   << "\n d = " << ground_coeffs[3]
+    //   << "\n height = " << height
+    //   << "\n tilt = " << tilt_angle;
+    // ROS_DEBUG_STREAM_THROTTLE(1, s.str());
   }
   else {
-    ROS_ERROR("Ground points not detected. Please check parameters");
+    // ROS_ERROR("Ground points not detected. Please check parameters");
   }
 
   if (height < mount_height_min_ || height > mount_height_max_) {
     height = mount_height_min_;
-    ROS_WARN("Estimated height (%.2f) not in range. Lowest value from range used instead of estimated.", height);
+    // ROS_WARN("Estimated height (%.2f) not in range. Lowest value from range used instead of estimated.", height);
   }
 
   if (tilt_angle < tilt_angle_min_ || tilt_angle > tilt_angle_max_) {
     tilt_angle = tilt_angle_min_;
-    ROS_WARN("Estimated tilt angle (%.2f) not in range. Lowest value from range used instead of estimated.", tilt_angle);
+    // ROS_WARN("Estimated tilt angle (%.2f) not in range. Lowest value from range used instead of estimated.", tilt_angle);
   }
 }
 

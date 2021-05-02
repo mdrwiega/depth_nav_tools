@@ -11,10 +11,10 @@
 
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>image_geometry</depend>
   <depend>image_transport</depend>
-  <depend>libpcl-all</depend>
   <depend>pcl_ros</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>

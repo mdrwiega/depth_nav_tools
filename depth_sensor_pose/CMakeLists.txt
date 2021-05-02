@@ -12,7 +12,8 @@ find_package(rclcpp_components REQUIRED)
 find_package(image_geometry REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(pcl_ros REQUIRED)
+find_package(std_msgs REQUIRED)
+# find_package(pcl_ros REQUIRED)
 
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -27,6 +28,7 @@ add_library(DepthSensorPoseNode
 )
 ament_target_dependencies(DepthSensorPoseNode
   rclcpp
+  std_msgs
   sensor_msgs
   image_geometry
   image_transport

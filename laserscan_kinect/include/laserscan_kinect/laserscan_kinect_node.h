@@ -26,8 +26,8 @@ private:
    * Callback for depth image and camera info.
    * It converts depth image to laserscan and publishes it at the end.
    *
-   * @param depth_msg Depth image provided by image_transport.
-   * @param info_msg CameraInfo provided by image_transport.
+   * @param image Depth image provided by image_transport.
+   * @param info CameraInfo provided by image_transport.
    */
   void depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& image,
                const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);

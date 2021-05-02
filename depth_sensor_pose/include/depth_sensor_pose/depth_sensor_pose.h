@@ -9,12 +9,10 @@
 #include <fstream>
 #include <list>
 
-#include <ros/console.h>
-#include <ros/ros.h>
+#include <std_msgs/msg/float64.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/LaserScan.h>
-#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/image_encodings.hpp>
 #include <image_geometry/pinhole_camera_model.h>
 
 #include <pcl/point_types.h>
@@ -37,19 +35,13 @@ class DepthSensorPose {
   DepthSensorPose & operator= (const DepthSensorPose &) = delete;
 
   /**
-     * Converts the information in a depth image (sensor_msgs::Image) to a sensor_msgs::LaserScan.
+     * Estimates depth sensor height and tilt angle
      *
-     * This function converts the information in the depth encoded image (UInt16) into
-     * a sensor_msgs::LaserScan as accurately as possible.  To do this, it requires the
-     * synchornized Image/CameraInfo pair associated with the image.
-     *
-     * @param depth_msg UInt16 or Float32 encoded depth image.
-     * @param info_msg CameraInfo associated with depth_msg
-     * @return sensor_msgs::LaserScanPtr for the center row(s) of the depth image.
-     *
+     * @param image UInt16 or Float32 encoded depth image.
+     * @param info CameraInfo associated with the image
      */
-  void estimateParams(const sensor_msgs::ImageConstPtr& depth_msg,
-                      const sensor_msgs::CameraInfoConstPtr& info_msg);
+  void estimateParams(const sensor_msgs::msg::Image::ConstSharedPtr& image,
+                      const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
   /**
      * Sets the minimum and maximum range for the sensor_msgs::LaserScan.
      *
@@ -130,7 +122,7 @@ class DepthSensorPose {
 
   float getSensorMountHeight() const { return mount_height_est_; }
 
-  sensor_msgs::ImageConstPtr getDbgImage() const;
+  sensor_msgs::msgs::Image::SharedPtr getDbgImage() const;
 
  protected:
   /**
@@ -180,14 +172,14 @@ class DepthSensorPose {
                                       std::vector<double>& distances);
 
   template<typename T>
-  void getGroundPoints(const sensor_msgs::ImageConstPtr& depth_msg,
+  void getGroundPoints(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
                        pcl::PointCloud<pcl::PointXYZ>::Ptr& points,
                        std::list<std::pair<unsigned, unsigned>>& points_indices);
 
-  void sensorPoseCalibration(const sensor_msgs::ImageConstPtr& depth_msg,
+  void sensorPoseCalibration(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
                              double& tilt_angle, double& height);
 
-  sensor_msgs::ImagePtr prepareDbgImage(const sensor_msgs::ImageConstPtr& depth_msg,
+  sensor_msgs::msg::Image::SharedPtr prepareDbgImage(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
     const std::list<std::pair<unsigned, unsigned>>& ground_points_indices);
 
  private:
@@ -213,7 +205,7 @@ class DepthSensorPose {
   ///< Class for managing sensor_msgs/CameraInfo messages
   image_geometry::PinholeCameraModel camera_model_;
 
-  sensor_msgs::ImagePtr dbg_image_;
+  sensor_msgs::msg::Image::SharedPtr dbg_image_;
 
   double mount_height_est_{0};
   double tilt_angle_est_{0};
