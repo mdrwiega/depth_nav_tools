@@ -13,6 +13,7 @@ find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(pcl_conversions REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -25,6 +26,7 @@ add_library(DepthSensorPoseNode
   src/depth_sensor_pose.cpp
   src/depth_sensor_pose_node.cpp
 )
+
 ament_target_dependencies(DepthSensorPoseNode
   rclcpp
   std_msgs

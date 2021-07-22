@@ -24,6 +24,8 @@ public:
 
   void onInitialize() override;
 
+  void reset() override {}
+
   void updateBounds(double origin_x, double origin_y, double origin_z,
                     double* min_x, double* min_y, double* max_x, double* max_y) override;
 

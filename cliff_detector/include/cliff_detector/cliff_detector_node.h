@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
@@ -39,6 +39,8 @@ class CliffDetectorNode : public rclcpp::Node {
   rclcpp::Publisher<geometry_msgs::msg::PolygonStamped>::SharedPtr pub_points_;
   /// Contains cliff detection method implementation
   cliff_detector::CliffDetector detector_;
+
+  OnSetParametersCallbackHandle::SharedPtr params_callback_handle_;
 };
 
 } // namespace cliff_detector

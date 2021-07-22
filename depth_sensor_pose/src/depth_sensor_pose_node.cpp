@@ -7,7 +7,7 @@ namespace depth_sensor_pose {
 DepthSensorPoseNode::DepthSensorPoseNode()
   : Node("depth_sensor_pose")
 {
-  set_on_parameters_set_callback(
+  params_callback_handle_ = add_on_set_parameters_callback(
       std::bind(&DepthSensorPoseNode::parametersCallback, this, std::placeholders::_1));
 
   declare_parameter("output_frame_id", "camera_depth_frame");

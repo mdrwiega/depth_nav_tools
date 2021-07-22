@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 #include <std_msgs/msg/float64.h>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
@@ -51,6 +51,8 @@ public:
   image_transport::Publisher pub_;
 
   depth_sensor_pose::DepthSensorPose estimator_;
+
+  OnSetParametersCallbackHandle::SharedPtr params_callback_handle_;
 };
 
 } // namespace depth_sensor_pose

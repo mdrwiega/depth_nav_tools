@@ -5,7 +5,7 @@ namespace cliff_detector {
 CliffDetectorNode::CliffDetectorNode()
   : Node("cliff_detector")
 {
-  set_on_parameters_set_callback(
+  params_callback_handle_ = add_on_set_parameters_callback(
     std::bind(&CliffDetectorNode::parametersCallback, this, std::placeholders::_1));
 
   // Declare all node parameters
