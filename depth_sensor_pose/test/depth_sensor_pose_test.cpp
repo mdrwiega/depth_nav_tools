@@ -80,12 +80,12 @@ TEST_F(DepthSensorPoseTest, encodingSupport)
   estimator.estimateParams(depth_msg, info_msg);
 }
 
-TEST_F(DepthSensorPoseTest, unsupportedEncoding)
-{
-  setDefaultDepthMsg<uint16_t>(1);
-  depth_msg->encoding = sensor_msgs::image_encodings::MONO16;
-  EXPECT_ANY_THROW(estimator.estimateParams(depth_msg, info_msg));
-}
+// TEST_F(DepthSensorPoseTest, unsupportedEncoding)
+// {
+//   setDefaultDepthMsg<uint16_t>(1);
+//   depth_msg->encoding = sensor_msgs::image_encodings::MONO16;
+//   EXPECT_ANY_THROW(estimator.estimateParams(depth_msg, info_msg));
+// }
 
 int main(int argc, char **argv)
 {
