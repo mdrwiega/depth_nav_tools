@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 
@@ -47,6 +47,8 @@ private:
   image_transport::Publisher pub_dbg_img_;
   /// Object which convert depth image to laserscan and store all parameters
   laserscan_kinect::LaserScanKinect converter_;
+
+  OnSetParametersCallbackHandle::SharedPtr params_callback_handle_;
 };
 
 } // namespace laserscan_kinect

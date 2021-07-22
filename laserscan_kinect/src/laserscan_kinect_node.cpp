@@ -7,7 +7,7 @@ namespace laserscan_kinect {
 LaserScanKinectNode::LaserScanKinectNode()
   : Node("laserscan_kinect")
 {
-  set_on_parameters_set_callback(
+  params_callback_handle_ = add_on_set_parameters_callback(
       std::bind(&LaserScanKinectNode::parametersCallback, this, std::placeholders::_1));
 
   // Declare all node parameters
