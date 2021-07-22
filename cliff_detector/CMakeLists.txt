@@ -19,6 +19,7 @@ add_library(CliffDetectorNode
   src/cliff_detector.cpp
   src/cliff_detector_node.cpp
 )
+
 ament_target_dependencies(CliffDetectorNode
   rclcpp
   image_geometry
@@ -45,7 +46,10 @@ install(DIRECTORY config
 )
 
 # Unit tests
-if (BUILD_TESTING)
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(CliffDetectorTest test/cliff_detector_test.cpp)

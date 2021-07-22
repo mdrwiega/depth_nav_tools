@@ -13,7 +13,10 @@ find_package(nav2_costmap_2d REQUIRED)
 
 include_directories(include)
 
-add_library(nav_layer_from_points src/costmap_layer.cpp )
+add_library(nav_layer_from_points
+  src/costmap_layer.cpp
+)
+
 ament_target_dependencies(nav_layer_from_points
   rclcpp
   geometry_msgs

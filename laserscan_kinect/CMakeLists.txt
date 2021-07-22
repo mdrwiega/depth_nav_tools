@@ -1,3 +1,5 @@
+# Copyright 2015-2021 Michał Drwięga
+
 cmake_minimum_required(VERSION 3.5)
 project(laserscan_kinect)
 
@@ -50,7 +52,10 @@ install(DIRECTORY
 )
 
 # Unit tests
-if (BUILD_TESTING)
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(laserscanKinectTest test/laserscan_kinect_test.cpp)
