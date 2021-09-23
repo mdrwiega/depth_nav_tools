@@ -104,7 +104,7 @@ rcl_interfaces::msg::SetParametersResult LaserScanKinectNode::parametersCallback
             converter_.setTiltCompensation(parameter.as_bool());
         }
         if (parameter.get_name() == "publish_dbg_info") {
-            converter_.setScanConfigurated(parameter.as_bool());
+            converter_.setPublishDbgImgEnable(parameter.as_bool());
         }
         if (parameter.get_name() == "threads_num") {
             converter_.setThreadsNum(parameter.as_int());
