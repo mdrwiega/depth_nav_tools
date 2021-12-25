@@ -1,4 +1,5 @@
-## depth_nav_tools
+# depth_nav_tools
+
 The set of software tools dedicated to a mobile robot autonomous navigation with a depth sensor, for example Kinect.
 
 The metapackage depth_nav_tools contains following packages:
@@ -21,6 +22,7 @@ It uses a known sensor pose to determine obstacles placed below the ground plane
 - **nav_layer_from_points** -- It creates navigation costmap layer based on received points, for example from the *cliff_detector*.
 
 ## Additional documentation
+
 A full documentation is available at the [ROS wiki](http://wiki.ros.org/depth_nav_tools) and in the publication "[A set of depth sensor processing ROS tools for wheeled mobile robot navigation"(PDF)](http://www.jamris.org/images/ISSUES/ISSUE-2017-02/48_56%20Drwiega.pdf) by M. Drwięga and J. Jakubiak (Journal of Automation, Mobile Robotics & Intelligent Systems, 2017).
 
 BibTeX:
@@ -36,11 +38,14 @@ BibTeX:
 ```
 
 ## laserscan_kinect
+
 ### The example of obstacles detection by the laserscan_kinect
+
 The picture shows comparison between a laser scan based on the converted depth image from a Microsoft Kinect (blue points) and a laser scan from a scanner Hokuyo URG-04LX-UG01 (black points).
 ![Laserscan Kinect detection](http://wiki.ros.org/laserscan_kinect?action=AttachFile&do=get&target=laserscan_kinect_detection.jpg)
 
 ### Tuning
+
 During the tuning process additional debug image can be used. It contains lines that represent the lower and upper bounds of the detection area. Also, closest points in each image column are visible.
 ![laserscan_kinect_dbg](https://user-images.githubusercontent.com/8460945/107285398-62629f80-6a5f-11eb-8d7b-2c23f7247566.png)
 
@@ -105,6 +110,10 @@ To start a node laserscan_kinect it can be used a following command
 - *~ransac_dist_thresh* (double) - RANSAC distance threshold
 
 - *~publish_dbg_info* (bool) - determines if debug image should be published
+
+## Building
+
+`colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release`
 
 ## Tests
 Currently unit tests are implemented only for the **laserscan_kinect** package.
