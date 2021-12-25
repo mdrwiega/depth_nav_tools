@@ -1,3 +1,30 @@
+// Software License Agreement (BSD License)
+//
+// Copyright (c) 2016-2021, Michal Drwiega (drwiega.michal@gmail.com)
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//     1. Redistributions of source code must retain the above copyright
+//        notice, this list of conditions and the following disclaimer.
+//     2. Redistributions in binary form must reproduce the above copyright
+//        notice, this list of conditions and the following disclaimer in the
+//        documentation and/or other materials provided with the distribution.
+//     3. Neither the name of the copyright holder nor the names of its
+//        contributors may be used to endorse or promote products derived
+//        from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+// TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <chrono>
 #include <iostream>
@@ -13,27 +40,31 @@ using namespace std::chrono;
 class LaserScanKinectTestable : public laserscan_kinect::LaserScanKinect {
   public:
     template <typename T>
-    float getSmallestValueInColumn(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg, int col) {
+    float getSmallestValueInColumn(
+      const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg, int col) {
       return laserscan_kinect::LaserScanKinect::getSmallestValueInColumn<T>(depth_msg, col);
     }
 };
 
-class LaserScanKinectTest : public ::testing::Test {
- public:
+class LaserScanKinectTest : public ::testing::Test
+{
+public:
   sensor_msgs::msg::Image::SharedPtr depth_msg;
   sensor_msgs::msg::CameraInfo::SharedPtr info_msg;
   LaserScanKinectTestable converter;
 
-  unsigned img_height { 480 };
-  unsigned img_width { 640 };
-  unsigned scan_height { 420 };
+  unsigned img_height {480};
+  unsigned img_width {640};
+  unsigned scan_height {420};
 
-  LaserScanKinectTest() {
+  LaserScanKinectTest()
+  {
     defaultConverterConfiguration();
     setDefaultInfoMsg();
   }
 
-  void defaultConverterConfiguration() {
+  void defaultConverterConfiguration()
+  {
     converter.setOutputFrame("kinect_frame");
     converter.setMinRange(0.5);
     converter.setMaxRange(5.0);
@@ -49,7 +80,8 @@ class LaserScanKinectTest : public ::testing::Test {
     converter.setScanConfigurated(false);
   }
 
-  void setDefaultInfoMsg() {
+  void setDefaultInfoMsg()
+  {
     info_msg.reset(new sensor_msgs::msg::CameraInfo);
     info_msg->header.frame_id = "depth_frame";
     info_msg->height = img_height;
@@ -72,7 +104,8 @@ class LaserScanKinectTest : public ::testing::Test {
   }
 
   template<typename T>
-  void setDefaultDepthMsg(T value) {
+  void setDefaultDepthMsg(T value)
+  {
     depth_msg.reset(new sensor_msgs::msg::Image);
     depth_msg->header.frame_id = "depth_frame";
     depth_msg->height = img_height;
@@ -82,15 +115,14 @@ class LaserScanKinectTest : public ::testing::Test {
 
     if (typeid(T) == typeid(uint16_t)) {
       depth_msg->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-    }
-    else if (typeid(T) == typeid(float)) {
+    } else if (typeid(T) == typeid(float)) {
       depth_msg->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     }
 
     depth_msg->data.resize(depth_msg->width * depth_msg->height * sizeof(T));
-    T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
+    auto depth_row = reinterpret_cast<T *>(&depth_msg->data[0]);
     for (size_t i = 0; i < depth_msg->width * depth_msg->height; ++i) {
-        depth_row[i] = value;
+      depth_row[i] = value;
     }
   }
 
@@ -98,7 +130,7 @@ class LaserScanKinectTest : public ::testing::Test {
   void setDepthMsgWithTheSameSmallestValueInEachColumn(T low_value, T high_value) {
     setDefaultDepthMsg<T>(high_value);
 
-    T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
+    T* depth_row = reinterpret_cast<T *>(&depth_msg->data[0]);
     const int row_size = depth_msg->width;
     const int offset = static_cast<int>(info_msg->k[5] - scan_height / 2.0);
 
@@ -110,16 +142,13 @@ class LaserScanKinectTest : public ::testing::Test {
       if (down) {
         if ((row + 1) <= (offset + static_cast<int>(scan_height))) {
           row++;
-        }
-        else {
+        } else {
           down = false;
         }
-      }
-      else {
+      } else {
         if ((row - 1) >= offset) {
           row--;
-        }
-        else {
+        } else {
           down = true;
         }
       }
@@ -128,7 +157,9 @@ class LaserScanKinectTest : public ::testing::Test {
 
   // Set low, high or ground value
   template<typename T>
-  void setDepthMsgWithTheSameSmallestValueAndGroundInEachColumn(T low_value, T high_value, T ground_value) {
+  void setDepthMsgWithTheSameSmallestValueAndGroundInEachColumn(
+    T low_value, T high_value, T ground_value)
+  {
     setDefaultDepthMsg<T>(high_value);
 
     T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
@@ -169,7 +200,8 @@ TEST_F(LaserScanKinectTest, getSmallestValueInColumn_U16_FeaturesOff)
 
   setDepthMsgWithTheSameSmallestValueInEachColumn<uint16_t>(low, high);
 
-  EXPECT_EQ((float)low/1000, converter.getSmallestValueInColumn<uint16_t>(depth_msg, 1));
+  EXPECT_EQ(static_cast<float>(low) / 1000,
+    converter.getSmallestValueInColumn<uint16_t>(depth_msg, 1));
 }
 
 TEST_F(LaserScanKinectTest, getSmallestValueInColumn_F32_FeaturesOff)
@@ -246,8 +278,8 @@ TEST_F(LaserScanKinectTest, minInEachColumn_F32_FeaturesDisabled)
   float max_depth = sqrt(tmp * tmp + high * high);
 
   // Check if in each column minimum value was selected
-  for (const float range : scan_msg->ranges) {
-      ASSERT_EQ(true, range <= max_depth || std::isnan(range));
+  for (const float & range : scan_msg->ranges) {
+    ASSERT_EQ(true, range <= max_depth || std::isnan(range));
   }
 }
 
@@ -261,13 +293,13 @@ TEST_F(LaserScanKinectTest, timeMeasurement_U16_FeaturesDisabled)
   duration<double> time{0};
 
   for (size_t i = 0; i < iter; ++i) {
-      auto start = high_resolution_clock::now();
+    auto start = high_resolution_clock::now();
 
-      auto scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
-      time += (high_resolution_clock::now() - start);
+    auto scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
+    time += (high_resolution_clock::now() - start);
   }
-  std::cout << "Mean processing time: "
-            << duration<double, std::milli>(time).count() / iter << " ms.\n";
+  std::cout << "Mean processing time: " <<
+    duration<double, std::milli>(time).count() / iter << " ms.\n";
 }
 
 TEST_F(LaserScanKinectTest, timeMeasurement_U16_FeaturesEnabled)
@@ -288,8 +320,8 @@ TEST_F(LaserScanKinectTest, timeMeasurement_U16_FeaturesEnabled)
     auto scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
     time += (high_resolution_clock::now() - start);
   }
-  std::cout << "Mean processing time: "
-            << duration<double, std::milli>(time).count() / iter << " ms.\n";
+  std::cout << "Mean processing time: " <<
+    duration<double, std::milli>(time).count() / iter << " ms.\n";
 }
 
 TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesDisabled)
@@ -307,8 +339,8 @@ TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesDisabled)
     auto scan_msg = converter.getLaserScanMsg(depth_msg, info_msg);
     time += (high_resolution_clock::now() - start);
   }
-  std::cout << "Mean processing time: "
-            << duration<double, std::milli>(time).count() / iter << " ms.\n";
+  std::cout << "Mean processing time: " <<
+    duration<double, std::milli>(time).count() / iter << " ms.\n";
 }
 
 TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesEnabled)
@@ -334,7 +366,7 @@ TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesEnabled)
             << duration<double, std::milli>(time).count() / iter << " ms.\n";
 }
 
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
