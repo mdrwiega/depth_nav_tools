@@ -19,11 +19,11 @@ ament_auto_add_library(${PROJECT_NAME}
   src/laserscan_kinect_node.cpp
 )
 
-add_executable(laserscan_kinect_exe
+add_executable(${PROJECT_NAME}_exe
   src/main.cpp
 )
 
-target_link_libraries(laserscan_kinect_exe ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_exe ${PROJECT_NAME})
 
 # Unit tests
 if(BUILD_TESTING)
