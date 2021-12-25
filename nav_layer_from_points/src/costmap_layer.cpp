@@ -7,7 +7,7 @@ PLUGINLIB_EXPORT_CLASS(nav_layer_from_points::NavLayerFromPoints, nav2_costmap_2
 namespace nav_layer_from_points {
 
 NavLayerFromPoints::NavLayerFromPoints()
-  : tf_buffer_(node_->get_clock())
+  : tf_buffer_(clock_)
 {
   layered_costmap_ = nullptr;
 }
@@ -16,12 +16,12 @@ void NavLayerFromPoints::onInitialize() {
   current_ = true;
   first_time_ = true;
 
-  node_->declare_parameter(name_ + "." + "enabled", true);
-  node_->declare_parameter(name_ + "." + "keep_time", 0.75);
-  node_->declare_parameter(name_ + "." + "point_radius", 0.2);
-  node_->declare_parameter(name_ + "." + "robot_radius", 0.6);
+  rclcpp_node_->declare_parameter(name_ + "." + "enabled", true);
+  rclcpp_node_->declare_parameter(name_ + "." + "keep_time", 0.75);
+  rclcpp_node_->declare_parameter(name_ + "." + "point_radius", 0.2);
+  rclcpp_node_->declare_parameter(name_ + "." + "robot_radius", 0.6);
 
-  sub_points_ = node_->create_subscription<geometry_msgs::msg::PolygonStamped>(
+  sub_points_ = rclcpp_node_->create_subscription<geometry_msgs::msg::PolygonStamped>(
     "points", 1, std::bind(&NavLayerFromPoints::pointsCallback, this, std::placeholders::_1));
 }
 
@@ -36,7 +36,7 @@ void NavLayerFromPoints::clearTransformedPoints() {
 
   auto p_it = transformed_points_.begin();
   while (p_it != transformed_points_.end()) {
-    if (node_->get_clock()->now() - (*p_it).header.stamp > points_keep_time_) {
+    if (clock_->now() - (*p_it).header.stamp > points_keep_time_) {
       p_it = transformed_points_.erase(p_it);
     }
     else {
@@ -79,15 +79,15 @@ void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
       transformed_points_.push_back(tpt);
     }
     catch(tf2::LookupException& ex) {
-      RCLCPP_ERROR(node_->get_logger(), "No Transform available Error: %s\n", ex.what());
+      RCLCPP_ERROR(rclcpp_node_->get_logger(), "No Transform available Error: %s\n", ex.what());
       continue;
     }
     catch(tf2::ConnectivityException& ex) {
-      RCLCPP_ERROR(node_->get_logger(), "Connectivity Error: %s\n", ex.what());
+      RCLCPP_ERROR(rclcpp_node_->get_logger(), "Connectivity Error: %s\n", ex.what());
       continue;
     }
     catch(tf2::ExtrapolationException& ex) {
-      RCLCPP_ERROR(node_->get_logger(), "Extrapolation Error: %s\n", ex.what());
+      RCLCPP_ERROR(rclcpp_node_->get_logger(), "Extrapolation Error: %s\n", ex.what());
       continue;
     }
   }
@@ -102,7 +102,10 @@ void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
     first_time_ = false;
   }
   else {
-    double a = *min_x, b = *min_y, c = *max_x, d = *max_y;
+    const double a = *min_x;
+    const double b = *min_y;
+    const double c = *max_x;
+    const double d = *max_y;
     *min_x = std::min(last_min_x_, *min_x);
     *min_y = std::min(last_min_y_, *min_y);
     *max_x = std::max(last_max_x_, *max_x);
@@ -115,9 +118,9 @@ void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
 }
 
 void NavLayerFromPoints::updateBoundsFromPoints(double* min_x, double* min_y, double* max_x, double* max_y) {
-  double radius = point_radius_ + robot_radius_;
+  const double radius = point_radius_ + robot_radius_;
 
-  for (const auto& point : transformed_points_) {
+  for (const auto & point : transformed_points_) {
     *min_x = std::min(*min_x, point.point.x - radius);
     *min_y = std::min(*min_y, point.point.y - radius);
     *max_x = std::max(*max_x, point.point.x + radius);
@@ -129,19 +132,21 @@ void NavLayerFromPoints::updateCosts([[maybe_unused]] nav2_costmap_2d::Costmap2D
                                      int min_i, int min_j, int max_i, int max_j) {
   std::lock_guard<std::recursive_mutex> lk(lock_);
 
-  if (!enabled_)
+  if (!enabled_) {
     return;
+  }
 
-  if (points_list_.polygon.points.empty())
+  if (points_list_.polygon.points.empty()) {
     return;
+  }
 
   auto costmap = layered_costmap_->getCostmap();
   const auto resolution = costmap->getResolution();
 
-  for (const auto& point : transformed_points_) {
+  for (const auto & point : transformed_points_) {
     geometry_msgs::msg::Point pt = point.point;
 
-    int size = std::max(1, int( (point_radius_ + robot_radius_) / resolution ));
+    const int size = std::max(1, static_cast<int>((point_radius_ + robot_radius_) / resolution));
     unsigned map_x, map_y;
     int size_x = size, size_y = size;
     int start_x, start_y, end_x, end_y;
@@ -161,10 +166,11 @@ void NavLayerFromPoints::updateCosts([[maybe_unused]] nav2_costmap_2d::Costmap2D
 
       for(int j = start_y; j < end_y; j++) {
         for(int i = start_x; i < end_x; i++) {
-          unsigned char old_cost = costmap->getCost(i, j);
+          const unsigned char old_cost = costmap->getCost(i, j);
 
-          if(old_cost == nav2_costmap_2d::NO_INFORMATION)
+          if(old_cost == nav2_costmap_2d::NO_INFORMATION) {
             continue;
+          }
 
           costmap->setCost(i, j, nav2_costmap_2d::LETHAL_OBSTACLE);
         }

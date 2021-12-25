@@ -37,6 +37,8 @@ public:
 
   bool isDiscretized() { return false; }
 
+  bool isClearable() { return false; }
+
 protected:
 
   void pointsCallback(const geometry_msgs::msg::PolygonStamped::SharedPtr points);
@@ -56,7 +58,7 @@ protected:
   std::list<geometry_msgs::msg::PointStamped> transformed_points_;
 
   // After this time points will be delete
-  rclcpp::Duration points_keep_time_{0};
+  rclcpp::Duration points_keep_time_ = rclcpp::Duration::from_nanoseconds(0);
 
   std::recursive_mutex lock_;
   bool first_time_;
