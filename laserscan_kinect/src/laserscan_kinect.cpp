@@ -213,7 +213,7 @@ sensor_msgs::msg::Image::SharedPtr LaserScanKinect::getDbgImage() const
 
 void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov)
 {
-  const double alpha = sensor_tilt_angle_ * M_PI / 180.0;  // Sensor tilt angle in radians
+  const double alpha = toRad(sensor_tilt_angle_);
   const int img_height = cam_model_.fullResolution().height;
 
   dist_to_ground_corrected.resize(img_height);
@@ -237,7 +237,7 @@ void LaserScanKinect::calcGroundDistancesForImgRows(double vertical_fov)
 
 void LaserScanKinect::calcTiltCompensationFactorsForImgRows(double vertical_fov)
 {
-  const double alpha = sensor_tilt_angle_ * M_PI / 180.0;
+  const double alpha = toRad(sensor_tilt_angle_);
   const int img_height = cam_model_.fullResolution().height;
 
   tilt_compensation_factor_.resize(img_height);

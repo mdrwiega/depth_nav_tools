@@ -63,7 +63,7 @@ void DepthSensorPoseNode::depthCallback(
   const sensor_msgs::msg::CameraInfo::ConstSharedPtr & info)
 {
   try {
-    // Estimation of parameters -- sensor pose
+    // Estimation of sensor pose
     estimator_.estimateParams(image, info);
 
     std_msgs::msg::Float64 height, tilt_angle;
@@ -79,7 +79,7 @@ void DepthSensorPoseNode::depthCallback(
     // Publish debug image
     if (estimator_.getPublishDepthEnable()) {
       auto dbg_image = estimator_.getDbgImage();
-      if (dbg_image != nullptr) {
+      if (dbg_image) {
         pub_.publish(dbg_image);
       }
     }

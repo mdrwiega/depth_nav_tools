@@ -68,7 +68,7 @@ void CliffDetectorNode::depthCb(
 
     // Publishes debug depth image with obstacles
     if (detector_.getPublishDepthEnable()) {
-      pub_.publish(detector_.new_depth_msg_);
+      pub_.publish(detector_.getDebugDepthImage());
     }
   } catch (std::runtime_error & e) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Could not perform stairs detection: %s", e.what());

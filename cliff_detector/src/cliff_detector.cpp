@@ -46,7 +46,8 @@ geometry_msgs::msg::PolygonStamped CliffDetector::detectCliff(
     camera_model_.fromCameraInfo(info);
 
     double angle_min, angle_max, vertical_fov;
-    double cx = camera_model_.cx(), cy = camera_model_.cy();
+    const auto cx = camera_model_.cx();
+    const auto cy = camera_model_.cy();
 
     // Calculate field of views angles - vertical and horizontal
     fieldOfView(angle_min, angle_max, cx, 0, cx, cy, cx, image->height - 1);
@@ -261,6 +262,11 @@ void CliffDetector::calcTiltCompensationFactorsForImgRows()
   }
 }
 
+sensor_msgs::msg::Image CliffDetector::getDebugDepthImage() const
+{
+  return debug_depth_msg_;
+}
+
 template<typename T>
 void CliffDetector::findCliffInDepthImage(
   const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg)
@@ -362,10 +368,10 @@ void CliffDetector::findCliffInDepthImage(
   }
 
   if (publish_depth_enable_) {
-    new_depth_msg_ = *depth_msg;
+    debug_depth_msg_ = *depth_msg;
   }
 
-  T * new_depth_row = reinterpret_cast<T *>(&new_depth_msg_.data[0]);
+  T * new_depth_row = reinterpret_cast<T *>(&debug_depth_msg_.data[0]);
 
   // Set header and size of points list in message
   geometry_msgs::msg::Point32 pt;

@@ -62,7 +62,8 @@ private:
   rcl_interfaces::msg::SetParametersResult parametersCallback(
     const std::vector<rclcpp::Parameter> & parameters);
 
-  image_transport::CameraSubscriber subscriber_;  ///< Subscriber for image_transport
+  ///< Subscriber for image_transport
+  image_transport::CameraSubscriber subscriber_;
 
   /// Publisher for estimated sensor height
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_height_;

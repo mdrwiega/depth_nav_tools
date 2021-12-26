@@ -20,8 +20,13 @@
 namespace laserscan_kinect
 {
 
+inline double toRad(double alpha)
+{
+  return alpha * M_PI / 180.0;
+}
+
 /**
-* @brief lengthOfVector calculate the length of the 3D vector
+* @brief A length of the 3D vector
 */
 inline double lengthOfVector(const cv::Point3d & vec)
 {

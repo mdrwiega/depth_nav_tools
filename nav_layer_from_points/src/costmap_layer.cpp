@@ -1,18 +1,34 @@
+// Copyright 2016-2021 Michał Drwięga (drwiega.michal@gmail.com)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <nav_layer_from_points/costmap_layer.h>
 
 #include <fstream>
 
 PLUGINLIB_EXPORT_CLASS(nav_layer_from_points::NavLayerFromPoints, nav2_costmap_2d::Layer)
 
-namespace nav_layer_from_points {
+namespace nav_layer_from_points
+{
 
 NavLayerFromPoints::NavLayerFromPoints()
-  : tf_buffer_(clock_)
+: tf_buffer_(clock_)
 {
   layered_costmap_ = nullptr;
 }
 
-void NavLayerFromPoints::onInitialize() {
+void NavLayerFromPoints::onInitialize()
+{
   current_ = true;
   first_time_ = true;
 
@@ -25,12 +41,15 @@ void NavLayerFromPoints::onInitialize() {
     "points", 1, std::bind(&NavLayerFromPoints::pointsCallback, this, std::placeholders::_1));
 }
 
-void NavLayerFromPoints::pointsCallback(const geometry_msgs::msg::PolygonStamped::SharedPtr points) {
+void NavLayerFromPoints::pointsCallback(
+  const geometry_msgs::msg::PolygonStamped::SharedPtr points)
+{
   std::lock_guard<std::recursive_mutex> lk(lock_);
   points_list_ = *points;
 }
 
-void NavLayerFromPoints::clearTransformedPoints() {
+void NavLayerFromPoints::clearTransformedPoints()
+{
   if (transformed_points_.size() > 10000)
     transformed_points_.clear();
 
@@ -45,10 +64,12 @@ void NavLayerFromPoints::clearTransformedPoints() {
   }
 }
 
-void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
-                                      [[maybe_unused]] double origin_y,
-                                      [[maybe_unused]] double origin_z,
-                                      double* min_x, double* min_y, double* max_x, double* max_y) {
+void NavLayerFromPoints::updateBounds(
+  [[maybe_unused]] double origin_x,
+  [[maybe_unused]] double origin_y,
+  [[maybe_unused]] double origin_z,
+  double* min_x, double* min_y, double* max_x, double* max_y)
+{
   std::lock_guard<std::recursive_mutex> lk(lock_);
 
   std::string global_frame = layered_costmap_->getGlobalFrameID();
@@ -117,7 +138,9 @@ void NavLayerFromPoints::updateBounds([[maybe_unused]] double origin_x,
   }
 }
 
-void NavLayerFromPoints::updateBoundsFromPoints(double* min_x, double* min_y, double* max_x, double* max_y) {
+void NavLayerFromPoints::updateBoundsFromPoints(
+  double* min_x, double* min_y, double* max_x, double* max_y)
+{
   const double radius = point_radius_ + robot_radius_;
 
   for (const auto & point : transformed_points_) {
@@ -128,8 +151,10 @@ void NavLayerFromPoints::updateBoundsFromPoints(double* min_x, double* min_y, do
   }
 }
 
-void NavLayerFromPoints::updateCosts([[maybe_unused]] nav2_costmap_2d::Costmap2D& master_grid,
-                                     int min_i, int min_j, int max_i, int max_j) {
+void NavLayerFromPoints::updateCosts(
+  [[maybe_unused]] nav2_costmap_2d::Costmap2D & master_grid,
+  int min_i, int min_j, int max_i, int max_j)
+{
   std::lock_guard<std::recursive_mutex> lk(lock_);
 
   if (!enabled_) {
@@ -144,7 +169,7 @@ void NavLayerFromPoints::updateCosts([[maybe_unused]] nav2_costmap_2d::Costmap2D
   const auto resolution = costmap->getResolution();
 
   for (const auto & point : transformed_points_) {
-    geometry_msgs::msg::Point pt = point.point;
+    const auto & pt = point.point;
 
     const int size = std::max(1, static_cast<int>((point_radius_ + robot_radius_) / resolution));
     unsigned map_x, map_y;
@@ -164,15 +189,13 @@ void NavLayerFromPoints::updateCosts([[maybe_unused]] nav2_costmap_2d::Costmap2D
       if (start_y < min_j) start_y = min_j;
       if (end_y > max_j)   end_y = max_j;
 
-      for(int j = start_y; j < end_y; j++) {
-        for(int i = start_x; i < end_x; i++) {
+      for (int j = start_y; j < end_y; j++) {
+        for (int i = start_x; i < end_x; i++) {
           const unsigned char old_cost = costmap->getCost(i, j);
 
-          if(old_cost == nav2_costmap_2d::NO_INFORMATION) {
-            continue;
+          if (old_cost != nav2_costmap_2d::NO_INFORMATION) {
+            costmap->setCost(i, j, nav2_costmap_2d::LETHAL_OBSTACLE);
           }
-
-          costmap->setCost(i, j, nav2_costmap_2d::LETHAL_OBSTACLE);
         }
       }
     }

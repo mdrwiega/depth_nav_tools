@@ -400,7 +400,7 @@ sensor_msgs::msg::Image::SharedPtr DepthSensorPose::prepareDbgImage(
   // Add line which is the border of the ground detection area
   std::list<std::pair<unsigned, unsigned>> pts;
   for (unsigned i = 0; i < img->width; ++i) {
-    const auto line_row = img->height - used_depth_height_;
+    const int line_row = img->height - used_depth_height_;
     if (line_row >= 0 && line_row < img->height) {
       pts.push_back({line_row, i});
     }

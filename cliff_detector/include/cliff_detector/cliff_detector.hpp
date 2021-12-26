@@ -131,6 +131,10 @@ public:
    * @param u
    */
   void setParametersConfigurated(const bool u) {depth_sensor_params_update = u;}
+  /**
+   * @brief Get depth image for debug purposes
+   */
+  sensor_msgs::msg::Image getDebugDepthImage() const;
 
 protected:
   /**
@@ -203,14 +207,12 @@ private:
   /// Class for managing sensor_msgs/CameraInfo messages
   image_geometry::PinholeCameraModel camera_model_;
   /// Calculated distances to ground for every row of depth image in mm
-  std::vector<unsigned int> dist_to_ground_;
+  std::vector<unsigned> dist_to_ground_;
   std::vector<double> tilt_compensation_factor_;
   std::vector<double> delta_row_;
 
-public:
-  sensor_msgs::msg::Image new_depth_msg_;
+  sensor_msgs::msg::Image debug_depth_msg_;
 
-private:
   /// Store points which contain obstacle
   geometry_msgs::msg::PolygonStamped stairs_points_msg_;
 };
