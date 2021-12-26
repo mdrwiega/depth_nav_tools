@@ -28,22 +28,23 @@
 
 #include <chrono>
 #include <iostream>
+#include <algorithm>
 
 #include <gtest/gtest.h>
 
-#include <sensor_msgs/image_encodings.hpp>
-
-#include <laserscan_kinect/laserscan_kinect.h>
+#include "laserscan_kinect/laserscan_kinect.hpp"
 
 using namespace std::chrono;
 
-class LaserScanKinectTestable : public laserscan_kinect::LaserScanKinect {
-  public:
-    template <typename T>
-    float getSmallestValueInColumn(
-      const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg, int col) {
-      return laserscan_kinect::LaserScanKinect::getSmallestValueInColumn<T>(depth_msg, col);
-    }
+class LaserScanKinectTestable : public laserscan_kinect::LaserScanKinect
+{
+public:
+  template<typename T>
+  float getSmallestValueInColumn(
+    const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg, int col)
+  {
+    return laserscan_kinect::LaserScanKinect::getSmallestValueInColumn<T>(depth_msg, col);
+  }
 };
 
 class LaserScanKinectTest : public ::testing::Test
@@ -127,10 +128,11 @@ public:
   }
 
   template<typename T>
-  void setDepthMsgWithTheSameSmallestValueInEachColumn(T low_value, T high_value) {
+  void setDepthMsgWithTheSameSmallestValueInEachColumn(T low_value, T high_value)
+  {
     setDefaultDepthMsg<T>(high_value);
 
-    T* depth_row = reinterpret_cast<T *>(&depth_msg->data[0]);
+    T * depth_row = reinterpret_cast<T *>(&depth_msg->data[0]);
     const int row_size = depth_msg->width;
     const int offset = static_cast<int>(info_msg->k[5] - scan_height / 2.0);
 
@@ -162,7 +164,7 @@ public:
   {
     setDefaultDepthMsg<T>(high_value);
 
-    T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
+    T * depth_row = reinterpret_cast<T *>(&depth_msg->data[0]);
     const int row_size = depth_msg->width;
 
     // Change one pixel in each column to smaller value
@@ -200,7 +202,8 @@ TEST_F(LaserScanKinectTest, getSmallestValueInColumn_U16_FeaturesOff)
 
   setDepthMsgWithTheSameSmallestValueInEachColumn<uint16_t>(low, high);
 
-  EXPECT_EQ(static_cast<float>(low) / 1000,
+  EXPECT_EQ(
+    static_cast<float>(low) / 1000,
     converter.getSmallestValueInColumn<uint16_t>(depth_msg, 1));
 }
 
@@ -229,7 +232,8 @@ TEST_F(LaserScanKinectTest, DISABLED_getSmallestValueInColumn_U16_GroundDetectio
 
   setDepthMsgWithTheSameSmallestValueAndGroundInEachColumn(low, high, ground);
 
-  EXPECT_EQ((float)low/1000, converter.getSmallestValueInColumn<uint16_t>(depth_msg, 0));
+  EXPECT_EQ(
+    static_cast<float>(low) / 1000, converter.getSmallestValueInColumn<uint16_t>(depth_msg, 0));
 }
 
 TEST_F(LaserScanKinectTest, DISABLED_getSmallestValueInColumn_F32_GroundDetection)
@@ -362,8 +366,8 @@ TEST_F(LaserScanKinectTest, timeMeasurement_F32_FeaturesEnabled)
     time += (high_resolution_clock::now() - start);
   }
 
-  std::cout << "Mean processing time: "
-            << duration<double, std::milli>(time).count() / iter << " ms.\n";
+  std::cout << "Mean processing time: " <<
+    duration<double, std::milli>(time).count() / iter << " ms.\n";
 }
 
 int main(int argc, char ** argv)

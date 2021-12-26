@@ -26,11 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#pragma once
+#ifndef LASERSCAN_KINECT__MATH_HPP_
+#define LASERSCAN_KINECT__MATH_HPP_
 
 #include <image_geometry/pinhole_camera_model.h>
 
-namespace laserscan_kinect {
+namespace laserscan_kinect
+{
 
 /**
 * @brief lengthOfVector calculate the length of the 3D vector
@@ -71,3 +73,5 @@ inline void calcFieldOfView(
 }
 
 }  // namespace laserscan_kinect
+
+#endif  // LASERSCAN_KINECT__MATH_HPP_

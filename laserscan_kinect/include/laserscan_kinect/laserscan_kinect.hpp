@@ -26,7 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#pragma once
+#ifndef LASERSCAN_KINECT__LASERSCAN_KINECT_HPP_
+#define LASERSCAN_KINECT__LASERSCAN_KINECT_HPP_
 
 #include <vector>
 #include <string>
@@ -34,17 +35,18 @@
 #include <list>
 #include <utility>
 
-#include <sensor_msgs/msg/image.hpp>
-#include <sensor_msgs/msg/laser_scan.hpp>
-#include <image_geometry/pinhole_camera_model.h>
+#include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
+#include "image_geometry/pinhole_camera_model.h"
 
-#include <laserscan_kinect/math.h>
+namespace laserscan_kinect
+{
 
-namespace laserscan_kinect {
-
-class LaserScanKinect {
+class LaserScanKinect
+{
 public:
-  LaserScanKinect(): scan_msg_(new sensor_msgs::msg::LaserScan())
+  LaserScanKinect()
+  : scan_msg_(new sensor_msgs::msg::LaserScan())
   {
   }
 
@@ -59,13 +61,13 @@ public:
    * @return Return pointer to LaserScan message.
    */
   sensor_msgs::msg::LaserScan::SharedPtr getLaserScanMsg(
-    const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info_msg);
+    const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg,
+    const sensor_msgs::msg::CameraInfo::ConstSharedPtr & info_msg);
   /**
    * @brief setOutputFrame sets the frame to output laser scan
    * @param frame
    */
-  void setOutputFrame(const std::string& frame) { output_frame_id_ = frame; }
+  void setOutputFrame(const std::string & frame) {output_frame_id_ = frame;}
   /**
    * @brief setMinRange sets depth sensor min range
    *
@@ -96,7 +98,7 @@ public:
    *
    * @param enable
    */
-  void setCamModelUpdate(const bool enable) { cam_model_update_ = enable; }
+  void setCamModelUpdate(const bool enable) {cam_model_update_ = enable;}
   /**
    * @brief setSensorMountHeight sets the height of sensor mount (in meters)
    */
@@ -112,7 +114,7 @@ public:
    *
    * @param enable
    */
-  void setGroundRemove(const bool enable) { ground_remove_enable_ = enable; }
+  void setGroundRemove(const bool enable) {ground_remove_enable_ = enable;}
   /**
    * @brief setGroundMargin sets the floor margin (in meters)
    *
@@ -124,18 +126,18 @@ public:
    *
    * @param enable
    */
-  void setTiltCompensation(const bool enable) { tilt_compensation_enable_ = enable; }
- /**
-  * @brief setScanConfigurated sets the configuration status
-  *
-  * @param enable
-  */
-  void setScanConfigurated(const bool configured) { is_scan_msg_configured_ = configured; }
+  void setTiltCompensation(const bool enable) {tilt_compensation_enable_ = enable;}
+  /**
+    * @brief setScanConfigurated sets the configuration status
+    *
+    * @param enable
+    */
+  void setScanConfigurated(const bool configured) {is_scan_msg_configured_ = configured;}
   /**
    * @brief setPublishDbgImgEnable
    * @param enable
    */
-  void setPublishDbgImgEnable(const bool enable) { publish_dbg_image_ = enable; }
+  void setPublishDbgImgEnable(const bool enable) {publish_dbg_image_ = enable;}
 
   void setThreadsNum(unsigned threads_num);
 
@@ -143,7 +145,7 @@ public:
 
   sensor_msgs::msg::Image::SharedPtr getDbgImage() const;
 
- protected:
+protected:
   /**
   * @brief calcGroundDistancesForImgRows calculate coefficients used in ground removing from scan
   *
@@ -161,22 +163,24 @@ public:
   *
   * @param depth_msg
   */
-  void calcScanMsgIndexForImgCols(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg);
+  void calcScanMsgIndexForImgCols(
+    const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg);
   /**
   * @brief getSmallestValueInColumn finds smallest values in depth image columns
     */
-  template <typename T>
+  template<typename T>
   float getSmallestValueInColumn(
-    const sensor_msgs::msg::Image::ConstSharedPtr &depth_msg, int col);
+    const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg, int col);
   /**
   * @brief convertDepthToPolarCoords converts depth map to 2D
   */
-  template <typename T>
-  void convertDepthToPolarCoords(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg);
+  template<typename T>
+  void convertDepthToPolarCoords(
+    const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg);
 
   sensor_msgs::msg::Image::SharedPtr prepareDbgImage(
-    const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-    const std::list<std::pair<int, int>>& min_dist_points_indices);
+    const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg,
+    const std::list<std::pair<int, int>> & min_dist_points_indices);
 
 private:
   // ROS parameters configurated with configuration file or dynamic_reconfigure
@@ -185,13 +189,13 @@ private:
   float range_max_{0};                    ///< Stores the current maximum range to use
   unsigned scan_height_{0};               ///< Number of pixel rows used to scan computing
   unsigned depth_img_row_step_{0};        ///< Row step in depth map processing
-  bool  cam_model_update_{false};         ///< If continously calibration update required
+  bool cam_model_update_{false};         ///< If continously calibration update required
   float sensor_mount_height_{0};          ///< Height of sensor mount from ground
   float sensor_tilt_angle_{0};            ///< Angle of sensor tilt
-  bool  ground_remove_enable_{false};     ///< Determines if remove ground from output scan
+  bool ground_remove_enable_{false};     ///< Determines if remove ground from output scan
   float ground_margin_{0};                ///< Margin for floor remove feature (in meters)
-  bool  tilt_compensation_enable_{false};  ///< Determines if tilt compensation feature is on
-  bool  publish_dbg_image_{false};        ///< Determines if debug image should be published
+  bool tilt_compensation_enable_{false};  ///< Determines if tilt compensation feature is on
+  bool publish_dbg_image_{false};        ///< Determines if debug image should be published
   unsigned threads_num_{1};                ///< Determines threads number used in image processing
 
   /// Published scan message
@@ -222,4 +226,6 @@ private:
   std::mutex scan_msg_mutex_;
 };
 
-} // namespace laserscan_kinect
+}  // namespace laserscan_kinect
+
+#endif  // LASERSCAN_KINECT__LASERSCAN_KINECT_HPP_

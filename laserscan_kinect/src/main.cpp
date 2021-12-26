@@ -26,11 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <laserscan_kinect/laserscan_kinect_node.h>
+#include <memory>
 
-#include <rclcpp/rclcpp.hpp>
+#include "rclcpp/rclcpp.hpp"
 
-int main(int argc, char **argv)
+#include "laserscan_kinect/laserscan_kinect_node.hpp"
+
+int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 

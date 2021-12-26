@@ -26,20 +26,24 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#pragma once
+#ifndef LASERSCAN_KINECT__LASERSCAN_KINECT_NODE_HPP_
+#define LASERSCAN_KINECT__LASERSCAN_KINECT_NODE_HPP_
 
-#include <rclcpp/rclcpp.hpp>
-#include <image_transport/image_transport.hpp>
-#include <sensor_msgs/msg/image.hpp>
-#include <sensor_msgs/msg/laser_scan.hpp>
+#include <vector>
 
+#include "rclcpp/rclcpp.hpp"
+#include "image_transport/image_transport.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
-#include <laserscan_kinect/laserscan_kinect.h>
+
+#include "laserscan_kinect/laserscan_kinect.hpp"
 
 namespace laserscan_kinect
 {
 
-class LaserScanKinectNode : public rclcpp::Node {
+class LaserScanKinectNode : public rclcpp::Node
+{
 public:
   /**
    * @brief LaserScanKinectNode constructor
@@ -57,15 +61,16 @@ private:
    * @param image Depth image provided by image_transport.
    * @param info CameraInfo provided by image_transport.
    */
-  void depthCb(const sensor_msgs::msg::Image::ConstSharedPtr& image,
-               const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
+  void depthCb(
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
+    const sensor_msgs::msg::CameraInfo::ConstSharedPtr & info);
   /**
    * @brief parametersCallback is a node reconfigure callback
    *
    * Callback is necessary to set ROS parameters dynamically.
    */
   rcl_interfaces::msg::SetParametersResult parametersCallback(
-      const std::vector<rclcpp::Parameter> &parameters);
+    const std::vector<rclcpp::Parameter> & parameters);
 
   /// Subscribes to synchronized Image CameraInfo pairs.
   image_transport::CameraSubscriber subscriber_;
@@ -79,4 +84,6 @@ private:
   OnSetParametersCallbackHandle::SharedPtr params_callback_handle_;
 };
 
-} // namespace laserscan_kinect
+}  // namespace laserscan_kinect
+
+#endif  // LASERSCAN_KINECT__LASERSCAN_KINECT_NODE_HPP_

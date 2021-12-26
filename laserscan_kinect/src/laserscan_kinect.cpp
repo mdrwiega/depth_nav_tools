@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <laserscan_kinect/laserscan_kinect.h>
+#include "laserscan_kinect/laserscan_kinect.hpp"
 
 #include <cmath>
 #include <algorithm>
@@ -37,11 +37,10 @@
 #include <list>
 #include <utility>
 #include <chrono>
-#include <sensor_msgs/image_encodings.hpp>
 
-#ifndef M_PI
-#define M_PI (3.14159265358979323846)
-#endif
+#include "sensor_msgs/image_encodings.hpp"
+
+#include "laserscan_kinect/math.hpp"
 
 namespace laserscan_kinect
 {
@@ -104,7 +103,8 @@ sensor_msgs::msg::LaserScan::SharedPtr LaserScanKinect::getLaserScanMsg(
       ss << "scan_height ( " << scan_height_ << " pixels) is too large for the image height.";
       throw std::runtime_error(ss.str());
     }
-    image_vertical_offset_ = static_cast<int>(cam_cy- scan_height_ / 2.0);
+
+    image_vertical_offset_ = static_cast<int>(cam_cy - scan_height_ / 2.0);
 
     is_scan_msg_configured_ = true;
   }
@@ -177,7 +177,7 @@ void LaserScanKinect::setDepthImgRowStep(const int row_step)
   }
 }
 
-void LaserScanKinect::setSensorMountHeight (const float height)
+void LaserScanKinect::setSensorMountHeight(const float height)
 {
   if (height > 0) {
     sensor_mount_height_ = height;
@@ -187,7 +187,7 @@ void LaserScanKinect::setSensorMountHeight (const float height)
   }
 }
 
-void LaserScanKinect::setSensorTiltAngle (const float angle)
+void LaserScanKinect::setSensorTiltAngle(const float angle)
 {
   if (angle < 90 && angle > -90) {
     sensor_tilt_angle_ = angle;
@@ -197,7 +197,7 @@ void LaserScanKinect::setSensorTiltAngle (const float angle)
   }
 }
 
-void LaserScanKinect::setGroundMargin (const float margin)
+void LaserScanKinect::setGroundMargin(const float margin)
 {
   if (margin > 0) {
     ground_margin_ = margin;
@@ -258,17 +258,17 @@ void LaserScanKinect::calcTiltCompensationFactorsForImgRows(double vertical_fov)
 
   tilt_compensation_factor_.resize(img_height);
 
-  for (int i = 0; i < img_height; ++i) {  // Processing all rows
-    double delta = vertical_fov * (i - cam_model_.cy() - 0.5) /
+  for (int i = 0; i < img_height; ++i) {  // Process all rows
+    const double delta = vertical_fov * (i - cam_model_.cy() - 0.5) /
       (static_cast<double>(img_height) - 1);
-    tilt_compensation_factor_[i] = sin(M_PI/2 - delta - alpha) / sin(M_PI/2 - delta);
+    tilt_compensation_factor_[i] = sin(M_PI / 2 - delta - alpha) / sin(M_PI / 2 - delta);
   }
 }
 
 void LaserScanKinect::calcScanMsgIndexForImgCols(
-  const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg)
+  const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg)
 {
-  scan_msg_index_.resize((int)depth_msg->width);
+  scan_msg_index_.resize(static_cast<int>(depth_msg->width));
 
   for (size_t u = 0; u < static_cast<size_t>(depth_msg->width); u++) {
     double th = -atan2(static_cast<double>(u - cam_model_.cx()) * 0.001f / cam_model_.fx(), 0.001f);
@@ -276,15 +276,15 @@ void LaserScanKinect::calcScanMsgIndexForImgCols(
   }
 }
 
-template <typename T>
+template<typename T>
 float LaserScanKinect::getSmallestValueInColumn(
-  const sensor_msgs::msg::Image::ConstSharedPtr &depth_msg, int col)
+  const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg, int col)
 {
   float depth_min = std::numeric_limits<float>::max();
   int depth_min_row = -1;
 
   const int row_size = depth_msg->width;
-  const T* data = reinterpret_cast<const T*>(&depth_msg->data[0]);
+  const T * data = reinterpret_cast<const T *>(&depth_msg->data[0]);
 
   // Loop over pixels in column and calculate z_min in each column
   for (size_t i = image_vertical_offset_; i < image_vertical_offset_ + scan_height_;
@@ -330,36 +330,37 @@ float LaserScanKinect::getSmallestValueInColumn(
 }
 
 template float LaserScanKinect::getSmallestValueInColumn<uint16_t>(
-  const sensor_msgs::msg::Image::ConstSharedPtr&, int);
+  const sensor_msgs::msg::Image::ConstSharedPtr &, int);
 template float LaserScanKinect::getSmallestValueInColumn<float>(
-  const sensor_msgs::msg::Image::ConstSharedPtr&, int);
+  const sensor_msgs::msg::Image::ConstSharedPtr &, int);
 
-template <typename T>
-void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::msg::Image::ConstSharedPtr &depth_msg) {
-
+template<typename T>
+void LaserScanKinect::convertDepthToPolarCoords(
+  const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg)
+{
   // Converts depth from specific column to polar coordinates
   auto convert_to_polar = [&](size_t col, float depth) -> float {
-    if (depth != std::numeric_limits<T>::max()) {
-      // Calculate x in XZ ( z = depth )
-      float x = (col - cam_model_.cx()) * depth  / cam_model_.fx();
+      if (depth != std::numeric_limits<T>::max()) {
+        // Calculate x in XZ ( z = depth )
+        float x = (col - cam_model_.cx()) * depth / cam_model_.fx();
 
-      // Calculate distance in polar coordinates
-      return sqrt(x * x + depth * depth);
-    }
-    return NAN;  // No information about distances in column
-  };
+        // Calculate distance in polar coordinates
+        return sqrt(x * x + depth * depth);
+      }
+      return NAN;  // No information about distances in column
+    };
 
   // Processing for specified columns from [left, right]
   auto process_columns = [&](size_t left, size_t right) {
-    for (size_t i = left; i <= right; ++i) {
-      const auto depth_min = getSmallestValueInColumn<T>(depth_msg, i);
-      const auto range_in_polar = convert_to_polar(i, depth_min);
-      {
-        std::lock_guard<std::mutex> guard(scan_msg_mutex_);
-        scan_msg_->ranges[scan_msg_index_[i]] = range_in_polar;
+      for (size_t i = left; i <= right; ++i) {
+        const auto depth_min = getSmallestValueInColumn<T>(depth_msg, i);
+        const auto range_in_polar = convert_to_polar(i, depth_min);
+        {
+          std::lock_guard<std::mutex> guard(scan_msg_mutex_);
+          scan_msg_->ranges[scan_msg_index_[i]] = range_in_polar;
+        }
       }
-    }
-  };
+    };
 
   if (threads_num_ <= 1) {
     process_columns(0, static_cast<size_t>(depth_msg->width - 1));
@@ -380,8 +381,8 @@ void LaserScanKinect::convertDepthToPolarCoords(const sensor_msgs::msg::Image::C
 }
 
 sensor_msgs::msg::Image::SharedPtr LaserScanKinect::prepareDbgImage(
-  const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-  const std::list<std::pair<int, int>>& min_dist_points_indices)
+  const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg,
+  const std::list<std::pair<int, int>> & min_dist_points_indices)
 {
   sensor_msgs::msg::Image::SharedPtr img(new sensor_msgs::msg::Image);
   img->header = depth_msg->header;
@@ -396,21 +397,22 @@ sensor_msgs::msg::Image::SharedPtr LaserScanKinect::prepareDbgImage(
 
   // Convert depth image to RGB
   if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
-    const uint16_t* depth_data = reinterpret_cast<const uint16_t*>(&depth_msg->data[0]);
+    const uint16_t * depth_data = reinterpret_cast<const uint16_t *>(&depth_msg->data[0]);
+
     for (unsigned i = 0; i < (img->width * img->height); ++i) {
       // Scale value to cover full range of RGB 8
-      uint8_t val = 255 * (depth_data[i] - range_min_ * 1000)  /
+      uint8_t val = 255 * (depth_data[i] - range_min_ * 1000) /
         (range_max_ * 1000 - range_min_ * 1000);
       rgb_data[i][0] = 255 - val;
       rgb_data[i][1] = 255 - val;
       rgb_data[i][2] = 255 - val;
     }
   } else if (depth_msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1) {
-    const float* depth_data = reinterpret_cast<const float*>(&depth_msg->data[0]);
+    const float * depth_data = reinterpret_cast<const float *>(&depth_msg->data[0]);
 
     for (unsigned i = 0; i < (img->width * img->height); ++i) {
       // Scale value to cover full range of RGB 8
-      uint8_t val = 255 * (depth_data[i] - range_min_)  / (range_max_ - range_min_);
+      uint8_t val = 255 * (depth_data[i] - range_min_) / (range_max_ - range_min_);
       rgb_data[i][0] = 255 - val;
       rgb_data[i][1] = 255 - val;
       rgb_data[i][2] = 255 - val;
