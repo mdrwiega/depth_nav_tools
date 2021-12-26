@@ -1,21 +1,38 @@
-#include <depth_sensor_pose/depth_sensor_pose.h>
+// Copyright 2016-2021 Michał Drwięga (drwiega.michal@gmail.com)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-#include <gtest/gtest.h>
+#include "depth_sensor_pose/depth_sensor_pose.hpp"
 
-class DepthSensorPoseTestable : public depth_sensor_pose::DepthSensorPose {
+#include "gtest/gtest.h"
+
+class DepthSensorPoseTestable : public depth_sensor_pose::DepthSensorPose
+{
 };
 
-class DepthSensorPoseTest : public ::testing::Test {
- public:
+class DepthSensorPoseTest : public ::testing::Test
+{
+public:
   sensor_msgs::msg::Image::SharedPtr depth_msg;
   sensor_msgs::msg::CameraInfo::SharedPtr info_msg;
   DepthSensorPoseTestable estimator;
 
-  unsigned img_height { 480 };
-  unsigned img_width { 640 };
-  unsigned scan_height { 420 };
+  unsigned img_height {480};
+  unsigned img_width {640};
+  unsigned scan_height {420};
 
-  DepthSensorPoseTest() {
+  DepthSensorPoseTest()
+  {
     setDefaultInfoMsg();
 
     // Configuration
@@ -25,7 +42,8 @@ class DepthSensorPoseTest : public ::testing::Test {
     estimator.setRansacMaxIter(1000);
   }
 
-  void setDefaultInfoMsg() {
+  void setDefaultInfoMsg()
+  {
     info_msg.reset(new sensor_msgs::msg::CameraInfo);
     info_msg->header.frame_id = "depth_frame";
     info_msg->height = img_height;
@@ -48,7 +66,8 @@ class DepthSensorPoseTest : public ::testing::Test {
   }
 
   template<typename T>
-  void setDefaultDepthMsg(T value) {
+  void setDefaultDepthMsg(T value)
+  {
     depth_msg.reset(new sensor_msgs::msg::Image);
     depth_msg->header.frame_id = "depth_frame";
     depth_msg->height = img_height;
@@ -58,15 +77,15 @@ class DepthSensorPoseTest : public ::testing::Test {
 
     if (typeid(T) == typeid(uint16_t)) {
       depth_msg->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-    }
-    else if (typeid(T) == typeid(float)) {
+    } else if (typeid(T) == typeid(float)) {
       depth_msg->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     }
 
     depth_msg->data.resize(depth_msg->width * depth_msg->height * sizeof(T));
-    T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
+    T * depth_row = reinterpret_cast<T *>(&depth_msg->data[0]);
+
     for (size_t i = 0; i < depth_msg->width * depth_msg->height; ++i) {
-        depth_row[i] = value;
+      depth_row[i] = value;
     }
   }
 };
@@ -87,7 +106,7 @@ TEST_F(DepthSensorPoseTest, encodingSupport)
 //   EXPECT_ANY_THROW(estimator.estimateParams(depth_msg, info_msg));
 // }
 
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
