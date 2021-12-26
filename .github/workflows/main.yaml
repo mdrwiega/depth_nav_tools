@@ -1,0 +1,32 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro: [galactic]
+    steps:
+      - uses: actions/checkout@v2-beta
+      - uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: ${{ matrix.rosdistro }}
+      - name: Build and tests ${{ matrix.package }} package
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          package-name: |
+            laserscan_kinect
+          target-ros2-distro: ${{ matrix.rosdistro }}
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc", "coverage-pytest"]
+              },
+              "test": {
+                "mixin": ["coverage-pytest"]
+              }
+            }
