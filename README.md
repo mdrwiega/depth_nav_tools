@@ -49,19 +49,22 @@ The picture shows comparison between a laser scan based on the converted depth i
 During the tuning process additional debug image can be used. It contains lines that represent the lower and upper bounds of the detection area. Also, closest points in each image column are visible.
 ![laserscan_kinect_dbg](https://user-images.githubusercontent.com/8460945/107285398-62629f80-6a5f-11eb-8d7b-2c23f7247566.png)
 
-
 ### Usage
+
 To start a node laserscan_kinect it can be used a following command
 `roslaunch laserscan_kinect laserscan.launch`
 
 ### Subscribed topics
+
 - */image* ([sensor_msgs/Image](http://docs.ros.org/en/api/sensor_msgs/html/msg/Image.html)) - depth image which will be converted to laserscan.
 - */camera_info* ([sensor_msgs/CameraInfo](http://docs.ros.org/en/api/sensor_msgs/html/msg/CameraInfo.html)) - additional information about the depth sensor.
 
 ### Published topics
+
 - */scan* ([sensor_msgs/LaserScan](http://docs.ros.org/en/api/sensor_msgs/html/msg/LaserScan.html)) - the converted depth image in form of laser scan. It contains information about the robot surrounding in a planar scan.
 
 ### Parameters
+
 The file /config/params.yaml contains default parameters values.
 
 - *~output_frame_id* (str) - frame id for the output laserscan message.
@@ -69,7 +72,7 @@ The file /config/params.yaml contains default parameters values.
 - *~range_max* (double) - maximum sensor range (in meters). Pixels in depth image with values greater than this parameter are ignored in processing.
 - *~depth_img_row_step* (int) - Row step in depth image processing. Increasing this parameter we decrease computational complexity of algorithm but some of data are lost.
 - *~scan_height* (int) - height of used part of depth image (in pixels).
-- *~cam_model_update* (bool) - determines if continuously camera model data update is neccessary. If it's true, then camera model (sensor_msgs/CameraInfo) from topic camera_info is updated with each new depth image message. Otherwise, camera model and parameters associated with it are updated only at the start of node or when node parameter are changed by dynamic_reconfigure.
+- *~cam_model_update* (bool) - determines if continuously camera model data update is necessary. If it's true, then camera model (sensor_msgs/CameraInfo) from topic camera_info is updated with each new depth image message. Otherwise, camera model and parameters associated with it are updated only at the start of node or when node parameter are changed by dynamic_reconfigure.
 
 - *~ground_remove_en* (bool) - determines if ground remove from output scan feature is enabled. The ground removing method to work needs a correctly values of parameters like a sensor_tilt_angle and sensor_mount_height.
 - *~sensor_mount_height* (double) - height of depth sensor optical center mount (in meters). Parameter is necessary for the ground removing feature. It should be measured from ground to the optical center of depth sensor.
@@ -79,20 +82,25 @@ The file /config/params.yaml contains default parameters values.
 
 
 ## depth_sensor_pose
+
 ### Usage
+
 To start a node laserscan_kinect it can be used a following command
 `roslaunch depth_sensor_pose depth_sensor_pose.launch.launch`
 
 ### Subscribed topics
+
 - */image* ([sensor_msgs/Image](http://docs.ros.org/en/api/sensor_msgs/html/msg/Image.html)) - depth image which will be converted to laserscan.
 - */camera_info* ([sensor_msgs/CameraInfo](http://docs.ros.org/en/api/sensor_msgs/html/msg/CameraInfo.html)) - additional information about the depth sensor.
 
 ### Published topics
+
 - */height* (double) - the sensor height (the distance from the ground to the center of optical sensor)
 - */tilt_angle* (double) - the sensor tilt angle (in deg)
 - */debug_image* ([sensor_msgs/Image](http://docs.ros.org/en/api/sensor_msgs/html/msg/Image.html)) - the debug image to check which points are used in the ground plane estimation, enabled only if *publish_dbg_info* parameter is set to *true*.
 
 ### Parameters
+
 - *~rate* (dobule) - Data processing frequency  (Hz)
 - *~range_min* (double) - minimum sensor range (in meters). Pixels in depth image with values smaller than this parameter are ignored in processing.
 - *~range_max* (double) - maximum sensor range (in meters). Pixels in depth image with values greater than this parameter are ignored in processing.
@@ -116,5 +124,6 @@ To start a node laserscan_kinect it can be used a following command
 `colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release`
 
 ## Tests
+
 Currently unit tests are implemented only for the **laserscan_kinect** package.
 - `catkin_make run_tests_laserscan_kinect`
