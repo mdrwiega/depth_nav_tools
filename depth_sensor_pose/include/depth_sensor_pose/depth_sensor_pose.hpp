@@ -27,6 +27,11 @@
 #include "image_geometry/pinhole_camera_model.h"
 
 #include "pcl/point_types.h"
+#include "pcl/sample_consensus/method_types.h"
+#include "pcl/sample_consensus/model_types.h"
+#include "pcl/sample_consensus/ransac.h"
+#include "pcl/sample_consensus/sac_model_plane.h"
+#include "pcl/segmentation/sac_segmentation.h"
 
 namespace depth_sensor_pose
 {
