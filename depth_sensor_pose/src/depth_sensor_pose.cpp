@@ -170,15 +170,15 @@ void DepthSensorPose::fieldOfView(
   double & min, double & max, double x1, double y1,
   double xc, double yc, double x2, double y2)
 {
-  const auto raw_pixel_left(x1, y1);
+  const cv::Point2d raw_pixel_left(x1, y1);
   const auto rect_pixel_left = camera_model_.rectifyPoint(raw_pixel_left);
   const auto left_ray = camera_model_.projectPixelTo3dRay(rect_pixel_left);
 
-  const auto raw_pixel_right(x2, y2);
+  const cv::Point2d raw_pixel_right(x2, y2);
   const auto rect_pixel_right = camera_model_.rectifyPoint(raw_pixel_right);
   const auto right_ray = camera_model_.projectPixelTo3dRay(rect_pixel_right);
 
-  const auto raw_pixel_center(xc, yc);
+  const cv::Point2d raw_pixel_center(xc, yc);
   const auto rect_pixel_center = camera_model_.rectifyPoint(raw_pixel_center);
   const auto center_ray = camera_model_.projectPixelTo3dRay(rect_pixel_center);
 

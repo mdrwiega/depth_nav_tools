@@ -1,20 +1,38 @@
-#include <cliff_detector/cliff_detector.h>
+// Copyright 2016-2021 Michał Drwięga (drwiega.michal@gmail.com)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "cliff_detector/cliff_detector.hpp"
 
 #include <iostream>
-#include <sensor_msgs/image_encodings.hpp>
-#include <gtest/gtest.h>
 
-class CliffDetectorTest : public ::testing::Test {
+#include "gtest/gtest.h"
+
+#include "sensor_msgs/image_encodings.hpp"
+
+class CliffDetectorTest : public ::testing::Test
+{
  public:
   sensor_msgs::msg::Image::SharedPtr depth_msg;
   sensor_msgs::msg::CameraInfo::SharedPtr info_msg;
   cliff_detector::CliffDetector detector;
 
-  unsigned img_height { 480 };
-  unsigned img_width { 640 };
-  unsigned scan_height { 420 };
+  unsigned img_height {480};
+  unsigned img_width {640};
+  unsigned scan_height {420};
 
-  CliffDetectorTest() {
+  CliffDetectorTest()
+  {
     setDefaultInfoMsg();
 
     // Configuration
@@ -27,7 +45,8 @@ class CliffDetectorTest : public ::testing::Test {
     detector.setSensorTiltAngle(10);
   }
 
-  void setDefaultInfoMsg() {
+  void setDefaultInfoMsg()
+  {
     info_msg.reset(new sensor_msgs::msg::CameraInfo);
     info_msg->header.frame_id = "depth_frame";
     info_msg->height = img_height;
@@ -50,7 +69,8 @@ class CliffDetectorTest : public ::testing::Test {
   }
 
   template<typename T>
-  void setDefaultDepthMsg(T value) {
+  void setDefaultDepthMsg(T value)
+  {
     depth_msg.reset(new sensor_msgs::msg::Image);
     depth_msg->header.frame_id = "depth_frame";
     depth_msg->height = img_height;
@@ -60,13 +80,13 @@ class CliffDetectorTest : public ::testing::Test {
 
     if (typeid(T) == typeid(uint16_t)) {
       depth_msg->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-    }
-    else if (typeid(T) == typeid(float)) {
+    } else if (typeid(T) == typeid(float)) {
       depth_msg->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
     }
 
     depth_msg->data.resize(depth_msg->width * depth_msg->height * sizeof(T));
     T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
+
     for (size_t i = 0; i < depth_msg->width * depth_msg->height; ++i) {
         depth_row[i] = value;
     }

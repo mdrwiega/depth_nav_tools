@@ -14,7 +14,7 @@
 
 #include <memory>
 
-#include "depth_sensor_pose/depth_sensor_pose_node.h"
+#include "depth_sensor_pose/depth_sensor_pose_node.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 

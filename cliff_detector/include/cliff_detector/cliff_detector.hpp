@@ -1,3 +1,17 @@
+// Copyright 2016-2021 Michał Drwięga (drwiega.michal@gmail.com)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #pragma once
 
 #include <vector>
@@ -6,13 +20,15 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 
-namespace cliff_detector {
+namespace cliff_detector
+{
 
 /**
  * @brief The CliffDetector class detect cliff based on depth image
  */
-class CliffDetector {
- public:
+class CliffDetector
+{
+public:
   CliffDetector();
   /**
    * @brief detectCliff detects descending stairs based on the information in a depth image
@@ -25,8 +41,8 @@ class CliffDetector {
    * @param info CameraInfo associated with depth_msg
    */
   geometry_msgs::msg::PolygonStamped detectCliff(
-    const sensor_msgs::msg::Image::ConstSharedPtr& image,
-    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
+    const sensor_msgs::msg::CameraInfo::ConstSharedPtr & info);
   /**
    * @brief setMinRange sets depth sensor min range
    *
@@ -51,7 +67,7 @@ class CliffDetector {
    *
    * @return Return sensor mount height in meters
    */
-  float getSensorMountHeight() { return sensor_mount_height_; }
+  float getSensorMountHeight() {return sensor_mount_height_;}
   /**
    * @brief setSensorTiltAngle sets the sensor tilt angle (in degrees)
    * @param angle
@@ -62,26 +78,26 @@ class CliffDetector {
    *
    * @return Return sensor tilt angle in degrees
    */
-  float getSensorTiltAngle() { return sensor_tilt_angle_; }
+  float getSensorTiltAngle() {return sensor_tilt_angle_;}
   /**
    * @brief setPublishDepthEnable
    * @param enable
    */
-  void setPublishDepthEnable(const bool enable) { publish_depth_enable_ = enable; }
+  void setPublishDepthEnable(const bool enable) {publish_depth_enable_ = enable;}
   /**
    * @brief getPublishDepthEnable
    * @return
    */
-  bool getPublishDepthEnable() const { return publish_depth_enable_; }
+  bool getPublishDepthEnable() const {return publish_depth_enable_;}
   /**
    * @brief setCamModelUpdate
    */
-  void setCamModelUpdate(const bool u) { cam_model_update_ = u; }
+  void setCamModelUpdate(const bool u) {cam_model_update_ = u;}
   /**
    * @brief setUsedDepthHeight
    * @param height
    */
-  void setUsedDepthHeight(const unsigned int height);
+  void setUsedDepthHeight(const unsigned height);
   /**
    * @brief setBlockSize sets size of square block (subimage) used in cliff detector
    *
@@ -108,23 +124,14 @@ class CliffDetector {
    * @brief setGroundMargin sets the floor margin (in meters)
    * @param margin
    */
-  void setGroundMargin (const float margin);
+  void setGroundMargin(const float margin);
   /**
    * @brief setParametersConfigurated
    * @param u
    */
-  void setParametersConfigurated (const bool u) { depth_sensor_params_update = u; }
+  void setParametersConfigurated(const bool u) {depth_sensor_params_update = u;}
 
- protected:
-  /**
-   * @brief lengthOfVector calculates length of 3D vector.
-   *
-   * Method calculates the length of 3D vector assumed to be a vector with start at the (0,0,0).
-   *
-   * @param vec Vector 3D which lenght will be calculated.
-   * @return Returns the length of 3D vector.
-   */
-  double lengthOfVector(const cv::Point3d& vec) const;
+protected:
   /**
     * Computes the angle between two cv::Point3d
     *
@@ -136,7 +143,7 @@ class CliffDetector {
     * @param ray2 The second ray
     * @return The angle between the two rays (in radians)
     */
-  double angleBetweenRays(const cv::Point3d& ray1, const cv::Point3d& ray2) const;
+  double angleBetweenRays(const cv::Point3d & ray1, const cv::Point3d & ray2) const;
   /**
     * Find 2D points relative to robots where stairs are detected
     *
@@ -145,7 +152,7 @@ class CliffDetector {
     * @param depth_msg The UInt16 encoded depth message.
     */
   template<typename T>
-  void findCliffInDepthImage(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg);
+  void findCliffInDepthImage(const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg);
   /**
     * Calculate vertical angle_min and angle_max by measuring angles between
     * the top ray, bottom ray, and optical center ray
@@ -154,8 +161,9 @@ class CliffDetector {
     * @param min_angle The minimum vertical angle
     * @param max_angle The maximum vertical angle
     */
-  void fieldOfView(double & min, double & max, double x1, double y1,
-                   double xc, double yc, double x2, double y2);
+  void fieldOfView(
+    double & min, double & max, double x1, double y1,
+    double xc, double yc, double x2, double y2);
   /**
    * @brief calcDeltaAngleForImgRows
    * @param vertical_fov
@@ -176,19 +184,19 @@ class CliffDetector {
    */
   void calcTiltCompensationFactorsForImgRows();
 
- private:
-  float    range_min_;            ///< Stores the current minimum range to use
-  float    range_max_;            ///< Stores the current maximum range to use
-  float    sensor_mount_height_;  ///< Height of sensor mount from ground
-  float    sensor_tilt_angle_;    ///< Sensor tilt angle (degrees)
-  bool     publish_depth_enable_; ///< Determines if depth should be republished
-  bool     cam_model_update_;     ///< Determines if continuously cam model update required
+private:
+  float range_min_;            ///< Stores the current minimum range to use
+  float range_max_;            ///< Stores the current maximum range to use
+  float sensor_mount_height_;  ///< Height of sensor mount from ground
+  float sensor_tilt_angle_;    ///< Sensor tilt angle (degrees)
+  bool publish_depth_enable_; ///< Determines if depth should be republished
+  bool cam_model_update_;     ///< Determines if continuously cam model update required
   unsigned used_depth_height_;    ///< Used depth height from img bottom (px)
   unsigned block_size_;           ///< Square block (subimage) size (px).
   unsigned block_points_thresh_;  ///< Threshold value of points in block to admit stairs
   unsigned depth_image_step_row_; ///< Rows step in depth processing (px).
   unsigned depth_image_step_col_; ///< Columns step in depth processing (px).
-  float    ground_margin_;        ///< Margin for ground points feature detector (m)
+  float ground_margin_;        ///< Margin for ground points feature detector (m)
 
   bool depth_sensor_params_update;
   /// Class for managing sensor_msgs/CameraInfo messages
@@ -198,12 +206,12 @@ class CliffDetector {
   std::vector<double> tilt_compensation_factor_;
   std::vector<double> delta_row_;
 
- public:
+public:
   sensor_msgs::msg::Image new_depth_msg_;
 
- private:
+private:
   /// Store points which contain obstacle
   geometry_msgs::msg::PolygonStamped stairs_points_msg_;
 };
 
-} // namespace cliff_detector
+}  // namespace cliff_detector
