@@ -22,7 +22,7 @@
 
 class CliffDetectorTest : public ::testing::Test
 {
- public:
+public:
   sensor_msgs::msg::Image::SharedPtr depth_msg;
   sensor_msgs::msg::CameraInfo::SharedPtr info_msg;
   cliff_detector::CliffDetector detector;
@@ -85,10 +85,10 @@ class CliffDetectorTest : public ::testing::Test
     }
 
     depth_msg->data.resize(depth_msg->width * depth_msg->height * sizeof(T));
-    T* depth_row = reinterpret_cast<T*>(&depth_msg->data[0]);
+    T * depth_row = reinterpret_cast<T *>(&depth_msg->data[0]);
 
     for (size_t i = 0; i < depth_msg->width * depth_msg->height; ++i) {
-        depth_row[i] = value;
+      depth_row[i] = value;
     }
   }
 };
@@ -109,7 +109,7 @@ TEST_F(CliffDetectorTest, unsupportedEncoding)
   EXPECT_ANY_THROW(detector.detectCliff(depth_msg, info_msg));
 }
 
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

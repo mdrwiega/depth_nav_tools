@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#ifndef CLIFF_DETECTOR__CLIFF_DETECTOR_NODE_HPP_
+#define CLIFF_DETECTOR__CLIFF_DETECTOR_NODE_HPP_
+
+#include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 #include "image_transport/image_transport.hpp"
@@ -60,3 +63,5 @@ protected:
 };
 
 }  // namespace cliff_detector
+
+#endif  // CLIFF_DETECTOR__CLIFF_DETECTOR_NODE_HPP_

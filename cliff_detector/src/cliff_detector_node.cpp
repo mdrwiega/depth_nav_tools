@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <vector>
+
 #include "cliff_detector/cliff_detector_node.hpp"
 
 namespace cliff_detector
@@ -44,13 +46,14 @@ CliffDetectorNode::CliffDetectorNode()
   pub_points_ = this->create_publisher<geometry_msgs::msg::PolygonStamped>("points", 2);
 
   using namespace std::placeholders;
-  image_sub_ = image_transport::create_camera_subscription(this, "image",
-                std::bind(&CliffDetectorNode::depthCb, this, _1, _2), "raw");
+  image_sub_ = image_transport::create_camera_subscription(
+    this, "image", std::bind(&CliffDetectorNode::depthCb, this, _1, _2), "raw");
 
   RCLCPP_INFO(this->get_logger(), "Cliff detector initialized.");
 }
 
-CliffDetectorNode::~CliffDetectorNode() {
+CliffDetectorNode::~CliffDetectorNode()
+{
   image_sub_.shutdown();
 }
 
@@ -67,20 +70,20 @@ void CliffDetectorNode::depthCb(
     if (detector_.getPublishDepthEnable()) {
       pub_.publish(detector_.new_depth_msg_);
     }
-  } catch (std::runtime_error& e) {
+  } catch (std::runtime_error & e) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Could not perform stairs detection: %s", e.what());
   }
 }
 
 rcl_interfaces::msg::SetParametersResult CliffDetectorNode::parametersCallback(
-    const std::vector<rclcpp::Parameter> &parameters)
+  const std::vector<rclcpp::Parameter> & parameters)
 {
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
   result.reason = "success";
 
   try {
-    for (const auto &parameter : parameters) {
+    for (const auto & parameter : parameters) {
       if (parameter.get_name() == "range_min") {
         detector_.setMinRange(parameter.as_double());
       } else if (parameter.get_name() == "range_max") {
@@ -108,11 +111,11 @@ rcl_interfaces::msg::SetParametersResult CliffDetectorNode::parametersCallback(
       }
     }
     detector_.setParametersConfigurated(true);
-  } catch (const std::exception& e) {
+  } catch (const std::exception & e) {
     RCLCPP_ERROR(this->get_logger(), e.what());
   }
 
   return result;
 }
 
-} // namespace cliff_detector
+}  // namespace cliff_detector
