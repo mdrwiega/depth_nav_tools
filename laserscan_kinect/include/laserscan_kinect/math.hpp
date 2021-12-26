@@ -26,18 +26,52 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <memory>
+#ifndef LASERSCAN_KINECT__MATH_HPP_
+#define LASERSCAN_KINECT__MATH_HPP_
 
-#include "rclcpp/rclcpp.hpp"
+#include <image_geometry/pinhole_camera_model.h>
 
-#include "laserscan_kinect/laserscan_kinect_node.hpp"
-
-int main(int argc, char ** argv)
+namespace laserscan_kinect
 {
-  rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<laserscan_kinect::LaserScanKinectNode>();
-  rclcpp::spin(node);
-  rclcpp::shutdown();
-  return 0;
+/**
+* @brief lengthOfVector calculate the length of the 3D vector
+*/
+inline double lengthOfVector(const cv::Point3d & vec)
+{
+  return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
+
+/**
+* @brief angleBetweenRays calculates angle between two rays in degrees
+*/
+inline double angleBetweenRays(const cv::Point3d & ray1, const cv::Point3d & ray2)
+{
+  const double dot = ray1.x * ray2.x + ray1.y * ray2.y + ray1.z * ray2.z;
+  return acos(dot / (lengthOfVector(ray1) * lengthOfVector(ray2)));
+}
+
+/**
+* @brief fieldOfView calculates field of view (angle)
+*/
+inline void calcFieldOfView(
+  const image_geometry::PinholeCameraModel & camera_model,
+  const cv::Point2d && left, const cv::Point2d && center,
+  const cv::Point2d && right, double & min, double & max)
+{
+  const auto rect_pixel_left = camera_model.rectifyPoint(left);
+  const auto left_ray = camera_model.projectPixelTo3dRay(rect_pixel_left);
+
+  const auto rect_pixel_right = camera_model.rectifyPoint(right);
+  const auto right_ray = camera_model.projectPixelTo3dRay(rect_pixel_right);
+
+  const auto rect_pixel_center = camera_model.rectifyPoint(center);
+  const auto center_ray = camera_model.projectPixelTo3dRay(rect_pixel_center);
+
+  min = -angleBetweenRays(center_ray, right_ray);
+  max = angleBetweenRays(left_ray, center_ray);
+}
+
+}  // namespace laserscan_kinect
+
+#endif  // LASERSCAN_KINECT__MATH_HPP_
