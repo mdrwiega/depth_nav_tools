@@ -26,12 +26,7 @@
 #include "sensor_msgs/image_encodings.hpp"
 #include "image_geometry/pinhole_camera_model.h"
 
-// #include <pcl/point_types.h>
-// #include <pcl/sample_consensus/ransac.h>
-// #include <pcl/sample_consensus/sac_model_plane.h>
-// #include <pcl/sample_consensus/method_types.h>
-// #include <pcl/sample_consensus/model_types.h>
-// #include <pcl/segmentation/sac_segmentation.h>
+#include "pcl/point_types.h"
 
 namespace depth_sensor_pose
 {
@@ -183,10 +178,11 @@ protected:
   void calcGroundDistancesForImgRows(
     double mount_height, double tilt_angle, std::vector<double> & distances);
 
-//   template<typename T>
-//   void getGroundPoints(const sensor_msgs::msg::Image::ConstSharedPtr& depth_msg,
-//                        pcl::PointCloud<pcl::PointXYZ>::Ptr& points,
-//                        std::list<std::pair<unsigned, unsigned>>& points_indices);
+  template<typename T>
+  void getGroundPoints(
+    const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr & points,
+    std::list<std::pair<unsigned, unsigned>> & points_indices);
 
   void sensorPoseCalibration(
     const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg,
