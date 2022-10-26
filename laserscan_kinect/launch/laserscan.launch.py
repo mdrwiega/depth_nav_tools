@@ -30,7 +30,7 @@ def generate_launch_description():
 
     laserscan_node = Node(
         package='laserscan_kinect',
-        node_executable='laserscan_kinect',
+        node_executable='laserscan_kinect_exe',
         parameters=[config],
         remappings=[
             ('/image', '/camera/depth/image_raw'),
