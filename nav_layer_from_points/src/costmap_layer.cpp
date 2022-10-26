@@ -32,12 +32,17 @@ void NavLayerFromPoints::onInitialize()
   current_ = true;
   first_time_ = true;
 
-  rclcpp_node_->declare_parameter(name_ + "." + "enabled", true);
-  rclcpp_node_->declare_parameter(name_ + "." + "keep_time", 0.75);
-  rclcpp_node_->declare_parameter(name_ + "." + "point_radius", 0.2);
-  rclcpp_node_->declare_parameter(name_ + "." + "robot_radius", 0.6);
+  auto node = node_.lock();
+  if (!node) {
+    throw std::runtime_error{"Failed to lock node"};
+  }
 
-  sub_points_ = rclcpp_node_->create_subscription<geometry_msgs::msg::PolygonStamped>(
+  node->declare_parameter(name_ + "." + "enabled", true);
+  node->declare_parameter(name_ + "." + "keep_time", 0.75);
+  node->declare_parameter(name_ + "." + "point_radius", 0.2);
+  node->declare_parameter(name_ + "." + "robot_radius", 0.6);
+
+  sub_points_ = node->create_subscription<geometry_msgs::msg::PolygonStamped>(
     "points", 1, std::bind(&NavLayerFromPoints::pointsCallback, this, std::placeholders::_1));
 }
 
@@ -100,15 +105,15 @@ void NavLayerFromPoints::updateBounds(
       transformed_points_.push_back(tpt);
     }
     catch(tf2::LookupException& ex) {
-      RCLCPP_ERROR(rclcpp_node_->get_logger(), "No Transform available Error: %s\n", ex.what());
+      RCLCPP_ERROR(logger_, "No Transform available Error: %s\n", ex.what());
       continue;
     }
     catch(tf2::ConnectivityException& ex) {
-      RCLCPP_ERROR(rclcpp_node_->get_logger(), "Connectivity Error: %s\n", ex.what());
+      RCLCPP_ERROR(logger_, "Connectivity Error: %s\n", ex.what());
       continue;
     }
     catch(tf2::ExtrapolationException& ex) {
-      RCLCPP_ERROR(rclcpp_node_->get_logger(), "Extrapolation Error: %s\n", ex.what());
+      RCLCPP_ERROR(logger_, "Extrapolation Error: %s\n", ex.what());
       continue;
     }
   }
