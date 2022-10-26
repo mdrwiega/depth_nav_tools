@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(cliff_detector)
 
-add_compile_options(-Wall -Wextra -Wpedantic)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
@@ -20,7 +22,7 @@ ament_auto_add_library(${PROJECT_NAME}
   src/cliff_detector_node.cpp
 )
 
-add_executable(${PROJECT_NAME}_exe
+ament_auto_add_executable(${PROJECT_NAME}_exe
   src/main.cpp
 )
 

@@ -19,7 +19,7 @@ ament_auto_add_library(${PROJECT_NAME}
   src/laserscan_kinect_node.cpp
 )
 
-add_executable(${PROJECT_NAME}_exe
+ament_auto_add_executable(${PROJECT_NAME}_exe
   src/main.cpp
 )
 
