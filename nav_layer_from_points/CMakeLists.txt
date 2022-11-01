@@ -12,6 +12,13 @@ find_package(nav2_costmap_2d REQUIRED)
 
 ament_auto_find_build_dependencies()
 
+set(dep_pkgs
+  rclcpp
+  tf2_ros
+  geometry_msgs
+  nav2_costmap_2d
+)
+
 ### Build
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/costmap_layer.cpp
@@ -24,9 +31,13 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Export package
-ament_export_dependencies(${PROJECT_NAME} PUBLIC tf2_ros geometry_msgs nav2_costmap_2d)
+ament_export_dependencies(${dep_pkgs})
+# Export package nav2_costmap_2d
+pluginlib_export_plugin_description_file(nav2_costmap_2d costmap_plugins.xml)
+
 
 ### Install
+
 ament_auto_package(INSTALL_TO_SHARE
   config
 )

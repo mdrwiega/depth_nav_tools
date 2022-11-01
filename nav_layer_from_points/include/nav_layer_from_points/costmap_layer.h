@@ -25,8 +25,8 @@
 
 #include <pluginlib/class_list_macros.hpp>
 
-#include <geometry_msgs/msg/polygon_stamped.hpp>
-#include <geometry_msgs/msg/point_stamped.hpp>
+#include "geometry_msgs/msg/polygon_stamped.hpp"
+#include "geometry_msgs/msg/point_stamped.hpp"
 
 #include <tf2_ros/buffer.h>
 
@@ -70,8 +70,6 @@ protected:
 
   geometry_msgs::msg::PolygonStamped points_list_;  ///< List of received points
 
-  tf2_ros::Buffer tf_buffer_;
-
   std::list<geometry_msgs::msg::PointStamped> transformed_points_;
 
   // After this time points will be delete
@@ -80,6 +78,7 @@ protected:
   std::recursive_mutex lock_;
   bool first_time_;
   double last_min_x_, last_min_y_, last_max_x_, last_max_y_;
+  std::string topic_;
 
 private:
   double point_radius_;
