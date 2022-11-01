@@ -22,7 +22,6 @@ namespace nav_layer_from_points
 {
 
 NavLayerFromPoints::NavLayerFromPoints()
-: tf_buffer_(clock_)
 {
   layered_costmap_ = nullptr;
 }
@@ -37,13 +36,16 @@ void NavLayerFromPoints::onInitialize()
     throw std::runtime_error{"Failed to lock node"};
   }
 
-  node->declare_parameter(name_ + "." + "enabled", true);
-  node->declare_parameter(name_ + "." + "keep_time", 0.75);
-  node->declare_parameter(name_ + "." + "point_radius", 0.2);
-  node->declare_parameter(name_ + "." + "robot_radius", 0.6);
+  node->declare_parameter(getFullName("keep_time"), 0.75);
+  enabled_ = node->declare_parameter(getFullName("enabled"), true);
+  point_radius_ = node->declare_parameter(getFullName("point_radius"), 0.2);
+  robot_radius_ = node->declare_parameter(getFullName("robot_radius"), 0.6);
+  topic_ = node->declare_parameter(getFullName("topic"), "points");
+
+  points_keep_time_ = rclcpp::Duration::from_seconds(node->get_parameter(getFullName("keep_time")).as_double());
 
   sub_points_ = node->create_subscription<geometry_msgs::msg::PolygonStamped>(
-    "points", 1, std::bind(&NavLayerFromPoints::pointsCallback, this, std::placeholders::_1));
+    topic_, 1, std::bind(&NavLayerFromPoints::pointsCallback, this, std::placeholders::_1));
 }
 
 void NavLayerFromPoints::pointsCallback(
@@ -96,7 +98,7 @@ void NavLayerFromPoints::updateBounds(
       pt.point.z =  tpt.point.z;
       pt.header.frame_id = points_list_.header.frame_id;
 
-      tf_buffer_.transform(pt, out_pt, global_frame);
+      tf_->transform(pt, out_pt, global_frame);
       tpt.point.x = out_pt.point.x;
       tpt.point.y = out_pt.point.y;
       tpt.point.z = out_pt.point.z;
