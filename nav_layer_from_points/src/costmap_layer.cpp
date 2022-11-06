@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <nav_layer_from_points/costmap_layer.h>
+#include <nav_layer_from_points/costmap_layer.hpp>
 
 #include <fstream>
 
