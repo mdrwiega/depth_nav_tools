@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 project(nav_layer_from_points)
 
-add_compile_options(-Wall -Wextra -Wpedantic)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 ### Dependencies
 find_package(ament_cmake_auto REQUIRED)
@@ -31,13 +37,11 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Export package
+ament_target_dependencies(${PROJECT_NAME} ${dep_pkgs})
 ament_export_dependencies(${dep_pkgs})
-# Export package nav2_costmap_2d
 pluginlib_export_plugin_description_file(nav2_costmap_2d costmap_plugins.xml)
 
-
 ### Install
-
 ament_auto_package(INSTALL_TO_SHARE
   config
 )
