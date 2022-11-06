@@ -12,9 +12,7 @@ jobs:
         rosdistro: [humble]
     steps:
       - uses: actions/checkout@v2-beta
-      - uses: ros-tooling/setup-ros@v0.2
-        with:
-          required-ros-distributions: ${{ matrix.rosdistro }}
+      - uses: ros-tooling/setup-ros@v0.3
       - name: Build and tests ${{ matrix.package }} package
         uses: ros-tooling/action-ros-ci@v0.2
         with:
