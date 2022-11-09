@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+
 <package format="3">
   <name>cliff_detector</name>
   <version>1.0.1</version>
   <description>Cliff detector package</description>
-  <author>Michal Drwiega (http://www.mdrwiega.com)</author>
-  <maintainer email="drwiega.michal@gmail.com">Michal Drwiega</maintainer>
+  <maintainer email="drwiega.michal@gmail.com">Michal Drwiega (https://mdrwiega.com/)</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/depth_nav_tools</url>
 
