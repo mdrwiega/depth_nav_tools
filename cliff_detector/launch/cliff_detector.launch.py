@@ -30,7 +30,7 @@ def generate_launch_description():
 
     laserscan_node = Node(
         package='cliff_detector',
-        node_executable='cliff_detector',
+        node_executable='cliff_detector_exe',
         parameters=[config],
         remappings=[
             ('/image', '/camera/depth/image_raw'),

@@ -29,7 +29,7 @@ ament_auto_add_library(${PROJECT_NAME}
   src/depth_sensor_pose_node.cpp
 )
 
-add_executable(depth_sensor_pose_exe
+ament_auto_add_executable(depth_sensor_pose_exe
   src/main.cpp
 )
 

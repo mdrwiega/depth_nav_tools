@@ -110,7 +110,7 @@ rcl_interfaces::msg::SetParametersResult CliffDetectorNode::parametersCallback(
         detector_.setBlockPointsThresh(parameter.as_int());
       }
     }
-    detector_.setParametersConfigurated(true);
+    detector_.setParametersConfigurated(false);
   } catch (const std::exception & e) {
     RCLCPP_ERROR(this->get_logger(), e.what());
   }

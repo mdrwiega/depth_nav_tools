@@ -4,12 +4,12 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build_and_test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        rosdistro: [galactic]
+        rosdistro: [humble]
     steps:
       - uses: actions/checkout@v2-beta
       - uses: ros-tooling/setup-ros@v0.3
