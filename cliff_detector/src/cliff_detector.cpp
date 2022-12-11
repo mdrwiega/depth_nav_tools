@@ -338,8 +338,10 @@ void CliffDetector::findCliffInDepthImage(
             d = static_cast<float>(data[row_size * row + col]);
           }
 
+          double current_dist_to_ground = dist_to_ground_[row] + ground_margin_;
+
           // Check if distance to point is greater than distance to ground plane
-          if (d > (dist_to_ground_[row] + ground_margin_) && d > range_min_ && d < range_max_) {
+          if (d > current_dist_to_ground && current_dist_to_ground > range_min_) {
             tpoints[block_cnt][Row] = row;
             tpoints[block_cnt][Col] = col;
             tpoints[block_cnt][Depth] = d;

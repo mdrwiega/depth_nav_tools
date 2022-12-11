@@ -29,6 +29,7 @@
 #include "geometry_msgs/msg/point_stamped.hpp"
 
 #include <tf2_ros/buffer.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace nav_layer_from_points
 {
