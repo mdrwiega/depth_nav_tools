@@ -159,17 +159,6 @@ protected:
   template<typename T>
   void findCliffInDepthImage(const sensor_msgs::msg::Image::ConstSharedPtr & depth_msg);
   /**
-    * Calculate vertical angle_min and angle_max by measuring angles between
-    * the top ray, bottom ray, and optical center ray
-    *
-    * @param camModel The image_geometry camera model for this image.
-    * @param min_angle The minimum vertical angle
-    * @param max_angle The maximum vertical angle
-    */
-  void fieldOfView(
-    double & min, double & max, double x1, double y1,
-    double xc, double yc, double x2, double y2);
-  /**
    * @brief calcDeltaAngleForImgRows
    * @param vertical_fov
    */
@@ -215,6 +204,7 @@ private:
 
   /// Store points which contain obstacle
   geometry_msgs::msg::PolygonStamped stairs_points_msg_;
+  double horizontal_fov;
 };
 
 }  // namespace cliff_detector
