@@ -57,10 +57,12 @@ void NavLayerFromPoints::pointsCallback(
 
 void NavLayerFromPoints::clearTransformedPoints()
 {
-  if (transformed_points_.size() > 10000)
+  if (transformed_points_.size() > 10000) {
     transformed_points_.clear();
+  }
 
   auto p_it = transformed_points_.begin();
+
   while (p_it != transformed_points_.end()) {
     if (clock_->now() - (*p_it).header.stamp > points_keep_time_) {
       p_it = transformed_points_.erase(p_it);
@@ -82,8 +84,9 @@ void NavLayerFromPoints::updateBounds(
   std::string global_frame = layered_costmap_->getGlobalFrameID();
 
   // Check if there are points to remove in transformed_points list and if so, then remove it
-  if (!transformed_points_.empty())
+  if (!transformed_points_.empty()) {
     clearTransformedPoints();
+  }
 
   // Add points to PointStamped list transformed_points_
   for (const auto& point : points_list_.polygon.points) {
