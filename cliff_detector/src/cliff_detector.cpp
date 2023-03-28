@@ -21,6 +21,11 @@
 namespace cliff_detector
 {
 
+struct FieldOfViews {
+  double horizontal_fov;
+  double vertical_fov;
+};
+
 double toRad(double alpha)
 {
   return alpha * M_PI / 180.0;
@@ -36,6 +41,18 @@ double length(const cv::Point3d & vec)
   return sqrt(squaredLength(vec));
 }
 
+FieldOfViews cameraInfoToFov(const sensor_msgs::msg::CameraInfo::ConstSharedPtr & info) 
+{
+  struct FieldOfViews fovs;
+  double fx = info->k[0];
+  double fy= info->k[4];
+  
+  fovs.horizontal_fov = 2 * std::atan2(info->width, 2 * fx);
+  fovs.vertical_fov = 2 * std::atan2(info->height, 2 * fy);
+
+  return fovs;
+}
+
 geometry_msgs::msg::PolygonStamped CliffDetector::detectCliff(
   const sensor_msgs::msg::Image::ConstSharedPtr & image,
   const sensor_msgs::msg::CameraInfo::ConstSharedPtr & info)
@@ -45,13 +62,12 @@ geometry_msgs::msg::PolygonStamped CliffDetector::detectCliff(
   if (!depth_sensor_params_update || cam_model_update_) {
     camera_model_.fromCameraInfo(info);
 
-    double angle_min, angle_max, vertical_fov;
-    const auto cx = camera_model_.cx();
-    const auto cy = camera_model_.cy();
+    double vertical_fov;
 
     // Calculate field of views angles - vertical and horizontal
-    fieldOfView(angle_min, angle_max, cx, 0, cx, cy, cx, image->height - 1);
-    vertical_fov = angle_max - angle_min;
+    auto field_of_views = cameraInfoToFov(info);
+    horizontal_fov = field_of_views.horizontal_fov;
+    vertical_fov = field_of_views.vertical_fov;
 
     // Calculate angles between optical axis and rays for each row of image
     calcDeltaAngleForImgRows(vertical_fov);
@@ -62,7 +78,7 @@ geometry_msgs::msg::PolygonStamped CliffDetector::detectCliff(
     // Sensor tilt compensation
     calcTiltCompensationFactorsForImgRows();
 
-    // Check scan_height vs image_height
+    // Check scan_                                                                                                                                                                                                                                                                                                                                height vs image_height
     if (used_depth_height_ > image->height) {
       // ROS_ERROR("Parameter used_depth_height is higher than height of image.");
       used_depth_height_ = image->height;
@@ -195,26 +211,6 @@ double CliffDetector::angleBetweenRays(
 {
   double dot = ray1.x * ray2.x + ray1.y * ray2.y + ray1.z * ray2.z;
   return acos(dot / (length(ray1) * length(ray2)));
-}
-
-void CliffDetector::fieldOfView(
-  double & min, double & max, double x1, double y1,
-  double xc, double yc, double x2, double y2)
-{
-  const cv::Point2d raw_pixel_left(x1, y1);
-  const auto rect_pixel_left = camera_model_.rectifyPoint(raw_pixel_left);
-  const auto left_ray = camera_model_.projectPixelTo3dRay(rect_pixel_left);
-
-  const cv::Point2d raw_pixel_right(x2, y2);
-  const auto rect_pixel_right = camera_model_.rectifyPoint(raw_pixel_right);
-  const auto right_ray = camera_model_.projectPixelTo3dRay(rect_pixel_right);
-
-  const cv::Point2d raw_pixel_center(xc, yc);
-  const auto rect_pixel_center = camera_model_.rectifyPoint(raw_pixel_center);
-  const auto center_ray = camera_model_.projectPixelTo3dRay(rect_pixel_center);
-
-  min = -angleBetweenRays(center_ray, right_ray);
-  max = angleBetweenRays(left_ray, center_ray);
 }
 
 void CliffDetector::calcDeltaAngleForImgRows(double vertical_fov)
@@ -381,17 +377,16 @@ void CliffDetector::findCliffInDepthImage(
   stairs_points_msg_.polygon.points.clear();
   pt.y = 0;
 
-  const double sensor_tilt = toRad(sensor_tilt_angle_);
-
   std::vector<std::vector<int>>::iterator it;
-  for (it = stairs_points.begin(); it != stairs_points.end(); ++it) {
-    // Calculate point in XZ plane -- depth (z)
-    unsigned row = (*it)[Row];
-    pt.z = sensor_mount_height_ / std::tan(sensor_tilt + delta_row_[row]);
+  double center_of_fov = horizontal_fov / 2;
+  double col_rad_weight = horizontal_fov / img_width;
 
-    // Calculate x value
-    const double depth = sensor_mount_height_ / std::sin(sensor_tilt + delta_row_[row]);
-    pt.x = ((*it)[Col] - camera_model_.cx()) * depth / camera_model_.fx();
+  for (it = stairs_points.begin(); it != stairs_points.end(); ++it) {
+    unsigned row = (*it)[Row];
+    pt.x = sensor_mount_height_ / std::tan(delta_row_[row]);
+
+    double horizontal_angle = center_of_fov - (*it)[Col] * col_rad_weight;
+    pt.y = std::tan(horizontal_angle) * pt.x;
 
     // Add point to message
     stairs_points_msg_.polygon.points.push_back(pt);
